@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXA Messages</title>
+
+    <link rel="stylesheet" href="messages.css">
+</head>
+
+<body>
+
+    <!-- NEXA HEADER -->
+
+    <header class="site-header">
+
+        <div class="header-left">
+            <a href="home.html" class="nexa-logo">
+                NEXA
+            </a>
+        </div>
+
+        <nav class="main-nav">
+
+            <a href="home.html">
+                <span class="nav-icon">⌂</span>
+                <span>Home</span>
+            </a>
+
+            <a href="people.html">
+                <span class="nav-icon">◉</span>
+                <span>People</span>
+            </a>
+
+            <a href="messages.html" class="active">
+                <span class="nav-icon">✉</span>
+                <span>Messages</span>
+            </a>
+
+            <a href="profile.html">
+                <span class="nav-icon">●</span>
+                <span>Profile</span>
+            </a>
+
+            <a href="settings.html">
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- MESSAGES APPLICATION -->
+
+    <main class="messages-page">
+
+        <div class="messages-shell">
+
+
+            <!-- LEFT: CONVERSATIONS -->
+
+            <aside
+                id="conversationsPanel"
+                class="conversations-panel"
+            >
+
+                <div class="conversations-top">
+
+                    <div class="messages-title-row">
+
+                        <div>
+
+                            <h1>
+                                Messages
+                            </h1>
+
+                            <p>
+                                Stay connected
+                            </p>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            id="newMessageButton"
+                            class="new-message-button"
+                            title="New message"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+
+                    <div class="conversation-search">
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+                        <input
+                            type="text"
+                            id="conversationSearch"
+                            placeholder="Search conversations"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="conversationsList"
+                    class="conversations-list"
+                ></div>
+
+            </aside>
+
+
+            <!-- RIGHT: CHAT -->
+
+            <section
+                id="chatSection"
+                class="chat-section"
+            >
+
+                <!-- CHAT HEADER -->
+
+                <div class="chat-header">
+
+                    <div class="chat-user-info">
+
+                        <button
+                            type="button"
+                            id="backToConversations"
+                            class="mobile-back-button"
+                        >
+                            ←
+                        </button>
+
+                        <div
+                            id="chatAvatar"
+                            class="chat-avatar"
+                        >
+                            N
+                        </div>
+
+                        <div class="chat-user-text">
+
+                            <h2 id="chatWith">
+                                Chat
+                            </h2>
+
+                            <span
+                                id="chatOnlineStatus"
+                                class="chat-online-status"
+                            >
+                                NEXA
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CHAT ACTIONS -->
+
+                    <div
+                        id="callControls"
+                        class="call-controls"
+                    >
+
+                        <button
+                            type="button"
+                            id="voiceCallButton"
+                            title="Voice call"
+                            class="chat-control"
+                        >
+                            📞
+                        </button>
+
+                        <button
+                            type="button"
+                            id="videoCallButton"
+                            title="Video call"
+                            class="chat-control"
+                        >
+                            📹
+                        </button>
+
+                        <button
+                            type="button"
+                            id="endCallButton"
+                            title="End call"
+                            class="chat-control end-call"
+                            style="display: none;"
+                        >
+                            🔴
+                        </button>
+
+                        <button
+                            type="button"
+                            class="chat-control"
+                            title="More options"
+                        >
+                            ⋯
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CALL STATUS -->
+
+                <div
+                    id="callStatus"
+                    class="call-status"
+                ></div>
+
+
+                <!-- REMOTE CALL AREA -->
+
+                <div
+                    id="remoteCallArea"
+                    class="remote-call-area"
+                    style="display: none;"
+                >
+
+                    <div class="remote-video-wrapper">
+
+                        <video
+                            id="remoteVideo"
+                            autoplay
+                            playsinline
+                            style="display: none;"
+                        ></video>
+
+                        <div
+                            id="remoteVideoName"
+                            class="remote-video-name"
+                        ></div>
+
+                    </div>
+
+                    <audio
+                        id="remoteAudio"
+                        autoplay
+                        playsinline
+                    ></audio>
+
+                </div>
+
+
+                <!-- MESSAGES -->
+
+                <div
+                    id="messagesContainer"
+                    class="messages-container"
+                ></div>
+
+
+                <!-- MESSAGE COMPOSER -->
+
+                <div class="message-composer-area">
+
+                    <form
+                        id="messageForm"
+                        class="message-form"
+                    >
+
+                        <button
+                            type="button"
+                            class="composer-action"
+                            title="Add emoji"
+                        >
+                            😊
+                        </button>
+
+                        <div class="message-input-wrapper">
+
+                            <input
+                                type="text"
+                                id="messageInput"
+                                placeholder="Message..."
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <label
+                            for="mediaInput"
+                            class="composer-action"
+                            title="Attach photo or video"
+                        >
+                            📎
+                        </label>
+
+
+                        <input
+                            type="file"
+                            id="mediaInput"
+                            accept="image/*,video/*"
+                            hidden
+                        >
+
+
+                        <button
+                            type="submit"
+                            class="send-button"
+                        >
+                            Send
+                        </button>
+
+                    </form>
+
+
+                    <!-- VOICE MESSAGE -->
+
+                    <div
+                        id="voiceControls"
+                        class="voice-controls"
+                    >
+
+                        <button
+                            type="button"
+                            id="recordButton"
+                        >
+                            🎤 Record Voice
+                        </button>
+
+                        <button
+                            type="button"
+                            id="stopButton"
+                            disabled
+                        >
+                            ⏹ Stop
+                        </button>
+
+                        <span id="recordingStatus"></span>
+
+                    </div>
+
+
+                    <!-- LOCATION -->
+
+                    <div
+                        id="locationControls"
+                        class="location-controls"
+                    >
+
+                        <button
+                            type="button"
+                            id="locationButton"
+                        >
+                            📍 Send Location
+                        </button>
+
+                        <span id="locationStatus"></span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- EMPTY CHAT -->
+
+            <section
+                id="emptyChatState"
+                class="empty-chat-state"
+            >
+
+                <div class="empty-chat-content">
+
+                    <div class="empty-chat-icon">
+                        💬
+                    </div>
+
+                    <h2>
+                        Your Messages
+                    </h2>
+
+                    <p>
+                        Choose a conversation from the left
+                        or start a new message.
+                    </p>
+
+                    <button
+                        type="button"
+                        id="emptyNewMessageButton"
+                        class="empty-new-message"
+                    >
+                        Send a message
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- MOBILE BOTTOM NAV -->
+
+    <nav class="mobile-nav">
+
+        <a
+            href="home.html"
+            class="mobile-nav-item"
+        >
+            <span>⌂</span>
+            <small>Home</small>
+        </a>
+
+        <a
+            href="people.html"
+            class="mobile-nav-item"
+        >
+            <span>◉</span>
+            <small>People</small>
+        </a>
+
+        <a
+            href="messages.html"
+            class="mobile-nav-item active"
+        >
+            <span>✉</span>
+            <small>Messages</small>
+        </a>
+
+        <a
+            href="profile.html"
+            class="mobile-nav-item"
+        >
+            <span>●</span>
+            <small>Profile</small>
+        </a>
+
+    </nav>
+
+
+    <!-- INCOMING CALL SCREEN -->
+
+    <div
+        id="incomingCall"
+        class="incoming-call"
+        style="display: none;"
+    >
+
+        <div
+            id="incomingCallBox"
+            class="incoming-call-box"
+        >
+
+            <div
+                id="incomingCallTop"
+                class="incoming-call-top"
+            >
+
+                <span id="incomingCallLabel">
+                    INCOMING CALL
+                </span>
+
+            </div>
+
+
+            <div
+                id="incomingCallAvatar"
+                class="incoming-call-avatar"
+            >
+
+                <span id="incomingCallIcon">
+                    📞
+                </span>
+
+            </div>
+
+
+            <h2 id="incomingCallTitle">
+                Incoming Voice Call
+            </h2>
+
+
+            <p id="incomingCaller">
+                Someone is calling you
+            </p>
+
+
+            <p id="incomingCallType">
+                NEXA Call
+            </p>
+
+
+            <div
+                id="incomingCallButtons"
+                class="incoming-call-buttons"
+            >
+
+                <button
+                    type="button"
+                    id="declineCallButton"
+                    class="callAction decline"
+                >
+
+                    <span class="callButtonIcon">
+                        ✕
+                    </span>
+
+                    <span>
+                        Decline
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="acceptCallButton"
+                    class="callAction accept"
+                >
+
+                    <span class="callButtonIcon">
+                        ✓
+                    </span>
+
+                    <span>
+                        Accept
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SOCKET.IO -->
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+
+    <!-- NEXA MESSAGES JAVASCRIPT -->
+
+    <script src="messages.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXA — Connect. Share. Live.</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="auth-background">
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+        <div class="glow glow-three"></div>
+
+        <div class="background-grid"></div>
+    </div>
+
+
+    <main class="auth-page">
+
+        <section class="auth-container">
+
+            <!-- BRAND -->
+            <div class="brand">
+
+                <div class="brand-mark">
+                    <span>N</span>
+                </div>
+
+                <h1>NEXA</h1>
+
+                <p>
+                    Connect. Share. Live.
+                </p>
+
+            </div>
+
+
+            <!-- AUTH CARD -->
+            <div class="auth-box">
+
+                <div class="auth-box-top">
+                    <span class="online-dot"></span>
+                    <span>NEXA SOCIAL</span>
+                </div>
+
+
+                <!-- MESSAGE -->
+                <div id="message"></div>
+
+
+                <!-- =========================
+                     LOGIN
+                ========================== -->
+
+                <div id="loginSection">
+
+                    <div class="auth-heading">
+
+                        <span class="eyebrow">
+                            WELCOME BACK
+                        </span>
+
+                        <h2>
+                            Welcome to NEXA
+                        </h2>
+
+                        <p class="auth-subtitle">
+                            Your people. Your moments. Your world.
+                        </p>
+
+                    </div>
+
+
+                    <form id="loginForm">
+
+                        <div class="input-group">
+
+                            <label for="loginEmail">
+                                Email or username
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    @
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="loginEmail"
+                                    placeholder="Enter your email or username"
+                                    autocomplete="username"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="input-group">
+
+                            <label for="loginPassword">
+                                Password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    •
+                                </span>
+
+                                <input
+                                    type="password"
+                                    id="loginPassword"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="auth-button"
+                        >
+                            <span>Log In</span>
+                            <span class="button-arrow">→</span>
+                        </button>
+
+                    </form>
+
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="create-button"
+                        id="showRegister"
+                    >
+                        <span>Create a new account</span>
+                        <span>+</span>
+                    </button>
+
+                </div>
+
+
+                <!-- =========================
+                     REGISTER
+                ========================== -->
+
+                <div
+                    id="registerSection"
+                    style="display: none;"
+                >
+
+                    <div class="auth-heading">
+
+                        <span class="eyebrow">
+                            JOIN NEXA
+                        </span>
+
+                        <h2>
+                            Create your account
+                        </h2>
+
+                        <p class="auth-subtitle">
+                            Build your profile and start connecting.
+                        </p>
+
+                    </div>
+
+
+                    <form id="registerForm">
+
+                        <div class="input-group">
+
+                            <label for="registerName">
+                                Full name
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    N
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="registerName"
+                                    placeholder="Enter your full name"
+                                    autocomplete="name"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="input-group">
+
+                            <label for="registerUsername">
+                                Username
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    @
+                                </span>
+
+                                <input
+                                    type="text"
+                                    id="registerUsername"
+                                    placeholder="@username"
+                                    autocomplete="username"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="input-group">
+
+                            <label for="registerEmail">
+                                Email
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    ✉
+                                </span>
+
+                                <input
+                                    type="email"
+                                    id="registerEmail"
+                                    placeholder="Enter your email"
+                                    autocomplete="email"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="input-group">
+
+                            <label for="registerPassword">
+                                Password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    •
+                                </span>
+
+                                <input
+                                    type="password"
+                                    id="registerPassword"
+                                    placeholder="Create a password"
+                                    autocomplete="new-password"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="auth-button"
+                        >
+                            <span>Create Account</span>
+                            <span class="button-arrow">→</span>
+                        </button>
+
+                    </form>
+
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="create-button"
+                        id="showLogin"
+                    >
+                        <span>Already have an account?</span>
+                        <span>Log in</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+            <div class="auth-footer">
+
+                <span>© 2026 NEXA</span>
+
+                <span class="footer-dot"></span>
+
+                <span>Connect. Share. Live.</span>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#f7f9fc"
+    >
+
+    <title>NEXA — Home</title>
+
+
+    <link
+        rel="stylesheet"
+        href="home.css"
+    >
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         NEXA APP SHELL
+    ====================================================== -->
+
+    <div class="nexa-app">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside
+            class="sidebar"
+            aria-label="Main navigation"
+        >
+
+            <!-- BRAND -->
+
+            <div class="sidebar-brand">
+
+                <a
+                    href="home.html"
+                    class="logo"
+                >
+                    NEXA
+                </a>
+
+                <span class="brand-status">
+                    SOCIAL
+                </span>
+
+            </div>
+
+
+            <!-- MAIN NAVIGATION -->
+
+            <nav class="main-nav">
+
+                <a
+                    href="home.html"
+                    class="nav-item active"
+                    aria-current="page"
+                >
+
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    <span class="nav-label">
+                        Home
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="people.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    <span class="nav-label">
+                        People
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="messages.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ✉
+                    </span>
+
+                    <span class="nav-label">
+                        Messages
+                    </span>
+
+                    <span class="nav-badge">
+                        0
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="profile.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ●
+                    </span>
+
+                    <span class="nav-label">
+                        Profile
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="settings.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ⚙
+                    </span>
+
+                    <span class="nav-label">
+                        Settings
+                    </span>
+
+                </a>
+
+
+                <div class="nav-divider"></div>
+
+
+                <a
+                    href="about.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ⓘ
+                    </span>
+
+                    <span class="nav-label">
+                        About
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="contact.html"
+                    class="nav-item"
+                >
+
+                    <span class="nav-icon">
+                        ☏
+                    </span>
+
+                    <span class="nav-label">
+                        Contact
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- SIDEBAR BOTTOM -->
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-promo">
+
+                    <span class="promo-icon">
+                        ✦
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Welcome to NEXA
+                        </strong>
+
+                        <small>
+                            Connect. Share. Discover.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    id="logoutButton"
+                    class="logout-btn"
+                    type="button"
+                >
+
+                    <span class="logout-icon">
+                        ↪
+                    </span>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main-content">
+
+
+            <!-- =================================================
+                 PREMIUM TOPBAR
+            ================================================== -->
+
+            <header class="topbar">
+
+
+                <!-- MOBILE BRAND -->
+
+                <a
+                    href="home.html"
+                    class="mobile-logo"
+                >
+                    NEXA
+                </a>
+
+
+                <!-- SEARCH -->
+
+                <div class="topbar-search">
+
+                    <span class="search-icon">
+                        ⌕
+                    </span>
+
+                    <label
+                        for="searchInput"
+                        class="sr-only"
+                    >
+                        Search NEXA
+                    </label>
+
+                    <input
+                        type="search"
+                        id="searchInput"
+                        placeholder="Search people, posts and more..."
+                        autocomplete="off"
+                    >
+
+                    <button
+                        class="search-shortcut"
+                        type="button"
+                        aria-label="Search"
+                    >
+                        /
+                    </button>
+
+                </div>
+
+
+                <!-- TOP ACTIONS -->
+
+                <div class="topbar-actions">
+
+
+                    <!-- CREATE -->
+
+                    <button
+                        class="top-create-button"
+                        id="topCreateButton"
+                        type="button"
+                    >
+
+                        <span>
+                            +
+                        </span>
+
+                        <strong>
+                            Create
+                        </strong>
+
+                    </button>
+
+
+                    <!-- NOTIFICATIONS -->
+
+                    <button
+                        class="topbar-btn notification-trigger"
+                        id="notificationButton"
+                        type="button"
+                        title="Notifications"
+                        aria-label="Notifications"
+                    >
+
+                        <span>
+                            ♡
+                        </span>
+
+                        <i
+                            class="notification-dot"
+                            aria-hidden="true"
+                        ></i>
+
+                    </button>
+
+
+                    <!-- MESSAGES -->
+
+                    <a
+                        href="messages.html"
+                        class="topbar-btn"
+                        title="Messages"
+                        aria-label="Messages"
+                    >
+                        ✉
+                    </a>
+
+
+                    <!-- PROFILE -->
+
+                    <a
+                        href="profile.html"
+                        class="mini-profile"
+                        aria-label="Open profile"
+                    >
+
+                        <div
+                            class="mini-avatar"
+                            id="miniAvatar"
+                        >
+                            N
+                        </div>
+
+                    </a>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 NOTIFICATIONS
+            ================================================== -->
+
+            <div
+                id="notificationArea"
+                class="notification-area"
+                aria-live="polite"
+                aria-atomic="true"
+            ></div>
+
+
+
+            <!-- =================================================
+                 PAGE CONTENT
+            ================================================== -->
+
+            <div class="home-page">
+
+
+                <!-- =================================================
+                     HERO / WELCOME
+                ================================================== -->
+
+                <section class="home-intro">
+
+                    <div>
+
+                        <span class="home-eyebrow">
+                            YOUR NEXA SPACE
+                        </span>
+
+                        <h1>
+                            Discover what's
+                            <span>happening.</span>
+                        </h1>
+
+                        <p>
+                            Share moments, discover people and stay
+                            connected with your NEXA community.
+                        </p>
+
+                    </div>
+
+
+                    <div class="home-intro-actions">
+
+                        <a
+                            href="people.html"
+                            class="intro-action secondary"
+                        >
+                            Discover people
+                        </a>
+
+                        <button
+                            type="button"
+                            class="intro-action primary"
+                            id="introCreateButton"
+                        >
+                            Create post
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     QUICK STATS
+                ================================================== -->
+
+                <section class="quick-stats">
+
+                    <div class="quick-stat">
+
+                        <span class="quick-stat-icon">
+                            ✦
+                        </span>
+
+                        <div>
+                            <strong>
+                                NEXA
+                            </strong>
+
+                            <small>
+                                Your community
+                            </small>
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-stat">
+
+                        <span class="quick-stat-icon">
+                            ◉
+                        </span>
+
+                        <div>
+                            <strong>
+                                People
+                            </strong>
+
+                            <small>
+                                Discover new connections
+                            </small>
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-stat">
+
+                        <span class="quick-stat-icon">
+                            ▶
+                        </span>
+
+                        <div>
+                            <strong>
+                                Reels
+                            </strong>
+
+                            <small>
+                                Short videos & moments
+                            </small>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     MAIN GRID
+                ================================================== -->
+
+                <div class="home-layout">
+
+
+                    <!-- =================================================
+                         PRIMARY FEED
+                    ================================================== -->
+
+                    <section
+                        class="feed-column"
+                        aria-label="NEXA feed"
+                    >
+
+
+                        <!-- =================================================
+                             STORIES
+                        ================================================== -->
+
+                        <section class="stories-section">
+
+
+                            <div class="stories-header">
+
+                                <div class="section-title-group">
+
+                                    <span class="section-eyebrow">
+                                        NEXA MOMENTS
+                                    </span>
+
+                                    <h2>
+                                        Stories
+                                    </h2>
+
+                                </div>
+
+
+                                <button
+                                    id="viewAllStories"
+                                    type="button"
+                                    class="section-link"
+                                >
+                                    View all
+                                    <span>→</span>
+                                </button>
+
+                            </div>
+
+
+                            <div
+                                class="stories-container"
+                                id="storiesContainer"
+                            >
+
+
+                                <!-- YOUR STORY -->
+
+                                <div class="story create-story">
+
+                                    <div class="story-avatar-wrapper">
+
+                                        <div
+                                            class="story-avatar"
+                                            id="storyAvatar"
+                                        >
+                                            N
+                                        </div>
+
+
+                                        <button
+                                            class="add-story"
+                                            id="addStoryButton"
+                                            type="button"
+                                            aria-label="Add a story"
+                                        >
+                                            +
+                                        </button>
+
+                                    </div>
+
+
+                                    <span>
+                                        Your story
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+
+                        <!-- =================================================
+                             CREATE POST
+                        ================================================== -->
+
+                        <section class="create-post">
+
+
+                            <div class="composer-header">
+
+                                <div
+                                    class="post-avatar"
+                                    id="postAvatar"
+                                >
+                                    N
+                                </div>
+
+
+                                <div class="composer-heading">
+
+                                    <strong>
+                                        Create something
+                                    </strong>
+
+                                    <span>
+                                        Share a moment with NEXA
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="create-post-top">
+
+                                <label
+                                    for="postInput"
+                                    class="sr-only"
+                                >
+                                    Create a post
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="postInput"
+                                    placeholder="What's happening on NEXA?"
+                                    autocomplete="off"
+                                    maxlength="1000"
+                                >
+
+                            </div>
+
+
+                            <!-- SELECTED MEDIA -->
+
+                            <div
+                                id="composerMediaIndicator"
+                                class="composer-media-indicator"
+                                hidden
+                            >
+
+                                <span>
+                                    Media selected
+                                </span>
+
+                                <button
+                                    type="button"
+                                    id="removeComposerMedia"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+
+                            <!-- POST ACTIONS -->
+
+                            <div class="create-post-actions">
+
+
+                                <button
+                                    id="photoPostButton"
+                                    type="button"
+                                    class="composer-action photo-action"
+                                >
+
+                                    <span class="composer-action-icon">
+                                        ▧
+                                    </span>
+
+                                    <span>
+                                        Photo
+                                    </span>
+
+                                </button>
+
+
+                                <button
+                                    id="videoPostButton"
+                                    type="button"
+                                    class="composer-action video-action"
+                                >
+
+                                    <span class="composer-action-icon">
+                                        ▷
+                                    </span>
+
+                                    <span>
+                                        Video
+                                    </span>
+
+                                </button>
+
+
+                                <button
+                                    id="reelPostButton"
+                                    type="button"
+                                    class="composer-action reel-action"
+                                >
+
+                                    <span class="composer-action-icon">
+                                        ▶
+                                    </span>
+
+                                    <span>
+                                        Reel
+                                    </span>
+
+                                </button>
+
+
+                                <button
+                                    id="createPostButton"
+                                    type="button"
+                                    class="composer-post-button"
+                                >
+                                    Post
+                                </button>
+
+                            </div>
+
+
+                            <!-- FILE INPUTS -->
+
+                            <input
+                                type="file"
+                                id="photoFileInput"
+                                accept="image/*"
+                                hidden
+                            >
+
+
+                            <input
+                                type="file"
+                                id="videoFileInput"
+                                accept="video/*"
+                                hidden
+                            >
+
+                        </section>
+
+
+
+                        <!-- =================================================
+                             FEED HEADER
+                        ================================================== -->
+
+                        <div class="feed-toolbar">
+
+                            <div>
+
+                                <span class="section-eyebrow">
+                                    COMMUNITY
+                                </span>
+
+                                <h2>
+                                    Latest posts
+                                </h2>
+
+                            </div>
+
+
+                            <div class="feed-filter">
+
+                                <button
+                                    type="button"
+                                    class="feed-filter-active"
+                                >
+                                    For you
+                                </button>
+
+                                <button
+                                    type="button"
+                                >
+                                    Latest
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             POSTS
+                        ================================================== -->
+
+                        <div
+                            id="feedPosts"
+                            class="feed-posts"
+                        ></div>
+
+
+
+                        <!-- =================================================
+                             EMPTY FEED
+                        ================================================== -->
+
+                        <section
+                            id="emptyFeed"
+                            class="empty-feed"
+                            hidden
+                        >
+
+                            <div class="empty-feed-icon">
+                                ✦
+                            </div>
+
+                            <h2>
+                                Your NEXA feed is empty
+                            </h2>
+
+                            <p>
+                                Create your first post and start
+                                connecting with people.
+                            </p>
+
+
+                            <button
+                                type="button"
+                                class="empty-feed-button"
+                                id="emptyFeedCreateButton"
+                            >
+                                Create your first post
+                            </button>
+
+                        </section>
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                         RIGHT SIDEBAR
+                    ================================================== -->
+
+                    <aside class="home-right-column">
+
+
+                        <!-- TRENDING -->
+
+                        <section class="home-side-card">
+
+                            <div class="side-card-header">
+
+                                <div>
+
+                                    <span class="section-eyebrow">
+                                        EXPLORE
+                                    </span>
+
+                                    <h3>
+                                        What's trending
+                                    </h3>
+
+                                </div>
+
+                                <span class="side-card-more">
+                                    •••
+                                </span>
+
+                            </div>
+
+
+                            <div class="trend-list">
+
+
+                                <div class="trend-item">
+
+                                    <span class="trend-number">
+                                        01
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            #NEXA
+                                        </strong>
+
+                                        <small>
+                                            NEXA community
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="trend-item">
+
+                                    <span class="trend-number">
+                                        02
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            #NewFriends
+                                        </strong>
+
+                                        <small>
+                                            Discover people
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="trend-item">
+
+                                    <span class="trend-number">
+                                        03
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            #Moments
+                                        </strong>
+
+                                        <small>
+                                            Shared today
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+
+                            <a
+                                href="people.html"
+                                class="side-card-link"
+                            >
+                                Explore more
+                                <span>→</span>
+                            </a>
+
+                        </section>
+
+
+
+                        <!-- CONNECTIONS -->
+
+                        <section class="home-side-card">
+
+                            <div class="side-card-header">
+
+                                <div>
+
+                                    <span class="section-eyebrow">
+                                        CONNECTIONS
+                                    </span>
+
+                                    <h3>
+                                        People to discover
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="connection-placeholder">
+
+
+                                <div class="connection-avatar">
+                                    N
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Meet new people
+                                    </strong>
+
+                                    <small>
+                                        Find friends and grow
+                                        your NEXA circle.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="people.html"
+                                class="discover-button"
+                            >
+                                Discover people
+                            </a>
+
+                        </section>
+
+
+
+                        <!-- NEXA CARD -->
+
+                        <section class="nexa-side-banner">
+
+                            <div class="banner-glow"></div>
+
+                            <span class="banner-logo">
+                                N
+                            </span>
+
+                            <span class="section-eyebrow">
+                                NEXA
+                            </span>
+
+                            <h3>
+                                Your social world,
+                                <span>one place.</span>
+                            </h3>
+
+                            <p>
+                                Share. Connect. Discover.
+                            </p>
+
+                        </section>
+
+
+                    </aside>
+
+                </div>
+
+            </div>
+
+        </main>
+
+
+
+        <!-- =================================================
+             MOBILE NAVIGATION
+        ================================================== -->
+
+        <nav
+            class="mobile-nav"
+            aria-label="Mobile navigation"
+        >
+
+
+            <a
+                href="home.html"
+                class="mobile-nav-item active"
+                aria-current="page"
+            >
+
+                <span>
+                    ⌂
+                </span>
+
+                <small>
+                    Home
+                </small>
+
+            </a>
+
+
+            <a
+                href="people.html"
+                class="mobile-nav-item"
+            >
+
+                <span>
+                    ◉
+                </span>
+
+                <small>
+                    People
+                </small>
+
+            </a>
+
+
+            <a
+                href="messages.html"
+                class="mobile-nav-item"
+            >
+
+                <span>
+                    ✉
+                </span>
+
+                <small>
+                    Messages
+                </small>
+
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="mobile-nav-item"
+            >
+
+                <span>
+                    ●
+                </span>
+
+                <small>
+                    Profile
+                </small>
+
+            </a>
+
+        </nav>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         COMMENTS MODAL
+    ====================================================== -->
+
+    <div
+        id="commentsModal"
+        class="comments-modal"
+        hidden
+        aria-hidden="true"
+    >
+
+        <div
+            class="comments-modal-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="commentsTitle"
+        >
+
+
+            <div class="comments-modal-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        CONVERSATION
+                    </span>
+
+                    <h2 id="commentsTitle">
+                        Comments
+                    </h2>
+
+                </div>
+
+
+                <button
+                    id="closeCommentsButton"
+                    type="button"
+                    aria-label="Close comments"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="commentsList"
+                class="comments-list"
+            ></div>
+
+
+            <form
+                id="commentForm"
+                class="comment-form"
+            >
+
+                <label
+                    for="commentInput"
+                    class="sr-only"
+                >
+                    Write a comment
+                </label>
+
+
+                <input
+                    type="text"
+                    id="commentInput"
+                    placeholder="Write a comment..."
+                    autocomplete="off"
+                    maxlength="500"
+                    required
+                >
+
+
+                <button type="submit">
+                    Post
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         STORY VIEWER
+    ====================================================== -->
+
+    <div
+        id="storyViewer"
+        class="story-viewer"
+        hidden
+        aria-hidden="true"
+    >
+
+
+        <button
+            id="closeStoryViewer"
+            class="story-viewer-close"
+            type="button"
+            aria-label="Close story"
+        >
+            ×
+        </button>
+
+
+        <div
+            id="storyViewerContent"
+            class="story-viewer-content"
+        ></div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MEDIA PREVIEW
+    ====================================================== -->
+
+    <div
+        id="mediaPreviewModal"
+        class="media-preview-modal"
+        hidden
+        aria-hidden="true"
+    >
+
+
+        <div
+            class="media-preview-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mediaCreateTitle"
+        >
+
+
+            <div class="media-preview-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        NEW POST
+                    </span>
+
+                    <h2 id="mediaCreateTitle">
+                        Create
+                    </h2>
+
+                </div>
+
+
+                <button
+                    id="closeMediaPreview"
+                    type="button"
+                    aria-label="Close media preview"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="mediaPreviewContent"
+                class="media-preview-content"
+            ></div>
+
+
+            <button
+                id="publishMediaButton"
+                class="publish-media-button"
+                type="button"
+            >
+                Publish
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         REEL / MEDIA VIEWER
+    ====================================================== -->
+
+    <div
+        id="reelViewer"
+        class="reel-viewer"
+        hidden
+        aria-hidden="true"
+    >
+
+
+        <button
+            id="closeReelViewer"
+            class="reel-viewer-close"
+            type="button"
+            aria-label="Close viewer"
+        >
+            ×
+        </button>
+
+
+        <div
+            id="reelViewerBackdrop"
+            class="reel-viewer-backdrop"
+        ></div>
+
+
+        <div
+            id="reelViewerContent"
+            class="reel-viewer-content"
+        >
+
+
+            <!-- =================================================
+                 REEL MEDIA
+            ================================================== -->
+
+            <div class="reel-viewer-video-wrap">
+
+
+                <div class="reel-viewer-progress">
+
+                    <span></span>
+
+                </div>
+
+
+                <video
+                    id="reelViewerVideo"
+                    class="reel-viewer-video"
+                    controls
+                    loop
+                    playsinline
+                    preload="metadata"
+                ></video>
+
+
+                <img
+                    id="reelViewerImage"
+                    class="reel-viewer-image"
+                    alt="NEXA post media"
+                />
+
+
+                <div class="reel-viewer-gradient"></div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 REEL INFORMATION
+            ================================================== -->
+
+            <div class="reel-viewer-info">
+
+
+                <div class="reel-viewer-user">
+
+                    <div
+                        id="reelViewerAvatar"
+                        class="reel-viewer-avatar"
+                    >
+                        N
+                    </div>
+
+
+                    <div>
+
+                        <strong id="reelViewerAuthor">
+                            NEXA User
+                        </strong>
+
+                        <span id="reelViewerTime">
+                            Just now
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <p id="reelViewerCaption"></p>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 REEL ACTIONS
+            ================================================== -->
+
+            <div class="reel-viewer-actions">
+
+
+                <button
+                    type="button"
+                    id="reelViewerLike"
+                    class="reel-viewer-action"
+                    aria-label="Like post"
+                >
+
+                    <span class="reel-viewer-action-icon">
+                        ♥
+                    </span>
+
+                    <span id="reelViewerLikes">
+                        0
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="reelViewerComment"
+                    class="reel-viewer-action"
+                    aria-label="Comment on post"
+                >
+
+                    <span class="reel-viewer-action-icon">
+                        💬
+                    </span>
+
+                    <span id="reelViewerComments">
+                        0
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="reelViewerShare"
+                    class="reel-viewer-action"
+                    aria-label="Share post"
+                >
+
+                    <span class="reel-viewer-action-icon">
+                        ↗
+                    </span>
+
+                    <span id="reelViewerShares">
+                        0
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="reelViewerSave"
+                    class="reel-viewer-action"
+                    aria-label="Save post"
+                >
+
+                    <span class="reel-viewer-action-icon">
+                        ♧
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="home.js"></script>
+
+</body>
+
+</html>

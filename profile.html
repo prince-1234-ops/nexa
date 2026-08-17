@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NEXA Profile</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+
+<body>
+
+<header class="profile-header">
+
+    <a href="home.html" class="nexa-logo">NEXA</a>
+
+    <nav>
+        <a href="home.html">Home</a>
+        <a href="people.html">People</a>
+        <a href="messages.html">Messages</a>
+        <a href="profile.html" class="active">Profile</a>
+        <a href="settings.html">Settings</a>
+    </nav>
+
+</header>
+
+
+<main class="profile-page">
+
+    <!-- PROFILE HEADER -->
+    <section class="profile-head">
+
+        <div class="profile-photo-wrap">
+            <div class="profile-photo" id="profilePhoto">
+                <span id="profileInitial">N</span>
+            </div>
+        </div>
+
+        <div class="profile-info">
+
+            <div class="profile-name-row">
+
+                <h1 id="profileUsername">@username</h1>
+
+                <button
+                    type="button"
+                    id="editProfileButton"
+                    class="edit-button">
+                    Edit Profile
+                </button>
+
+            </div>
+
+            <div class="profile-stats">
+
+                <button
+                    type="button"
+                    class="stat-button"
+                    id="postsStat">
+
+                    <strong id="postsCount">0</strong>
+                    <span>Posts</span>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="stat-button"
+                    id="friendsStat">
+
+                    <strong id="friendsCount">0</strong>
+                    <span>Friends</span>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="stat-button"
+                    id="likesStat">
+
+                    <strong id="likesCount">0</strong>
+                    <span>Likes</span>
+
+                </button>
+
+            </div>
+
+            <div class="profile-bio">
+
+                <strong id="profileName">
+                    Your Name
+                </strong>
+
+                <p id="profileBio">
+                    No bio yet.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PEOPLE YOU MAY KNOW -->
+    <section class="people-strip">
+
+        <div class="section-title">
+
+            <h2>People You May Know</h2>
+
+            <span>Connect with people on NEXA</span>
+
+        </div>
+
+        <div
+            class="people-row"
+            id="peopleRow">
+        </div>
+
+    </section>
+
+
+    <!-- POSTS -->
+    <section class="profile-posts">
+
+        <div class="posts-title">
+            <span>Posts</span>
+        </div>
+
+        <div
+            class="profile-post-grid"
+            id="profilePostGrid">
+        </div>
+
+        <div
+            class="empty-profile-posts"
+            id="emptyProfilePosts">
+
+            <div class="empty-icon">+</div>
+
+            <h3>No Posts Yet</h3>
+
+            <p>
+                Posts you create will appear here.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =====================================================
+     EDIT PROFILE MODAL
+===================================================== -->
+
+<div class="modal" id="editModal">
+
+    <div class="modal-bg"></div>
+
+    <div class="edit-card">
+
+        <div class="modal-title">
+
+            <h2>Edit Profile</h2>
+
+            <button
+                type="button"
+                id="closeEdit"
+                class="close-button">
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="picture-editor">
+
+            <div
+                class="editor-photo"
+                id="editorPhoto">
+
+                <span id="editorInitial">N</span>
+
+            </div>
+
+            <div class="picture-controls">
+
+                <label
+                    for="pictureInput"
+                    class="picture-button">
+                    Change Photo
+                </label>
+
+                <input
+                    type="file"
+                    id="pictureInput"
+                    accept="image/*">
+
+                <button
+                    type="button"
+                    id="removePicture"
+                    class="remove-picture">
+                    Remove
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <form id="profileForm">
+
+            <label for="name">Full Name</label>
+
+            <input
+                type="text"
+                id="name"
+                required>
+
+
+            <label for="username">Username</label>
+
+            <input
+                type="text"
+                id="username"
+                required>
+
+
+            <label for="bio">Bio</label>
+
+            <textarea
+                id="bio"
+                maxlength="150"
+                placeholder="Tell people about yourself"></textarea>
+
+
+            <button
+                type="submit"
+                class="save-button">
+                Save Changes
+            </button>
+
+            <p
+                id="profileMessage"
+                class="profile-message">
+            </p>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     FRIENDS / LIKES MODAL
+===================================================== -->
+
+<div class="modal" id="peopleModal">
+
+    <div class="modal-bg"></div>
+
+    <div class="people-modal-card">
+
+        <div class="modal-title">
+
+            <h2 id="peopleModalTitle">
+                Friends
+            </h2>
+
+            <button
+                type="button"
+                id="closePeople"
+                class="close-button">
+                ×
+            </button>
+
+        </div>
+
+        <div
+            id="peopleList"
+            class="people-list">
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     POST VIEWER
+===================================================== -->
+
+<div class="post-viewer" id="postViewer">
+
+    <div class="viewer-bg"></div>
+
+    <button
+        type="button"
+        id="closeViewer"
+        class="viewer-close">
+        ×
+    </button>
+
+    <button
+        type="button"
+        id="viewerPrevious"
+        class="viewer-arrow viewer-prev">
+        ‹
+    </button>
+
+  <div class="viewer-content" id="viewerContent"></div>
+
+<div class="viewer-actions" id="viewerActions">
+
+    <button
+        type="button"
+        id="viewerLike"
+        class="viewer-action">
+
+        <span class="action-icon">♡</span>
+        <span class="action-label">Like</span>
+
+    </button>
+
+
+    <button
+        type="button"
+        id="viewerComment"
+        class="viewer-action">
+
+        <span class="action-icon">💬</span>
+        <span class="action-label">Comment</span>
+
+    </button>
+
+
+    <button
+        type="button"
+        id="viewerShare"
+        class="viewer-action">
+
+        <span class="action-icon">↗</span>
+        <span class="action-label">Share</span>
+
+    </button>
+
+
+    <button
+        type="button"
+        id="viewerCopy"
+        class="viewer-action">
+
+        <span class="action-icon">🔗</span>
+        <span class="action-label">Copy Link</span>
+
+    </button>
+
+
+    <button
+        type="button"
+        id="viewerSave"
+        class="viewer-action">
+
+        <span class="action-icon">♡</span>
+        <span class="action-label">Save</span>
+
+    </button>
+
+</div>
+
+
+<div
+    class="viewer-caption"
+    id="viewerCaption">
+</div>
+
+    <button
+        type="button"
+        id="viewerNext"
+        class="viewer-arrow viewer-next">
+        ›
+    </button>
+
+</div>
+
+
+<script src="profile.js"></script>
+
+</body>
+</html>
