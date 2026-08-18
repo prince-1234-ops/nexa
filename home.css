@@ -1670,21 +1670,6 @@ a {
 }
 
 
-/* REEL ACTIONS */
-
-.reel-actions {
-    position: absolute;
-
-    right: 12px;
-    bottom: 17px;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 8px;
-
-    z-index: 5;
-}
 
 .reel-action {
     width: 43px;
@@ -2184,7 +2169,7 @@ a {
     border-radius: 21px;
 
     background:
-        #fffdf9;
+        #000000;
 
     box-shadow:
         0 30px 90px rgba(16,26,50,.22);
@@ -2223,7 +2208,7 @@ a {
 
     border-radius: 50%;
 
-    background: #f5f5f3;
+    background: #000000;
 
     color: #626b7c;
 
@@ -2294,7 +2279,7 @@ a {
 
     outline: none;
 
-    background: #f6f6f3;
+    background: #000000;
 
     color: var(--nexa-text);
 }
@@ -6985,11 +6970,11 @@ body {
 }
 
 .topbar-search input {
-    color: #ffffff !important;
+    color: #000000 !important;
 }
 
 .topbar-search input::placeholder {
-    color: rgba(244, 204, 4, 0.45) !important;
+    color: rgba(11, 11, 11, 0.45) !important;
 }
 
 
@@ -7126,4 +7111,3099 @@ body {
 
     box-shadow:
         0 0 14px rgba(212,175,55,.45) !important;
+}
+
+
+/* =========================================================
+   NEXA STORY VIEWER — PREMIUM UI
+   ========================================================= */
+
+.story-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        radial-gradient(
+            circle at 50% 30%,
+            rgba(0, 234, 255, 0.08),
+            transparent 35%
+        ),
+        rgba(3, 6, 18, 0.96);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/* =========================================================
+   STORY CONTENT
+   ========================================================= */
+
+.story-viewer-content {
+    position: relative;
+
+    width: min(430px, 90vw);
+    height: min(760px, 82vh);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background: #050816;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    box-shadow:
+        0 30px 90px
+        rgba(0, 0, 0, 0.65),
+        0 0 50px
+        rgba(0, 234, 255, 0.08);
+}
+
+
+/* =========================================================
+   STORY IMAGE
+   ========================================================= */
+
+.story-viewer-content img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+
+/* =========================================================
+   STORY VIDEO
+   ========================================================= */
+
+.story-viewer-content video {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    background: #000;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.story-viewer-close {
+    position: absolute;
+
+    top: 24px;
+    right: 28px;
+
+    z-index: 20;
+
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    font-size: 28px;
+    font-weight: 300;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.story-viewer-close:hover {
+    transform: scale(1.08);
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    border-color:
+        rgba(255, 255, 255, 0.28);
+}
+
+
+/* =========================================================
+   ACTION BAR
+   ========================================================= */
+
+.story-viewer-actions {
+    position: absolute;
+
+    left: 50%;
+    bottom: 30px;
+
+    transform: translateX(-50%);
+
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 9px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.13);
+
+    border-radius: 22px;
+
+    background:
+        rgba(8, 12, 28, 0.72);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    box-shadow:
+        0 14px 40px
+        rgba(0, 0, 0, 0.42);
+}
+
+
+/* =========================================================
+   ACTION BUTTON
+   ========================================================= */
+
+.story-viewer-action {
+    min-width: 72px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 0 15px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    color: rgba(255, 255, 255, 0.88);
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.story-viewer-action:hover {
+    transform: translateY(-2px);
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    border-color:
+        rgba(255, 255, 255, 0.18);
+
+    color: #fff;
+}
+
+.story-viewer-action:active {
+    transform: scale(0.95);
+}
+
+
+/* =========================================================
+   ACTION ICON
+   ========================================================= */
+
+.story-viewer-action-icon {
+    font-size: 20px;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   ACTIVE LIKE
+   ========================================================= */
+
+.story-viewer-action.active {
+    background:
+        rgba(255, 70, 110, 0.14);
+
+    border-color:
+        rgba(255, 90, 125, 0.30);
+
+    color: #ff5b87;
+
+    box-shadow:
+        0 0 20px
+        rgba(255, 70, 110, 0.12);
+}
+
+.story-viewer-action.active
+.story-viewer-action-icon {
+    transform: scale(1.08);
+}
+
+
+/* =========================================================
+   STORY PREVIEW CIRCLES
+   ========================================================= */
+
+.story-ring {
+    position: relative;
+
+    width: 68px;
+    height: 68px;
+
+    padding: 3px;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00eaff,
+            #0066ff,
+            #7b2cff
+        );
+
+    box-shadow:
+        0 0 22px
+        rgba(0, 234, 255, 0.18);
+}
+
+.story-ring::after {
+    content: "";
+
+    position: absolute;
+    inset: 3px;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    border:
+        2px solid
+        rgba(5, 8, 22, 0.85);
+}
+
+.story-ring img,
+.story-ring video {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    background: #050816;
+}
+
+
+/* =========================================================
+   YOUR STORY AVATAR
+   ========================================================= */
+
+.create-story .story-avatar-wrapper {
+    position: relative;
+
+    width: 68px;
+    height: 68px;
+}
+
+.create-story .story-avatar {
+    width: 68px;
+    height: 68px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 234, 255, 0.20),
+            rgba(0, 102, 255, 0.20)
+        );
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.16);
+
+    color: #fff;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.create-story .story-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   ADD STORY BUTTON
+   ========================================================= */
+
+.add-story {
+    position: absolute;
+
+    right: -2px;
+    bottom: -2px;
+
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border:
+        3px solid
+        #050816;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00eaff,
+            #0066ff
+        );
+
+    color: #fff;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 18px
+        rgba(0, 102, 255, 0.30);
+
+    transition:
+        transform 0.2s ease;
+}
+
+.add-story:hover {
+    transform: scale(1.12);
+}
+
+
+/* =========================================================
+   STORY LABELS
+   ========================================================= */
+
+.story > span,
+.create-story > span {
+    margin-top: 8px;
+
+    max-width: 78px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color:
+        rgba(255, 255, 255, 0.78);
+
+    font-size: 12px;
+    font-weight: 500;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .story-viewer {
+        padding: 12px;
+    }
+
+    .story-viewer-content {
+        width: 94vw;
+        height: 82vh;
+
+        border-radius: 22px;
+    }
+
+    .story-viewer-close {
+        top: 16px;
+        right: 18px;
+
+        width: 42px;
+        height: 42px;
+
+        font-size: 24px;
+    }
+
+    .story-viewer-actions {
+        bottom: 20px;
+
+        width: calc(100% - 28px);
+
+        gap: 7px;
+
+        padding: 7px;
+
+        border-radius: 18px;
+    }
+
+    .story-viewer-action {
+        flex: 1;
+
+        min-width: 0;
+
+        height: 46px;
+
+        padding: 0 10px;
+
+        font-size: 14px;
+    }
+
+    .story-viewer-action-icon {
+        font-size: 19px;
+    }
+
+    .story-ring,
+    .create-story .story-avatar-wrapper,
+    .create-story .story-avatar {
+        width: 62px;
+        height: 62px;
+    }
+}
+
+
+/* =========================================================
+   NEXA STORY COMMENT PANEL
+   ========================================================= */
+
+.story-comment-panel {
+    position: absolute;
+
+    left: 50%;
+    bottom: 105px;
+
+    transform: translateX(-50%);
+
+    z-index: 100;
+
+    width: min(430px, calc(100vw - 32px));
+
+    display: flex;
+    justify-content: center;
+}
+
+
+.story-comment-panel-box {
+    width: 100%;
+
+    padding: 14px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius: 20px;
+
+    background:
+        rgba(8, 12, 28, 0.88);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    box-shadow:
+        0 18px 50px
+        rgba(0, 0, 0, 0.48);
+}
+
+
+.story-comment-panel-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+
+    color: #fff;
+}
+
+
+.story-comment-panel-header strong {
+    font-size: 14px;
+}
+
+
+.story-comment-panel-header button {
+    width: 30px;
+    height: 30px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+
+.story-comment-form {
+    display: flex;
+
+    gap: 8px;
+}
+
+
+.story-comment-form input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 44px;
+
+    padding:
+        0 14px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color: #fff;
+
+    font-family: inherit;
+}
+
+
+.story-comment-form input::placeholder {
+    color:
+        rgba(255, 255, 255, 0.48);
+}
+
+
+.story-comment-form button {
+    height: 44px;
+
+    padding:
+        0 17px;
+
+    border: 0;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00eaff,
+            #0066ff
+        );
+
+    color: #fff;
+
+    font-family: inherit;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+@media (max-width: 600px) {
+
+    .story-comment-panel {
+
+        bottom: 92px;
+
+        width:
+            calc(100vw - 24px);
+    }
+}
+/* =========================================================
+   NEXA HOME — PHONE OPTIMIZATION
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    /* -----------------------------------------------------
+       GLOBAL
+       ----------------------------------------------------- */
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        font-size: 14px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    /* -----------------------------------------------------
+       MAIN APP
+       ----------------------------------------------------- */
+
+    .nexa-app {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .main-content {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 78px;
+    }
+
+    .home-page {
+        width: 100%;
+        padding: 0 12px 24px;
+    }
+
+
+    /* -----------------------------------------------------
+       TOPBAR
+       ----------------------------------------------------- */
+
+    .topbar {
+        width: 100%;
+        min-height: 58px;
+
+        padding: 8px 12px;
+
+        gap: 8px;
+    }
+
+    .mobile-logo {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .topbar-search {
+        min-width: 0;
+        flex: 1;
+        height: 40px;
+    }
+
+    .topbar-search input {
+        width: 100%;
+        min-width: 0;
+        font-size: 13px;
+    }
+
+    .search-shortcut {
+        display: none;
+    }
+
+    .topbar-actions {
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+    .top-create-button {
+        min-width: 40px;
+        width: 40px;
+        height: 40px;
+
+        padding: 0;
+
+        border-radius: 12px;
+    }
+
+    .top-create-button strong {
+        display: none;
+    }
+
+    .top-create-button span {
+        font-size: 20px;
+    }
+
+    .topbar-btn {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+    .mini-profile {
+        width: 38px;
+        height: 38px;
+    }
+
+    .mini-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+
+    /* -----------------------------------------------------
+       HERO
+       ----------------------------------------------------- */
+
+    .home-intro {
+        margin-top: 10px;
+
+        padding: 18px 15px;
+
+        border-radius: 18px;
+
+        gap: 14px;
+    }
+
+    .home-eyebrow,
+    .section-eyebrow {
+        font-size: 9px;
+        letter-spacing: 0.12em;
+    }
+
+    .home-intro h1 {
+        margin: 5px 0 8px;
+
+        font-size: clamp(
+            24px,
+            7vw,
+            34px
+        );
+
+        line-height: 1.05;
+    }
+
+    .home-intro p {
+        max-width: 100%;
+
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .home-intro-actions {
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        gap: 8px;
+    }
+
+    .intro-action {
+        width: 100%;
+
+        min-height: 40px;
+
+        padding: 9px 10px;
+
+        font-size: 12px;
+    }
+
+
+    /* -----------------------------------------------------
+       QUICK STATS
+       ----------------------------------------------------- */
+
+    .quick-stats {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 7px;
+
+        margin-top: 10px;
+    }
+
+    .quick-stat {
+        min-width: 0;
+
+        padding: 10px 8px;
+
+        border-radius: 14px;
+    }
+
+    .quick-stat-icon {
+        font-size: 16px;
+    }
+
+    .quick-stat strong {
+        font-size: 11px;
+    }
+
+    .quick-stat small {
+        display: block;
+
+        margin-top: 2px;
+
+        font-size: 8px;
+
+        line-height: 1.25;
+    }
+
+
+    /* -----------------------------------------------------
+       MAIN GRID
+       ----------------------------------------------------- */
+
+    .home-layout {
+        display: block;
+        width: 100%;
+    }
+
+    .feed-column {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .home-right-column {
+        display: none;
+    }
+
+
+    /* -----------------------------------------------------
+       STORIES
+       ----------------------------------------------------- */
+
+    .stories-section {
+        margin-top: 12px;
+
+        padding: 13px 11px;
+
+        border-radius: 18px;
+    }
+
+    .stories-header {
+        margin-bottom: 10px;
+    }
+
+    .stories-header h2 {
+        font-size: 18px;
+    }
+
+    .section-link {
+        font-size: 11px;
+    }
+
+    .stories-container {
+        width: 100%;
+
+        display: flex;
+
+        gap: 9px;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        padding-bottom: 3px;
+
+        scrollbar-width: none;
+    }
+
+    .stories-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .story {
+        flex: 0 0 64px;
+
+        width: 64px;
+    }
+
+    .story-ring {
+        width: 60px;
+        height: 60px;
+    }
+
+    .create-story .story-avatar-wrapper,
+    .create-story .story-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .story > span,
+    .create-story > span {
+        display: block;
+
+        width: 60px;
+
+        margin-top: 6px;
+
+        font-size: 9px;
+
+        line-height: 1.2;
+    }
+
+    .add-story {
+        width: 21px;
+        height: 21px;
+
+        font-size: 14px;
+
+        border-width: 2px;
+    }
+
+
+    /* -----------------------------------------------------
+       CREATE POST
+       ----------------------------------------------------- */
+
+    .create-post {
+        margin-top: 12px;
+
+        padding: 13px;
+
+        border-radius: 18px;
+    }
+
+    .composer-header {
+        gap: 9px;
+    }
+
+    .post-avatar {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+    .composer-heading strong {
+        font-size: 12px;
+    }
+
+    .composer-heading span {
+        font-size: 9px;
+    }
+
+    .create-post-top {
+        margin-top: 10px;
+    }
+
+    .create-post-top input {
+        width: 100%;
+        height: 42px;
+
+        padding: 0 12px;
+
+        font-size: 12px;
+    }
+
+    .create-post-actions {
+        gap: 6px;
+
+        margin-top: 9px;
+    }
+
+    .composer-action {
+        min-width: 0;
+
+        height: 38px;
+
+        padding:
+            0 8px;
+
+        gap: 4px;
+
+        border-radius: 11px;
+
+        font-size: 10px;
+    }
+
+    .composer-action-icon {
+        font-size: 13px;
+    }
+
+    .composer-post-button {
+        height: 38px;
+
+        padding:
+            0 13px;
+
+        border-radius: 11px;
+
+        font-size: 10px;
+    }
+
+
+    /* -----------------------------------------------------
+       FEED TOOLBAR
+       ----------------------------------------------------- */
+
+    .feed-toolbar {
+        margin-top: 15px;
+
+        gap: 8px;
+    }
+
+    .feed-toolbar h2 {
+        font-size: 18px;
+    }
+
+    .feed-filter {
+        gap: 4px;
+    }
+
+    .feed-filter button {
+        padding:
+            6px 8px;
+
+        font-size: 9px;
+    }
+
+
+    /* -----------------------------------------------------
+       POSTS
+       ----------------------------------------------------- */
+
+    .feed-posts {
+        width: 100%;
+    }
+
+    .feed-post,
+    .reel-card {
+        width: 100%;
+
+        margin-bottom: 12px;
+
+        border-radius: 18px;
+
+        overflow: hidden;
+    }
+
+    .post-header,
+    .reel-header {
+        padding: 11px 12px;
+    }
+
+    .post-author {
+        min-width: 0;
+        gap: 8px;
+    }
+
+    .post-user-avatar {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+    }
+
+    .post-author h3 {
+        max-width: 150px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        font-size: 12px;
+    }
+
+    .post-author span {
+        font-size: 9px;
+    }
+
+    .post-caption {
+        padding:
+            0 12px 10px;
+
+        font-size: 12px;
+
+        line-height: 1.45;
+    }
+
+    .post-actions,
+    .reel-actions {
+        gap: 2px;
+
+        padding: 8px 9px;
+    }
+
+    .post-actions button,
+    .reel-action {
+        min-width: 0;
+        flex: 1;
+
+        min-height: 36px;
+
+        padding:
+            5px 6px;
+
+        border-radius: 10px;
+
+        font-size: 11px;
+    }
+
+    .reel-action-icon {
+        font-size: 16px;
+    }
+
+    .reel-caption {
+        padding: 10px;
+    }
+
+    .reel-caption h3 {
+        font-size: 13px;
+    }
+
+    .reel-caption p {
+        font-size: 9px;
+    }
+
+
+    /* -----------------------------------------------------
+       NORMAL MEDIA
+       ----------------------------------------------------- */
+
+    .post-media {
+        width: 100%;
+    }
+
+    .post-media img,
+    .post-media video {
+        width: 100%;
+
+        max-height: 72vh;
+
+        object-fit: cover;
+    }
+
+
+    /* -----------------------------------------------------
+       EMPTY FEED
+       ----------------------------------------------------- */
+
+    .empty-feed {
+        padding: 32px 14px;
+
+        border-radius: 18px;
+    }
+
+    .empty-feed h2 {
+        font-size: 18px;
+    }
+
+    .empty-feed p {
+        font-size: 11px;
+    }
+
+
+    /* -----------------------------------------------------
+       STORY VIEWER
+       ----------------------------------------------------- */
+
+    .story-viewer {
+        padding: 8px;
+    }
+
+    .story-viewer-content {
+        width: 94vw;
+        height: 82vh;
+
+        border-radius: 20px;
+    }
+
+    .story-viewer-close {
+        top: 14px;
+        right: 14px;
+
+        width: 38px;
+        height: 38px;
+
+        font-size: 22px;
+    }
+
+    .story-viewer-actions {
+        bottom: 18px;
+
+        width:
+            calc(100% - 24px);
+
+        gap: 5px;
+
+        padding: 6px;
+
+        border-radius: 16px;
+    }
+
+    .story-viewer-action {
+        flex: 1;
+
+        min-width: 0;
+
+        height: 42px;
+
+        padding:
+            0 8px;
+
+        gap: 4px;
+
+        border-radius: 11px;
+
+        font-size: 12px;
+    }
+
+    .story-viewer-action-icon {
+        font-size: 17px;
+    }
+
+
+    /* -----------------------------------------------------
+       STORY COMMENT PANEL
+       ----------------------------------------------------- */
+
+    .story-comment-panel {
+        bottom: 78px;
+
+        width:
+            calc(100vw - 20px);
+    }
+
+    .story-comment-panel-box {
+        padding: 11px;
+
+        border-radius: 17px;
+    }
+
+    .story-comment-form {
+        gap: 6px;
+    }
+
+    .story-comment-form input {
+        height: 40px;
+
+        padding:
+            0 11px;
+
+        font-size: 12px;
+    }
+
+    .story-comment-form button {
+        height: 40px;
+
+        padding:
+            0 13px;
+
+        border-radius: 11px;
+
+        font-size: 11px;
+    }
+
+
+    /* -----------------------------------------------------
+       COMMENTS MODAL
+       ----------------------------------------------------- */
+
+    .comments-modal {
+        padding: 10px;
+    }
+
+    .comments-modal-box {
+        width: 100%;
+
+        max-height: 82vh;
+
+        border-radius: 18px;
+    }
+
+    .comments-modal-header {
+        padding: 12px;
+    }
+
+    .comments-modal-header h2 {
+        font-size: 17px;
+    }
+
+    .comments-list {
+        max-height: 48vh;
+
+        padding: 10px;
+    }
+
+    .comment-form {
+        gap: 6px;
+
+        padding: 10px;
+    }
+
+    .comment-form input {
+        height: 40px;
+
+        min-width: 0;
+
+        font-size: 12px;
+    }
+
+    .comment-form button {
+        height: 40px;
+
+        padding:
+            0 12px;
+
+        font-size: 11px;
+    }
+
+
+    /* -----------------------------------------------------
+       MEDIA PREVIEW
+       ----------------------------------------------------- */
+
+    .media-preview-modal {
+        padding: 10px;
+    }
+
+    .media-preview-box {
+        width: 100%;
+
+        max-height: 88vh;
+
+        border-radius: 18px;
+    }
+
+    .media-preview-content {
+        max-height: 65vh;
+    }
+
+
+    /* -----------------------------------------------------
+       REEL VIEWER
+       ----------------------------------------------------- */
+
+    .reel-viewer-content {
+        width: 100%;
+        max-width: 100%;
+
+        height: 100%;
+    }
+
+    .reel-viewer-actions {
+        gap: 5px;
+
+        padding:
+            7px;
+
+        left: 10px;
+        right: 10px;
+
+        bottom: 16px;
+    }
+
+    .reel-viewer-action {
+        min-width: 0;
+
+        flex: 1;
+
+        height: 42px;
+
+        padding:
+            0 7px;
+
+        font-size: 11px;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE NAV
+       ----------------------------------------------------- */
+
+    .mobile-nav {
+        width: 100%;
+
+        height: 62px;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        padding:
+            6px 10px;
+
+        gap: 4px;
+
+        z-index: 999;
+    }
+
+    .mobile-nav-item {
+        flex: 1;
+
+        min-width: 0;
+
+        padding: 5px 4px;
+
+        font-size: 17px;
+    }
+
+    .mobile-nav-item small {
+        font-size: 8px;
+    }
+}
+
+
+/* =========================================================
+   NEXA MOBILE — PHOTO POST FIX
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    /* -----------------------------------------------------
+       PHOTO MEDIA
+       Instagram-style proportions
+       ----------------------------------------------------- */
+
+    .feed-post .post-media[data-media-type="image"] {
+        width: 100%;
+        aspect-ratio: 4 / 5;
+
+        overflow: hidden;
+
+        background: #050816;
+    }
+
+    .feed-post .post-media[data-media-type="image"] img {
+        width: 100%;
+        height: 100%;
+
+        display: block;
+
+        object-fit: cover;
+    }
+
+
+    /* -----------------------------------------------------
+       PHOTO POST ACTION BAR
+       ----------------------------------------------------- */
+
+    .feed-post .post-actions {
+        display: flex;
+        align-items: center;
+
+        width: 100%;
+
+        padding: 8px 10px;
+
+        gap: 5px;
+
+        background: rgba(5, 8, 22, 0.96);
+
+        border-top:
+            1px solid
+            rgba(255, 255, 255, 0.07);
+    }
+
+
+    /* -----------------------------------------------------
+       ACTION BUTTONS
+       ----------------------------------------------------- */
+
+    .feed-post .post-actions button {
+        flex: 1;
+
+        min-width: 0;
+        min-height: 38px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 5px;
+
+        padding: 7px 5px;
+
+        border: 0;
+        border-radius: 11px;
+
+        background:
+            rgba(255, 255, 255, 0.055);
+
+        color:
+            rgba(255, 255, 255, 0.82);
+
+        font-size: 11px;
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+
+    /* -----------------------------------------------------
+       ICONS
+       ----------------------------------------------------- */
+
+    .feed-post .post-actions button span:first-child {
+        font-size: 17px;
+
+        line-height: 1;
+    }
+
+
+    /* -----------------------------------------------------
+       LIKE
+       ----------------------------------------------------- */
+
+    .feed-post .post-actions
+    button[data-action="like"] {
+        color:
+            rgba(255, 255, 255, 0.88);
+    }
+
+    .feed-post .post-actions
+    button[data-action="like"].liked {
+        color: #ff5b87;
+
+        background:
+            rgba(255, 70, 110, 0.10);
+    }
+
+
+    /* -----------------------------------------------------
+       SAVE BUTTON
+       Keep it compact
+       ----------------------------------------------------- */
+
+    .feed-post .post-actions
+    button[data-action="save"] {
+        flex: 0 0 42px;
+
+        max-width: 42px;
+
+        font-size: 18px;
+    }
+
+
+    /* -----------------------------------------------------
+       PHOTO CAPTION
+       ----------------------------------------------------- */
+
+    .feed-post .post-caption {
+        padding:
+            10px 12px 8px;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+
+        color:
+            rgba(255, 255, 255, 0.88);
+    }
+
+
+    /* -----------------------------------------------------
+       PHOTO HEADER
+       ----------------------------------------------------- */
+
+    .feed-post .post-header {
+        min-height: 52px;
+
+        padding:
+            9px 11px;
+    }
+
+
+    .feed-post .post-author h3 {
+        font-size: 12px;
+    }
+
+
+    .feed-post .post-author span {
+        font-size: 9px;
+    }
+
+
+    /* -----------------------------------------------------
+       PHOTO CARD
+       ----------------------------------------------------- */
+
+    .feed-post {
+        border-radius: 16px;
+
+        overflow: hidden;
+
+        margin-bottom: 12px;
+    }
+}
+
+
+/* =========================================================
+   NEXA HOME — PHOTO POST ACTION AREA
+   Clean dark Instagram-style controls
+   ========================================================= */
+
+.feed-post {
+    overflow: hidden;
+}
+
+
+/* ---------------------------------------------------------
+   ACTION BAR
+   --------------------------------------------------------- */
+
+.feed-post .post-actions {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    padding: 10px 12px;
+
+    gap: 4px;
+
+    background: #050816;
+
+    border: 0;
+}
+
+
+/* ---------------------------------------------------------
+   ALL ACTION BUTTONS
+   --------------------------------------------------------- */
+
+.feed-post .post-actions button {
+    flex: 1;
+
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 0 8px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: rgba(255, 255, 255, 0.82);
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+/* ---------------------------------------------------------
+   HOVER / PRESS
+   --------------------------------------------------------- */
+
+.feed-post .post-actions button:hover {
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
+}
+
+.feed-post .post-actions button:active {
+    transform: scale(0.95);
+}
+
+
+/* ---------------------------------------------------------
+   ICON
+   --------------------------------------------------------- */
+
+.feed-post .post-actions button span:first-child {
+    font-size: 20px;
+
+    line-height: 1;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ---------------------------------------------------------
+   LIKE
+   --------------------------------------------------------- */
+
+.feed-post .post-actions
+button[data-action="like"].liked {
+    color: #ff5c87;
+}
+
+.feed-post .post-actions
+button[data-action="like"].liked
+span:first-child {
+    color: #ff5c87;
+}
+
+
+/* ---------------------------------------------------------
+   SAVE
+   --------------------------------------------------------- */
+
+.feed-post .post-actions
+button[data-action="save"] {
+    flex: 0 0 42px;
+
+    max-width: 42px;
+}
+
+.feed-post .post-actions
+button[data-action="save"] span:first-child {
+    font-size: 21px;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 600px) {
+
+    .feed-post .post-actions {
+        padding: 8px 8px;
+
+        gap: 2px;
+
+        background: #050816;
+    }
+
+    .feed-post .post-actions button {
+        height: 38px;
+
+        padding: 0 5px;
+
+        gap: 4px;
+
+        border-radius: 9px;
+
+        font-size: 10px;
+    }
+
+    .feed-post .post-actions
+    button span:first-child {
+        font-size: 18px;
+    }
+
+    .feed-post .post-actions
+    button[data-action="save"] {
+        flex: 0 0 38px;
+
+        max-width: 38px;
+    }
+}
+/* =========================================================
+   NEXA MOBILE — SEARCH BAR FIX
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+
+    /* -----------------------------------------------------
+       SEARCH AREA
+       ----------------------------------------------------- */
+
+    .topbar-search {
+        flex: 1 1 auto;
+
+        width: auto;
+        min-width: 0;
+
+        height: 42px;
+
+        display: flex;
+        align-items: center;
+
+        border-radius: 13px;
+
+        overflow: hidden;
+    }
+
+
+    .topbar-search input {
+        flex: 1;
+
+        width: 100%;
+        min-width: 0;
+
+        height: 100%;
+
+        padding:
+            0 10px 0 8px;
+
+        font-size: 12px;
+
+        text-overflow: ellipsis;
+    }
+
+
+    .search-icon {
+        flex: 0 0 30px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 17px;
+    }
+
+
+    /* -----------------------------------------------------
+       TOP RIGHT ICONS
+       ----------------------------------------------------- */
+
+    .topbar-actions {
+        flex: 0 0 auto;
+
+        display: flex;
+        align-items: center;
+
+        gap: 4px;
+    }
+
+
+    .topbar-actions
+    .top-create-button {
+        width: 38px;
+        min-width: 38px;
+        flex: 0 0 38px;
+    }
+
+
+    .topbar-actions
+    .topbar-btn {
+        width: 36px;
+        min-width: 36px;
+        flex: 0 0 36px;
+    }
+
+
+    .topbar-actions
+    .mini-profile {
+        width: 36px;
+        min-width: 36px;
+        flex: 0 0 36px;
+    }
+
+
+    /* -----------------------------------------------------
+       SMALL PHONES
+       ----------------------------------------------------- */
+
+    @media (max-width: 380px) {
+
+        .mobile-logo {
+            font-size: 16px;
+        }
+
+        .topbar {
+            gap: 5px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .topbar-actions {
+            gap: 2px;
+        }
+
+        .topbar-actions
+        .top-create-button {
+            width: 34px;
+            min-width: 34px;
+            flex-basis: 34px;
+        }
+
+        .topbar-actions
+        .topbar-btn {
+            width: 33px;
+            min-width: 33px;
+            flex-basis: 33px;
+        }
+
+        .topbar-actions
+        .mini-profile {
+            width: 33px;
+            min-width: 33px;
+            flex-basis: 33px;
+        }
+
+        .topbar-search {
+            height: 38px;
+        }
+    }
+}
+
+/* =========================================================
+   NEXA MOBILE — FINAL SEARCH BAR LAYOUT
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .topbar {
+        display: grid;
+
+        grid-template-columns:
+            auto
+            minmax(0, 1fr)
+            auto;
+
+        align-items: center;
+
+        gap: 8px;
+
+        padding:
+            8px 10px;
+    }
+
+
+    /* -----------------------------------------------------
+       LOGO
+       ----------------------------------------------------- */
+
+    .mobile-logo {
+        flex: none;
+
+        width: auto;
+
+        font-size: 18px;
+
+        white-space: nowrap;
+    }
+
+
+    /* -----------------------------------------------------
+       SEARCH
+       ----------------------------------------------------- */
+
+    .topbar-search {
+        width: 100%;
+        min-width: 0;
+
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+    }
+
+
+    .topbar-search input {
+        width: 100%;
+        min-width: 0;
+
+        flex: 1;
+
+        height: 100%;
+
+        padding:
+            0 12px;
+
+        font-size: 13px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+
+    .search-icon {
+        flex: 0 0 30px;
+
+        width: 30px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 17px;
+    }
+
+
+    .search-shortcut {
+        display: none;
+    }
+
+
+    /* -----------------------------------------------------
+       TOP ACTIONS
+       ----------------------------------------------------- */
+
+    .topbar-actions {
+        display: flex;
+
+        align-items: center;
+
+        gap: 4px;
+
+        flex: none;
+    }
+
+
+    /* Create button: icon only */
+
+    .top-create-button {
+        width: 36px;
+        min-width: 36px;
+
+        height: 36px;
+
+        padding: 0;
+    }
+
+
+    .top-create-button strong {
+        display: none;
+    }
+
+
+    /* Notification */
+
+    .topbar-actions
+    .notification-trigger {
+        width: 36px;
+        min-width: 36px;
+
+        height: 36px;
+
+        padding: 0;
+    }
+
+
+    /* Hide Messages icon from the topbar on phones.
+       Mobile bottom navigation already contains Messages. */
+
+    .topbar-actions
+    a.topbar-btn[href="messages.html"] {
+        display: none;
+    }
+
+
+    /* Profile */
+
+    .mini-profile {
+        width: 36px;
+        min-width: 36px;
+
+        height: 36px;
+    }
+
+
+    .mini-avatar {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .topbar {
+        gap: 6px;
+
+        padding:
+            7px 8px;
+    }
+
+    .mobile-logo {
+        font-size: 16px;
+    }
+
+    .topbar-search {
+        height: 38px;
+    }
+
+    .topbar-search input {
+        font-size: 12px;
+        padding: 0 9px;
+    }
+
+    .topbar-actions {
+        gap: 3px;
+    }
+
+    .top-create-button,
+    .topbar-actions
+    .notification-trigger,
+    .mini-profile {
+        width: 33px;
+        min-width: 33px;
+        height: 33px;
+    }
+
+    .mini-avatar {
+        width: 29px;
+        height: 29px;
+    }
+}
+
+/* =========================================================
+   NEXA REELS — RIGHT-SIDE ACTION BUTTONS
+   ========================================================= */
+
+.reel-card .reel-video {
+    position: relative;
+}
+
+.reel-card .reel-actions {
+    position: absolute;
+
+    right: 14px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    z-index: 20;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 0;
+}
+
+
+/* ---------------------------------------------------------
+   INDIVIDUAL REEL ACTION
+   --------------------------------------------------------- */
+
+.reel-card .reel-actions .reel-action {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    padding: 0;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.16);
+
+    border-radius: 50%;
+
+    background:
+        rgba(0, 0, 0, 0.42);
+
+    color: #fff;
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    font-size: 10px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease;
+}
+
+.reel-card .reel-actions
+.reel-action:hover {
+    transform: scale(1.08);
+
+    background:
+        rgba(0, 0, 0, 0.62);
+}
+
+
+/* ---------------------------------------------------------
+   ICON
+   --------------------------------------------------------- */
+
+.reel-card .reel-action-icon {
+    font-size: 19px;
+
+    line-height: 1;
+}
+
+
+/* ---------------------------------------------------------
+   LIKED
+   --------------------------------------------------------- */
+
+.reel-card .reel-action.liked {
+    color: #ff5c87;
+
+    background:
+        rgba(255, 60, 110, 0.16);
+
+    border-color:
+        rgba(255, 90, 130, 0.35);
+}
+
+
+/* ---------------------------------------------------------
+   SAVED
+   --------------------------------------------------------- */
+
+.reel-card .reel-action.saved {
+    color: #00eaff;
+}
+
+
+/* =========================================================
+   MOBILE REELS
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .reel-card .reel-actions {
+        right: 9px;
+
+        gap: 9px;
+    }
+
+    .reel-card .reel-actions
+    .reel-action {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+
+        font-size: 9px;
+    }
+
+    .reel-card .reel-action-icon {
+        font-size: 17px;
+    }
+}
+
+/* =========================================================
+   NEXA REELS — MOBILE ACTION POSITION
+   Move actions away from screen center
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .reel-card .reel-actions {
+        top: auto;
+
+        right: 10px;
+        bottom: 72px;
+
+        transform: none;
+
+        gap: 8px;
+    }
+
+    .reel-card .reel-actions
+    .reel-action {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+    }
+}
+
+/* =========================================================
+   FINAL MOBILE REEL ACTION POSITION
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .reel-card .reel-video {
+        position: relative !important;
+    }
+
+    .reel-card .reel-overlay {
+        position: absolute !important;
+        inset: 0 !important;
+        pointer-events: none;
+    }
+
+    .reel-card .reel-overlay .reel-actions {
+        position: absolute !important;
+
+        top: auto !important;
+        bottom: 88px !important;
+
+        right: 8px !important;
+        left: auto !important;
+
+        width: 44px !important;
+        height: auto !important;
+
+        transform: none !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: flex-end !important;
+
+        gap: 9px !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+
+        background: transparent !important;
+        border: 0 !important;
+
+        pointer-events: auto;
+    }
+
+    .reel-card .reel-overlay .reel-action {
+        position: relative !important;
+
+        width: 40px !important;
+        min-width: 40px !important;
+
+        height: 40px !important;
+
+        flex: 0 0 40px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        border-radius: 50% !important;
+
+        background:
+            rgba(0, 0, 0, 0.48) !important;
+    }
+
+    .reel-card .reel-overlay .reel-action-icon {
+        font-size: 17px !important;
+        line-height: 1 !important;
+    }
+
+    .reel-card .reel-overlay .reel-action
+    > span:last-child {
+        font-size: 8px !important;
+        line-height: 1 !important;
+    }
+
+}
+/* =========================================================
+   MOBILE REEL ACTIONS — FINAL POSITION
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .reel-card .reel-video > .reel-overlay > .reel-actions {
+        position: absolute !important;
+
+        /* LOWER RIGHT */
+        top: auto !important;
+        bottom: 70px !important;
+
+        right: 10px !important;
+        left: auto !important;
+
+        /* REMOVE CENTERING */
+        transform: none !important;
+
+        width: 44px !important;
+        height: auto !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: flex-end !important;
+
+        gap: 8px !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+
+        background: transparent !important;
+    }
+
+
+    .reel-card .reel-video > .reel-overlay > .reel-actions > .reel-action {
+        width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+
+        flex: 0 0 40px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        border-radius: 50% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+
+
+/* =========================================================
+   FINAL MOBILE REEL ACTION POSITION
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .reel-card .reel-video {
+        position: relative;
+    }
+
+    .reel-card .reel-overlay {
+        position: absolute;
+        inset: 0;
+    }
+
+    .reel-card .reel-actions {
+        position: absolute;
+
+        top: auto !important;
+        bottom: 18px !important;
+
+        left: auto !important;
+        right: 10px !important;
+
+        transform: none !important;
+
+        width: 44px !important;
+        height: auto !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: flex-end !important;
+
+        gap: 9px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        z-index: 50 !important;
+    }
+
+    .reel-card .reel-action {
+        width: 41px !important;
+        height: 41px !important;
+
+        min-width: 41px !important;
+        min-height: 41px !important;
+
+        flex: 0 0 41px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+
+/* =========================================================
+   FINAL MOBILE FULLSCREEN REEL ACTIONS
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .reel-viewer {
+        width: 100vw;
+        height: 100vh;
+
+        overflow: hidden;
+    }
+
+    .reel-viewer-content {
+        position: relative;
+
+        width: 100vw !important;
+        height: 100vh !important;
+
+        max-width: none !important;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reel-viewer-video-wrap {
+        position: relative;
+
+        width: 100vw !important;
+        height: 100vh !important;
+
+        max-width: 430px;
+
+        margin: 0 auto;
+
+        border-radius: 0 !important;
+    }
+
+    .reel-viewer-actions {
+        position: fixed !important;
+
+        top: 50% !important;
+        right: 10px !important;
+        bottom: auto !important;
+        left: auto !important;
+
+        transform: translateY(-50%) !important;
+
+        width: 50px !important;
+        height: auto !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+
+        gap: 12px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        z-index: 999999 !important;
+    }
+
+    .reel-viewer-action {
+        width: 46px !important;
+        height: 46px !important;
+
+        min-width: 46px !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .reel-viewer-action-icon {
+        width: 44px !important;
+        height: 44px !important;
+
+        display: grid !important;
+        place-items: center !important;
+
+        border-radius: 50% !important;
+
+        background:
+            rgba(0, 0, 0, 0.55) !important;
+
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+}
+
+/* =========================================================
+   NEXA DESKTOP — PREMIUM CENTERED SEARCH
+   ========================================================= */
+
+@media (min-width: 651px) {
+
+    .topbar {
+        position: sticky;
+
+        display: grid;
+
+        grid-template-columns:
+            1fr
+            minmax(380px, 560px)
+            1fr;
+
+        align-items: center;
+
+        gap: 20px;
+    }
+
+
+    /* -----------------------------------------------------
+       CENTER SEARCH
+       ----------------------------------------------------- */
+
+    .topbar-search {
+        grid-column: 2;
+
+        justify-self: center;
+
+        width: min(560px, 100%);
+
+        position: relative;
+    }
+
+
+    .topbar-search input {
+        width: 100%;
+
+        height: 46px;
+
+        padding:
+            0 20px
+            0 48px;
+
+        border:
+            1px solid
+            rgba(89, 100, 233, 0.13);
+
+        border-radius: 999px;
+
+        outline: none;
+
+        background:
+            rgba(255, 255, 255, 0.88);
+
+        color:
+            var(--text);
+
+        font-size: 12px;
+        font-weight: 550;
+
+        box-shadow:
+            0 8px 28px
+            rgba(35, 44, 76, 0.06);
+
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease,
+            background .2s ease;
+    }
+
+
+    .topbar-search input::placeholder {
+        color:
+            #9aa3b3;
+    }
+
+
+    .topbar-search input:focus {
+        background:
+            #ffffff;
+
+        border-color:
+            rgba(89, 100, 233, 0.28);
+
+        box-shadow:
+            0 0 0 4px
+            rgba(89, 100, 233, 0.06),
+            0 10px 30px
+            rgba(35, 44, 76, 0.08);
+    }
+
+
+    /* -----------------------------------------------------
+       SEARCH ICON
+       ----------------------------------------------------- */
+
+    .search-icon {
+        left: 18px;
+
+        color:
+            #8993a6;
+
+        font-size: 19px;
+
+        z-index: 2;
+    }
+
+
+    /* -----------------------------------------------------
+       REMOVE "/" SHORTCUT
+       ----------------------------------------------------- */
+
+    .search-shortcut {
+        display: none !important;
+    }
+}
+
+/* =========================================================
+   DESKTOP TOPBAR — LOGO AND SEARCH FULLY SEPARATED
+   ========================================================= */
+
+@media (min-width: 651px) {
+
+    .topbar {
+        display: flex !important;
+        align-items: center !important;
+
+        gap: 30px !important;
+
+        min-height: 66px;
+
+        padding: 10px 24px !important;
+
+        background: black !important;
+
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+
+        border-bottom:
+            1px solid var(--line);
+
+        box-shadow: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       NEXA LOGO
+       ----------------------------------------------------- */
+
+    .mobile-logo {
+        display: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       SEARCH — CENTER/MAIN AREA
+       ----------------------------------------------------- */
+
+    .topbar-search {
+        position: relative !important;
+
+        flex: 1 1 auto !important;
+
+        width: auto !important;
+
+        max-width: 560px !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        order: 1;
+    }
+
+
+    .topbar-search input {
+        width: 100% !important;
+
+        height: 46px !important;
+
+        padding:
+            0 20px 0 48px !important;
+
+        border-radius: 999px !important;
+
+        background: #fff !important;
+
+        border:
+            1px solid
+            rgba(89, 100, 233, 0.13) !important;
+
+        box-shadow:
+            0 4px 18px
+            rgba(35, 44, 76, 0.06) !important;
+    }
+
+
+    /* -----------------------------------------------------
+       TOP ACTIONS
+       ----------------------------------------------------- */
+
+    .topbar-actions {
+        flex: 0 0 auto !important;
+
+        display: flex !important;
+
+        align-items: center !important;
+
+        gap: 7px !important;
+
+        order: 2;
+    }
+
+
+    /* -----------------------------------------------------
+       IMPORTANT:
+       THE LOGO IS THE SIDEBAR BRAND.
+       IT MUST NOT SIT INSIDE THE SEARCH AREA.
+       ----------------------------------------------------- */
+
+    .sidebar-brand {
+        position: relative;
+        z-index: 2;
+    }
+}
+
+/* =========================================================
+   MOBILE — HIDE HOME HERO
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .home-intro {
+        display: none !important;
+    }
+
+}
+
+/* =========================================================
+   FULLSCREEN REEL — CENTER TAP AREA
+   ========================================================= */
+
+.reel-viewer-video-wrap {
+    position: relative;
+}
+
+.reel-center-toggle {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(
+        -50%,
+        -50%
+    );
+
+    width: 45%;
+    height: 55%;
+
+    border: 0;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    z-index: 15;
+
+    padding: 0;
+}
+
+.reel-center-toggle:focus {
+    outline: none;
+}
+
+@media (max-width: 650px) {
+
+    .reel-center-toggle {
+        width: 60%;
+        height: 55%;
+    }
+}
+
+
+
+/* =========================================================
+   NEXA — DARK COMMENT BOXES
+   ========================================================= */
+
+/* Normal post comments */
+
+.comments-modal-box {
+    background: #0b1020 !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.comments-modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.comments-modal-header h2,
+.comments-modal-header .section-eyebrow {
+    color: #ffffff !important;
+}
+
+.comments-modal-header button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.comments-list {
+    background: #0b1020 !important;
+}
+
+.comment-item {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.comment-item strong {
+    color: #ffffff !important;
+}
+
+.comment-item p {
+    color: rgba(255, 255, 255, 0.70) !important;
+}
+
+.comment-form {
+    background: #080c18 !important;
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.comment-form input {
+    background: #151b2d !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    color: #ffffff !important;
+}
+
+.comment-form input::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.comment-form button {
+    background: linear-gradient(
+        135deg,
+        #5964e9,
+        #33b8e8
+    ) !important;
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   STORY COMMENT PANEL
+   ========================================================= */
+
+.story-comment-panel-box {
+    background: #0b1020 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.story-comment-panel-header {
+    color: #ffffff !important;
+}
+
+.story-comment-panel-header button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+.story-existing-comments {
+    background: #0b1020 !important;
+}
+
+.story-existing-comment {
+    color: #ffffff !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.story-existing-comment strong {
+    color: #ffffff !important;
+}
+
+.story-existing-comment span {
+    color: rgba(255, 255, 255, 0.70) !important;
+}
+
+.story-no-comments {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.story-comment-form {
+    background: #080c18 !important;
+}
+
+.story-comment-form input {
+    background: #151b2d !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    color: #ffffff !important;
+}
+
+.story-comment-form input::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.story-comment-form button {
+    background: linear-gradient(
+        135deg,
+        #5964e9,
+        #33b8e8
+    ) !important;
+    color: #ffffff !important;
 }
