@@ -19,12 +19,6 @@ if (!currentUser) {
 }
 
 
-/* =========================================================
-   API
-   ========================================================= */
-
-const API_BASE = "http://localhost:3000/api";
-
 
 /* =========================================================
    ELEMENTS
@@ -78,6 +72,9 @@ const addStoryButton =
 const viewAllStories =
     document.getElementById("viewAllStories");
 
+const storyViewerComment =
+    document.getElementById("storyViewerComment");
+
 const commentsModal =
     document.getElementById("commentsModal");
 
@@ -101,6 +98,26 @@ const storyViewerContent =
 
 const closeStoryViewer =
     document.getElementById("closeStoryViewer");
+    const storyViewerLike =
+    document.getElementById("storyViewerLike");
+
+const storyViewerLikes =
+    document.getElementById("storyViewerLikes");
+
+const storyViewerComments =
+    document.getElementById("storyViewerComments");
+
+const storyCommentPanel =
+    document.getElementById("storyCommentPanel");
+
+const storyCommentForm =
+    document.getElementById("storyCommentForm");
+
+const storyCommentInput =
+    document.getElementById("storyCommentInput");
+
+const closeStoryComment =
+    document.getElementById("closeStoryComment");
 
 const notificationArea =
     document.getElementById("notificationArea");
@@ -148,6 +165,9 @@ const reelViewerBackdrop =
 
 const reelViewerVideo =
     document.getElementById("reelViewerVideo");
+
+const reelCenterToggle =
+    document.getElementById("reelCenterToggle");
 
 const reelViewerImage =
     document.getElementById("reelViewerImage");
@@ -211,6 +231,8 @@ let viewerTouchStartX = 0;
 let viewerChanging = false;
 
 let selectedStoryId = null;
+
+let selectedStoryCommentId = null;
 
 
 /* =========================================================
@@ -475,6 +497,31 @@ function updateHomeAvatars() {
     );
 }
 
+function formatEngagementCount(number) {
+
+    const value =
+        Number(number || 0);
+
+    if (value >= 1000000) {
+        return (
+            (value / 1000000)
+                .toFixed(
+                    value % 1000000 === 0 ? 0 : 1
+                )
+        ) + "M";
+    }
+
+    if (value >= 1000) {
+        return (
+            (value / 1000)
+                .toFixed(
+                    value % 1000 === 0 ? 0 : 1
+                )
+        ) + "K";
+    }
+
+    return String(value);
+}
 
 /* =========================================================
    LIKE / SAVE HELPERS
@@ -516,34 +563,37 @@ function userSaved(post) {
 
 function getLikesCount(post) {
 
-    if (
-        !post
-    ) {
+    if (!post) {
         return 0;
     }
 
-    if (
+    const realLikes =
         Array.isArray(post.likes)
-    ) {
-        return post.likes.length;
-    }
+            ? post.likes.length
+            : Number(post.likes || 0);
 
-    return Number(
-        post.likes || 0
-    );
+    return formatEngagementCount(
+    Number(post.demoLikes || 0) +
+    realLikes
+);
 }
 
 
 function getCommentsCount(post) {
 
-    if (
-        !post ||
-        !Array.isArray(post.comments)
-    ) {
+    if (!post) {
         return 0;
     }
 
-    return post.comments.length;
+    const realComments =
+        Array.isArray(post.comments)
+            ? post.comments.length
+            : 0;
+
+    return formatEngagementCount(
+        Number(post.demoComments || 0) +
+        realComments
+    );
 }
 
 
@@ -553,8 +603,9 @@ function getSharesCount(post) {
         return 0;
     }
 
-    return Number(
-        post.shares || 0
+    return formatEngagementCount(
+        Number(post.demoShares || 0) +
+        Number(post.shares || 0)
     );
 }
 
@@ -673,6 +724,19 @@ async function loadPosts() {
 
                     return {
 
+
+                        demoLikes:
+                            Number(post.demo_likes || 0),
+
+                        demoComments:
+                             Number(post.demo_comments || 0),
+
+                        demoShares:
+                             Number(post.demo_shares || 0),
+
+                        demoSaves:
+                             Number(post.demo_saves || 0),
+
                         id:
                             post.id,
 
@@ -706,16 +770,18 @@ async function loadPosts() {
                                 postId
                             ] || [],
 
-                        comments:
+             comments:
     Array.isArray(post.comments)
         ? post.comments
         : [],
 
-                        shares:
-                            0,
+shares:
+    Number(post.shares || 0),
 
-                        savedBy:
-                            []
+savedBy:
+    Array.isArray(post.saved_by)
+        ? post.saved_by
+        : [],
                     };
                 }
             );
@@ -1253,33 +1319,6 @@ function renderReel(post) {
     );
 
 
-    /* -------------------------------------------------------
-       CLICK VIDEO = PLAY / PAUSE
-    ------------------------------------------------------- */
-
-    video.addEventListener(
-        "click",
-        event => {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            if (
-                video.paused
-            ) {
-
-                video
-                    .play()
-                    .catch(
-                        () => {}
-                    );
-
-            } else {
-
-                video.pause();
-            }
-        }
-    );
 
 
     /* -------------------------------------------------------
@@ -1329,22 +1368,24 @@ function renderReel(post) {
     );
 
 
-    /* -------------------------------------------------------
-       OPEN FULLSCREEN WHEN MEDIA IS CLICKED
-    ------------------------------------------------------- */
+   /* =========================================================
+   OPEN REEL FULLSCREEN WITH ONE TAP
+   ========================================================= */
 
-    video.addEventListener(
-        "dblclick",
-        event => {
+video.addEventListener(
+    "click",
+    event => {
 
-            event.preventDefault();
-            event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
-            openViewer(
-                post
-            );
-        }
-    );
+        video.pause();
+
+        openViewer(
+            post
+        );
+    }
+);
 }
 
 
@@ -1909,6 +1950,9 @@ function loadViewerPost(post) {
             };
 
 
+            
+             
+
         reelViewerVideo.onerror =
             () => {
 
@@ -1928,6 +1972,8 @@ function loadViewerPost(post) {
         return;
     }
 
+
+    
 
     /* -------------------------------------------------------
        IMAGE
@@ -1951,6 +1997,44 @@ function loadViewerPost(post) {
     }
 }
 
+/* =========================================================
+   FULLSCREEN REEL — CENTER TAP PLAY / PAUSE
+   ========================================================= */
+
+if (reelCenterToggle) {
+
+    reelCenterToggle.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (
+                !viewerIsOpen ||
+                !reelViewerVideo
+            ) {
+                return;
+            }
+
+
+            if (
+                reelViewerVideo.paused
+            ) {
+
+                reelViewerVideo
+                    .play()
+                    .catch(
+                        () => {}
+                    );
+
+            } else {
+
+                reelViewerVideo.pause();
+            }
+        }
+    );
+}
 
 /* =========================================================
    UPDATE VIEWER COUNTS
@@ -2862,10 +2946,9 @@ function updatePostLikeUI(post) {
     );
 }
 
-
 /* =========================================================
    TOGGLE SAVE
-   Server-backed
+   Supabase-backed
    ========================================================= */
 
 async function toggleSave(
@@ -2874,136 +2957,140 @@ async function toggleSave(
 ) {
 
     const post =
-        findPost(
-            postId
-        );
+        findPost(postId);
 
     if (!post) {
         return false;
     }
 
-    if (
-        !Array.isArray(
-            post.savedBy
-        )
-    ) {
+    const userId =
+        String(getUserId());
 
-        post.savedBy =
-            [];
+    if (!Array.isArray(post.savedBy)) {
+        post.savedBy = [];
     }
 
-    const userId =
-        getUserId();
-
-    const index =
-        post.savedBy.findIndex(
+    const alreadySaved =
+        post.savedBy.some(
             id =>
                 String(id) ===
-                String(userId)
+                userId
         );
 
-    if (
-        index !==
-        -1
-    ) {
+    const oldSavedBy =
+        [...post.savedBy];
 
-        post.savedBy.splice(
-            index,
-            1
-        );
+    try {
 
-        showNotification(
-            "Removed from saved."
-        );
+        if (alreadySaved) {
 
-    } else {
+            post.savedBy =
+                post.savedBy.filter(
+                    id =>
+                        String(id) !==
+                        userId
+                );
 
-        post.savedBy.push(
-            userId
-        );
-
-        showNotification(
-            "Post saved."
-        );
-    }
-
-
-    const result =
-        await updatePostOnServer(
-            post
-        );
-
-
-    if (!result) {
-
-        /*
-         * Undo the local change
-         * if server update failed.
-         */
-
-        const nowIndex =
-            post.savedBy.findIndex(
-                id =>
-                    String(id) ===
-                    String(userId)
-            );
-
-        if (
-            index !== -1 &&
-            nowIndex === -1
-        ) {
+        } else {
 
             post.savedBy.push(
                 userId
             );
+        }
 
-        } else if (
-            index === -1 &&
-            nowIndex !== -1
-        ) {
 
-            post.savedBy.splice(
-                nowIndex,
-                1
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("posts")
+                .update({
+                    saved_by:
+                        post.savedBy
+                })
+                .eq(
+                    "id",
+                    post.id
+                )
+                .select("id, saved_by")
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        post.savedBy =
+            Array.isArray(
+                data.saved_by
+            )
+                ? data.saved_by
+                : [];
+
+
+        if (alreadySaved) {
+
+            showNotification(
+                "Removed from saved."
+            );
+
+        } else {
+
+            showNotification(
+                "Post saved."
             );
         }
 
+
+        if (rerenderFeed) {
+
+            renderFeed(
+                searchInput
+                    ? searchInput.value
+                    : ""
+            );
+        }
+
+
+        if (
+            viewerIsOpen &&
+            String(
+                selectedViewerPostId
+            ) ===
+            String(postId)
+        ) {
+
+            updateViewerCounts(
+                post
+            );
+        }
+
+
+        return true;
+
+
+    } catch (error) {
+
+        post.savedBy =
+            oldSavedBy;
+
+        console.error(
+            "NEXA Supabase save error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+
         showNotification(
-            "Could not save this change."
+            "Could not save this post."
         );
 
         return false;
     }
-
-
-    if (
-        rerenderFeed
-    ) {
-
-        renderFeed(
-            searchInput
-                ? searchInput.value
-                : ""
-        );
-    }
-
-
-    if (
-        viewerIsOpen &&
-        String(
-            selectedViewerPostId
-        ) ===
-        String(postId)
-    ) {
-
-        updateViewerCounts(
-            post
-        );
-    }
-
-    return true;
 }
-
 
 /* =========================================================
    COMMENTS
@@ -3416,9 +3503,9 @@ if (closeCommentsButton) {
     );
 }
 
-
 /* =========================================================
    SHARE POST
+   Supabase-backed
    ========================================================= */
 
 async function sharePost(
@@ -3427,9 +3514,7 @@ async function sharePost(
 ) {
 
     const post =
-        findPost(
-            postId
-        );
+        findPost(postId);
 
     if (!post) {
         return false;
@@ -3450,19 +3535,19 @@ async function sharePost(
     };
 
 
+    /* -----------------------------------------------------
+       SHARE / COPY LINK
+       ----------------------------------------------------- */
+
     try {
 
-        if (
-            navigator.share
-        ) {
+        if (navigator.share) {
 
             await navigator.share(
                 shareData
             );
 
-        } else if (
-            navigator.clipboard
-        ) {
+        } else if (navigator.clipboard) {
 
             await navigator.clipboard.writeText(
                 window.location.href
@@ -3498,66 +3583,119 @@ async function sharePost(
     }
 
 
+    /* -----------------------------------------------------
+       INCREASE SHARE COUNT
+       ----------------------------------------------------- */
+
+    const oldShares =
+        Number(
+            post.shares || 0
+        );
+
     post.shares =
-        getSharesCount(
-            post
-        ) + 1;
+        oldShares + 1;
 
 
-    const result =
-        await updatePostOnServer(
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("posts")
+                .update({
+
+                    shares:
+                        post.shares
+
+                })
+                .eq(
+                    "id",
+                    post.id
+                )
+                .select(
+                    "id, shares"
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        post.shares =
+            Number(
+                data.shares || 0
+            );
+
+
+        updateShareCountUI(
             post
         );
 
 
-    if (!result) {
+        if (
+            viewerIsOpen &&
+            String(
+                selectedViewerPostId
+            ) ===
+            String(
+                postId
+            )
+        ) {
+
+            updateViewerCounts(
+                post
+            );
+        }
+
+
+        if (rerenderFeed) {
+
+            renderFeed(
+                searchInput
+                    ? searchInput.value
+                    : ""
+            );
+        }
+
+
+        showNotification(
+            "Post shared."
+        );
+
+
+        console.log(
+            "NEXA share saved to Supabase:",
+            data
+        );
+
+
+        return true;
+
+
+    } catch (error) {
 
         post.shares =
-            Math.max(
-                0,
-                post.shares - 1
-            );
+            oldShares;
+
+        console.error(
+            "NEXA Supabase share error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+
+        showNotification(
+            "Could not save the share."
+        );
 
         return false;
     }
-
-
-    updateShareCountUI(
-        post
-    );
-
-
-    if (
-        viewerIsOpen &&
-        String(
-            selectedViewerPostId
-        ) ===
-        String(
-            postId
-        )
-    ) {
-
-        updateViewerCounts(
-            post
-        );
-    }
-
-
-    if (
-        rerenderFeed
-    ) {
-
-        renderFeed(
-            searchInput
-                ? searchInput.value
-                : ""
-        );
-    }
-
-
-    return true;
 }
-
 
 /* =========================================================
    UPDATE SHARE COUNT
@@ -3924,7 +4062,9 @@ async function createTextPost() {
                 0,
 
             savedBy:
-                []
+    Array.isArray(post.saved_by)
+        ? post.saved_by
+        : [],
         };
 
 
@@ -4621,53 +4761,99 @@ if (publishMediaButton) {
     );
 }
 
-
 /* =========================================================
-   STORIES
+   LOAD STORIES FROM SUPABASE
    ========================================================= */
 
-function loadStories() {
+async function loadStories() {
 
     try {
 
-        const stored =
-            JSON.parse(
-                localStorage.getItem(
-                    "nexaStories"
-                ) || "[]"
+        const {
+            data,
+            error
+        } = await nexaSupabase
+            .from("stories")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
             );
 
-        stories =
-            Array.isArray(
-                stored
-            )
-                ? stored
-                : [];
-
-    } catch {
+        if (error) {
+            throw error;
+        }
 
         stories =
-            [];
-    }
-}
+            (data || []).map(
+                story => ({
 
+                    id:
+                        story.id,
 
-function saveStories() {
+                    userId:
+                        story.user_id,
 
-    try {
+                    username:
+                        story.username ||
+                        "NEXA User",
 
-        localStorage.setItem(
-            "nexaStories",
-            JSON.stringify(
-                stories
-            )
+                    authorAvatar:
+                        story.author_avatar ||
+                        "",
+
+                    media:
+                        story.media,
+
+                    mediaType:
+                        story.media_type,
+
+                    createdAt:
+    story.created_at,
+
+likes:
+    Array.isArray(story.likes)
+        ? story.likes
+        : [],
+
+comments:
+    Array.isArray(story.comments)
+        ? story.comments
+        : [],
+
+shares:
+    Number(story.shares || 0)
+
+                })
+            );
+
+            console.log(
+    "NEXA STORY COMMENTS AFTER REFRESH:",
+    stories.map(story => ({
+        id: story.id,
+        username: story.username,
+        comments: story.comments
+    }))
+);
+
+        console.log(
+            "NEXA stories loaded from Supabase:",
+            stories.length
         );
 
     } catch (error) {
 
         console.error(
-            "Could not save stories:",
+            "NEXA Supabase stories load error:",
             error
+        );
+
+        stories = [];
+
+        showNotification(
+            "Could not load stories."
         );
     }
 }
@@ -4683,19 +4869,18 @@ function renderStories() {
         return;
     }
 
+    storiesContainer.innerHTML = "";
 
-    storiesContainer.innerHTML =
-        "";
 
+    /* =====================================================
+       YOUR STORY
+       ===================================================== */
 
     const yourStory =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     yourStory.className =
         "story create-story";
-
 
     yourStory.innerHTML = `
 
@@ -4754,6 +4939,10 @@ function renderStories() {
     );
 
 
+    /* =====================================================
+       OTHER STORIES
+       ===================================================== */
+
     stories.forEach(
         story => {
 
@@ -4764,6 +4953,12 @@ function renderStories() {
 
             item.className =
                 "story";
+
+
+            const mediaURL =
+                getMediaURL(
+                    story.media
+                );
 
 
             item.innerHTML = `
@@ -4779,27 +4974,25 @@ function renderStories() {
                         ).startsWith(
                             "video"
                         )
+
                             ? `
                                 <video
                                     src="${escapeHTML(
-                                        getMediaURL(
-                                            story.media
-                                        )
+                                        mediaURL
                                     )}"
                                     muted
                                     playsinline
                                 ></video>
-                            `
+                              `
+
                             : `
                                 <img
                                     src="${escapeHTML(
-                                        getMediaURL(
-                                            story.media
-                                        )
+                                        mediaURL
                                     )}"
                                     alt="Story"
                                 >
-                            `
+                              `
                     }
 
                 </div>
@@ -4807,7 +5000,6 @@ function renderStories() {
                 <span>
                     ${escapeHTML(
                         story.username ||
-                        story.authorName ||
                         "NEXA User"
                     )}
                 </span>
@@ -4834,6 +5026,1045 @@ function renderStories() {
 
 
 /* =========================================================
+   STORY VIEWER STATE
+   One source of truth for likes/comments/shares
+   ========================================================= */
+
+let storyViewerRequestId = 0;
+
+
+/* =========================================================
+   LOAD CURRENT STORY ACTION STATE
+   ========================================================= */
+
+async function loadStoryViewerState(storyId) {
+
+    const requestId =
+        ++storyViewerRequestId;
+
+    const currentId =
+        String(storyId);
+
+
+    /* -----------------------------------------------------
+       RESET THE UI IMMEDIATELY
+    ----------------------------------------------------- */
+
+    if (storyViewerLikes) {
+        storyViewerLikes.textContent = "0";
+    }
+
+    if (storyViewerComments) {
+        storyViewerComments.textContent = "0";
+    }
+
+    if (storyViewerShares) {
+        storyViewerShares.textContent = "0";
+    }
+
+
+    if (storyViewerLike) {
+
+        storyViewerLike.classList.remove(
+            "active"
+        );
+
+        const icon =
+            storyViewerLike.querySelector(
+                ".story-viewer-action-icon"
+            );
+
+        if (icon) {
+            icon.textContent = "♡";
+        }
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("stories")
+                .select(
+                    "id, likes, comments, shares"
+                )
+                .eq(
+                    "id",
+                    storyId
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /* -------------------------------------------------
+           IGNORE OLD REQUESTS
+        ------------------------------------------------- */
+
+        if (
+            requestId !== storyViewerRequestId ||
+            String(selectedStoryId) !==
+            currentId
+        ) {
+            return;
+        }
+
+
+        /* -------------------------------------------------
+           STORE THE REAL DATA ON THIS STORY ONLY
+        ------------------------------------------------- */
+
+        const story =
+            stories.find(
+                item =>
+                    String(item.id) ===
+                    currentId
+            );
+
+
+        if (!story) {
+            return;
+        }
+
+
+        story.likes =
+            Array.isArray(data.likes)
+                ? data.likes
+                : [];
+
+
+        story.comments =
+            Array.isArray(data.comments)
+                ? data.comments
+                : [];
+
+
+        story.shares =
+            Number(data.shares || 0);
+
+
+        /* -------------------------------------------------
+           UPDATE COUNTS
+        ------------------------------------------------- */
+
+        if (storyViewerLikes) {
+
+            storyViewerLikes.textContent =
+                story.likes.length;
+        }
+
+
+        if (storyViewerComments) {
+
+            storyViewerComments.textContent =
+                story.comments.length;
+        }
+
+
+        if (storyViewerShares) {
+
+            storyViewerShares.textContent =
+                story.shares;
+        }
+
+
+        /* -------------------------------------------------
+           UPDATE LIKE HEART
+        ------------------------------------------------- */
+
+        const userId =
+            String(getUserId());
+
+        const liked =
+            story.likes.some(
+                id =>
+                    String(id) ===
+                    userId
+            );
+
+
+        if (storyViewerLike) {
+
+            storyViewerLike.classList.toggle(
+                "active",
+                liked
+            );
+
+
+            const icon =
+                storyViewerLike.querySelector(
+                    ".story-viewer-action-icon"
+                );
+
+
+            if (icon) {
+
+                icon.textContent =
+                    liked
+                        ? "♥"
+                        : "♡";
+            }
+        }
+
+
+        console.log(
+            "NEXA STORY STATE:",
+            {
+                storyId:
+                    story.id,
+
+                likes:
+                    story.likes.length,
+
+                comments:
+                    story.comments.length,
+
+                shares:
+                    story.shares
+            }
+        );
+
+
+    } catch (error) {
+
+        if (
+            requestId !== storyViewerRequestId ||
+            String(selectedStoryId) !==
+            currentId
+        ) {
+            return;
+        }
+
+
+        console.error(
+            "NEXA Story viewer state error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+    }
+}
+
+
+/* =========================================================
+   OPEN STORY
+   ========================================================= */
+
+async function openStory(storyId) {
+
+    const story =
+        stories.find(
+            item =>
+                String(item.id) ===
+                String(storyId)
+        );
+
+
+    if (
+        !story ||
+        !storyViewer ||
+        !storyViewerContent
+    ) {
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+       THIS IS THE IMPORTANT PART:
+       SET THE STORY ID FIRST.
+    ----------------------------------------------------- */
+
+    selectedStoryId =
+        story.id;
+
+
+    /* -----------------------------------------------------
+       SHOW THE MEDIA
+    ----------------------------------------------------- */
+
+    storyViewerContent.innerHTML =
+        "";
+
+
+    const mediaURL =
+        getMediaURL(
+            story.media
+        );
+
+
+    if (
+        String(
+            story.mediaType || ""
+        ).startsWith(
+            "video"
+        )
+    ) {
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+
+        video.src =
+            mediaURL;
+
+        video.controls =
+            true;
+
+        video.autoplay =
+            true;
+
+        video.playsInline =
+            true;
+
+
+        storyViewerContent.appendChild(
+            video
+        );
+
+
+    } else {
+
+        const image =
+            document.createElement(
+                "img"
+            );
+
+
+        image.src =
+            mediaURL;
+
+        image.alt =
+            "NEXA Story";
+
+
+        storyViewerContent.appendChild(
+            image
+        );
+    }
+
+
+    /* -----------------------------------------------------
+       OPEN VIEWER
+    ----------------------------------------------------- */
+
+    storyViewer.hidden =
+        false;
+
+    storyViewer.style.display =
+        "flex";
+
+    storyViewer.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    /* -----------------------------------------------------
+       GET THIS STORY'S REAL COUNTS
+    ----------------------------------------------------- */
+
+    await loadStoryViewerState(
+        story.id
+    );
+}
+
+
+/* =========================================================
+   STORY LIKE
+   ========================================================= */
+
+async function toggleStoryLike(storyId) {
+
+    if (
+        String(selectedStoryId) !==
+        String(storyId)
+    ) {
+        return false;
+    }
+
+
+    const story =
+        stories.find(
+            item =>
+                String(item.id) ===
+                String(storyId)
+        );
+
+
+    if (!story) {
+        return false;
+    }
+
+
+    try {
+
+        /* -------------------------------------------------
+           ALWAYS READ THE LATEST DATABASE VALUE FIRST
+        ------------------------------------------------- */
+
+        const {
+            data: currentData,
+            error: currentError
+        } =
+            await nexaSupabase
+                .from("stories")
+                .select(
+                    "id, likes"
+                )
+                .eq(
+                    "id",
+                    story.id
+                )
+                .single();
+
+
+        if (currentError) {
+            throw currentError;
+        }
+
+
+        const currentLikes =
+            Array.isArray(
+                currentData.likes
+            )
+                ? currentData.likes
+                : [];
+
+
+        const userId =
+            String(getUserId());
+
+
+        const alreadyLiked =
+            currentLikes.some(
+                id =>
+                    String(id) ===
+                    userId
+            );
+
+
+        let newLikes;
+
+
+        if (alreadyLiked) {
+
+            newLikes =
+                currentLikes.filter(
+                    id =>
+                        String(id) !==
+                        userId
+                );
+
+        } else {
+
+            newLikes =
+                [
+                    ...currentLikes,
+                    userId
+                ];
+        }
+
+
+        /* -------------------------------------------------
+           SAVE THIS STORY ONLY
+        ------------------------------------------------- */
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("stories")
+                .update({
+                    likes:
+                        newLikes
+                })
+                .eq(
+                    "id",
+                    story.id
+                )
+                .select(
+                    "id, likes"
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /* -------------------------------------------------
+           UPDATE LOCAL STORY
+        ------------------------------------------------- */
+
+        story.likes =
+            Array.isArray(data.likes)
+                ? data.likes
+                : [];
+
+
+        /* -------------------------------------------------
+           ONLY UPDATE IF STILL ON SAME STORY
+        ------------------------------------------------- */
+
+        if (
+            String(selectedStoryId) !==
+            String(story.id)
+        ) {
+            return true;
+        }
+
+
+        if (storyViewerLikes) {
+
+            storyViewerLikes.textContent =
+                story.likes.length;
+        }
+
+
+        const likedNow =
+            story.likes.some(
+                id =>
+                    String(id) ===
+                    userId
+            );
+
+
+        if (storyViewerLike) {
+
+            storyViewerLike.classList.toggle(
+                "active",
+                likedNow
+            );
+
+
+            const icon =
+                storyViewerLike.querySelector(
+                    ".story-viewer-action-icon"
+                );
+
+
+            if (icon) {
+
+                icon.textContent =
+                    likedNow
+                        ? "♥"
+                        : "♡";
+            }
+        }
+
+
+        showNotification(
+            likedNow
+                ? "Story liked."
+                : "Story unliked."
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "NEXA Story like error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+
+
+        showNotification(
+            "Could not update the Story like."
+        );
+
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   STORY LIKE BUTTON
+   ========================================================= */
+
+if (storyViewerLike) {
+
+    storyViewerLike.addEventListener(
+        "click",
+        async event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            if (!selectedStoryId) {
+                return;
+            }
+
+
+            await toggleStoryLike(
+                selectedStoryId
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   OPEN STORY COMMENTS
+   ========================================================= */
+
+async function openStoryCommentPanel(storyId) {
+
+    if (
+        String(selectedStoryId) !==
+        String(storyId)
+    ) {
+        return;
+    }
+
+
+    if (!storyCommentPanel) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("stories")
+                .select(
+                    "id, comments"
+                )
+                .eq(
+                    "id",
+                    storyId
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (
+            String(selectedStoryId) !==
+            String(storyId)
+        ) {
+            return;
+        }
+
+
+        const story =
+            stories.find(
+                item =>
+                    String(item.id) ===
+                    String(storyId)
+            );
+
+
+        if (!story) {
+            return;
+        }
+
+
+        story.comments =
+            Array.isArray(data.comments)
+                ? data.comments
+                : [];
+
+
+        const comments =
+            story.comments;
+
+
+        let existingComments =
+            storyCommentPanel.querySelector(
+                ".story-existing-comments"
+            );
+
+
+        if (!existingComments) {
+
+            existingComments =
+                document.createElement(
+                    "div"
+                );
+
+            existingComments.className =
+                "story-existing-comments";
+
+
+            const box =
+                storyCommentPanel.querySelector(
+                    ".story-comment-panel-box"
+                );
+
+
+            const form =
+                storyCommentPanel.querySelector(
+                    "#storyCommentForm"
+                );
+
+
+            if (
+                box &&
+                form
+            ) {
+
+                box.insertBefore(
+                    existingComments,
+                    form
+                );
+
+            } else if (box) {
+
+                box.appendChild(
+                    existingComments
+                );
+            }
+        }
+
+
+        existingComments.innerHTML =
+            "";
+
+
+        if (
+            comments.length ===
+            0
+        ) {
+
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+            empty.className =
+                "story-no-comments";
+
+            empty.textContent =
+                "No comments yet. Be the first.";
+
+
+            existingComments.appendChild(
+                empty
+            );
+
+        } else {
+
+            comments.forEach(
+                comment => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "story-existing-comment";
+
+
+                    const username =
+                        document.createElement(
+                            "strong"
+                        );
+
+                    username.textContent =
+                        comment.username ||
+                        "NEXA User";
+
+
+                    const text =
+                        document.createElement(
+                            "span"
+                        );
+
+                    text.textContent =
+                        comment.text ||
+                        "";
+
+
+                    item.appendChild(
+                        username
+                    );
+
+                    item.appendChild(
+                        text
+                    );
+
+
+                    existingComments.appendChild(
+                        item
+                    );
+                }
+            );
+        }
+
+
+        if (storyViewerComments) {
+
+            storyViewerComments.textContent =
+                comments.length;
+        }
+
+
+        storyCommentPanel.hidden =
+            false;
+
+        storyCommentPanel.style.display =
+            "flex";
+
+
+        if (storyCommentInput) {
+
+            storyCommentInput.value =
+                "";
+
+            setTimeout(
+                () => {
+
+                    storyCommentInput.focus();
+
+                },
+                100
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "NEXA Story comments load error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+
+
+        showNotification(
+            "Could not load Story comments."
+        );
+    }
+}
+
+/* =========================================================
+   STORY SHARE TO FRIEND
+   ========================================================= */
+
+async function shareStoryToFriend(storyId, friendId) {
+
+    try {
+
+        const story =
+            stories.find(
+                item =>
+                    String(item.id) ===
+                    String(storyId)
+            );
+
+        if (!story) {
+            showNotification("Story not found.");
+            return false;
+        }
+
+        const senderId =
+            Number(getUserId());
+
+        const receiverId =
+            Number(friendId);
+
+        if (!senderId || !receiverId) {
+            showNotification("Invalid user.");
+            return false;
+        }
+
+        const message = {
+
+            id:
+                Date.now() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2, 8),
+
+            senderId:
+                senderId,
+
+            receiverId:
+                receiverId,
+
+            conversationId:
+                createConversationId(
+                    senderId,
+                    receiverId
+                ),
+
+            text:
+                `Shared a story: ${story.media || ""}`,
+
+            media:
+                story.media || null,
+
+            mediaType:
+                story.mediaType || "story",
+
+            storyId:
+                story.id,
+
+            createdAt:
+                new Date().toISOString()
+        };
+
+
+        const response =
+            await fetch(
+                `${API_URL}/api/messages`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(message)
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Message could not be sent."
+            );
+        }
+
+
+        /* -------------------------------------------------
+           INCREASE STORY SHARE COUNT
+        ------------------------------------------------- */
+
+        const {
+            data: currentStory,
+            error: storyError
+        } =
+            await nexaSupabase
+                .from("stories")
+                .select(
+                    "id, shares"
+                )
+                .eq(
+                    "id",
+                    story.id
+                )
+                .single();
+
+
+        if (!storyError) {
+
+            const newShares =
+                Number(
+                    currentStory?.shares || 0
+                ) + 1;
+
+
+            await nexaSupabase
+                .from("stories")
+                .update({
+                    shares:
+                        newShares
+                })
+                .eq(
+                    "id",
+                    story.id
+                );
+
+
+            story.shares =
+                newShares;
+
+
+            if (
+                String(selectedStoryId) ===
+                String(story.id) &&
+                storyViewerShares
+            ) {
+
+                storyViewerShares.textContent =
+                    newShares;
+            }
+        }
+
+
+        showNotification(
+            "Story sent successfully."
+        );
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "NEXA Story share error:",
+            error
+        );
+
+        showNotification(
+            "Could not send the story."
+        );
+
+        return false;
+    }
+}
+
+/* =========================================================
+   STORY COMMENT BUTTON
+   ========================================================= */
+
+if (storyViewerComment) {
+
+    storyViewerComment.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            if (!selectedStoryId) {
+                return;
+            }
+
+
+            openStoryCommentPanel(
+                selectedStoryId
+            );
+        }
+    );
+}
+
+
+/* =========================================================
    CREATE STORY INPUT
    ========================================================= */
 
@@ -4853,7 +6084,7 @@ function createStoryFileInput() {
 
     input.addEventListener(
         "change",
-        () => {
+        async () => {
 
             const file =
                 input.files?.[0];
@@ -4863,65 +6094,204 @@ function createStoryFileInput() {
             }
 
 
-            const reader =
-                new FileReader();
+            try {
+
+                showNotification(
+                    "Uploading story..."
+                );
+
+                console.log("NEXA STORY: upload started");
 
 
-            reader.onload =
-                () => {
+                /* =============================================
+                   1. UNIQUE STORAGE PATH
+                   ============================================= */
 
-                    const story = {
-
-                        id:
-                            Date.now(),
-
-                        userId:
-                            getUserId(),
-
-                        username:
-                            getUsername(),
-
-                        media:
-                            reader.result,
-
-                        mediaType:
-                            file.type.startsWith(
-                                "video/"
-                            )
-                                ? "video"
-                                : "image",
-
-                        createdAt:
-                            new Date()
-                                .toISOString()
-                    };
+                const extension =
+                    file.name
+                        .split(".")
+                        .pop()
+                        .toLowerCase();
 
 
-                    stories.unshift(
-                        story
+                const filePath =
+                    `stories/${getUserId()}_${Date.now()}.${extension}`;
+
+
+                /* =============================================
+                   2. UPLOAD TO SUPABASE STORAGE
+                   ============================================= */
+
+                console.log(
+                    "NEXA STORY: sending file to Supabase Storage",
+                    file.name,
+                    file.type,
+                    file.size
+                );
+
+                const {
+                    error: uploadError
+                } =
+                    await nexaSupabase
+                        .storage
+                        .from("nexa-media")
+                        .upload(
+                            filePath,
+                            file,
+                            {
+                                cacheControl:
+                                    "3600",
+
+                                upsert:
+                                    false,
+
+                                contentType:
+                                    file.type
+                            }
+                        );
+                        
+                          console.log(
+    "NEXA STORY: Storage upload finished",
+    uploadError
+);
+
+                if (uploadError) {
+                    throw uploadError;
+                }
+
+
+                /* =============================================
+                   3. GET PUBLIC URL
+                   ============================================= */
+
+                const {
+                    data:
+                        publicURLData
+                } =
+                    nexaSupabase
+                        .storage
+                        .from("nexa-media")
+                        .getPublicUrl(
+                            filePath
+                        );
+
+
+                const mediaURL =
+                    publicURLData.publicUrl;
+
+
+                if (!mediaURL) {
+
+                    throw new Error(
+                        "Could not get story media URL."
                     );
+                }
 
 
-                    saveStories();
+                /* =============================================
+                   4. SAVE STORY TO SUPABASE
+                   ============================================= */
+
+                const {
+                    data,
+                    error
+                } =
+                    await nexaSupabase
+                        .from("stories")
+                        .insert({
+
+                            user_id:
+                                String(
+                                    getUserId()
+                                ),
+
+                            username:
+                                getUsername(),
+
+                            media:
+                                mediaURL,
+
+                            media_type:
+                                file.type.startsWith(
+                                    "video/"
+                                )
+                                    ? "video"
+                                    : "image"
+
+                        })
+                        .select()
+                        .single();
 
 
-                    renderStories();
+                if (error) {
+                    throw error;
+                }
 
 
-                    showNotification(
-                        "Your story is live!"
-                    );
+                /* =============================================
+                   5. ADD TO LOCAL ARRAY
+                   ============================================= */
 
+                const newStory = {
 
-                    openStory(
-                        story.id
-                    );
+                    id:
+                        data.id,
+
+                    userId:
+                        data.user_id,
+
+                    username:
+                        data.username,
+
+                    media:
+                        data.media,
+
+                    mediaType:
+                        data.media_type,
+
+                    createdAt:
+                        data.created_at
                 };
 
 
-            reader.readAsDataURL(
-                file
-            );
+                stories.unshift(
+                    newStory
+                );
+
+
+                /* =============================================
+                   6. UPDATE UI
+                   ============================================= */
+
+                renderStories();
+
+
+                showNotification(
+                    "Your story is live!"
+                );
+
+
+                /* =============================================
+                   7. OPEN STORY
+                   ============================================= */
+
+                openStory(
+                    newStory.id
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "NEXA Supabase story upload error:",
+                    error
+                );
+
+                showNotification(
+                    error.message ||
+                    "Could not publish your story."
+                );
+            }
         }
     );
 
@@ -4929,6 +6299,10 @@ function createStoryFileInput() {
     input.click();
 }
 
+
+/* =========================================================
+   ADD STORY BUTTON
+   ========================================================= */
 
 if (addStoryButton) {
 
@@ -4939,104 +6313,727 @@ if (addStoryButton) {
 }
 
 
+
+    /* =====================================================
+       OPEN PANEL
+    ===================================================== */
+
+    storyCommentPanel.hidden =
+        false;
+
+    storyCommentPanel.style.display =
+        "flex";
+
+
+    if (storyCommentInput) {
+
+        storyCommentInput.value =
+            "";
+
+        setTimeout(
+            () => {
+
+                storyCommentInput.focus();
+
+            },
+            100
+        );
+    }
+
+
 /* =========================================================
-   OPEN STORY
+   CLOSE STORY COMMENT PANEL
    ========================================================= */
 
-function openStory(storyId) {
+function closeStoryCommentPanel() {
 
-    const story =
-        stories.find(
-            item =>
-                String(
-                    item.id
-                ) ===
-                String(
-                    storyId
-                )
-        );
+    if (!storyCommentPanel) {
+        return;
+    }
 
-    if (
-        !story ||
-        !storyViewer ||
-        !storyViewerContent
-    ) {
+    storyCommentPanel.hidden =
+        true;
+
+    storyCommentPanel.style.display =
+        "none";
+
+    if (storyCommentInput) {
+        storyCommentInput.value =
+            "";
+    }
+}
+
+
+if (closeStoryComment) {
+
+    closeStoryComment.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            closeStoryCommentPanel();
+        }
+    );
+}
+
+
+
+/* =========================================================
+   CLOSE STORY
+   ========================================================= */
+
+function closeStory() {
+
+    if (!storyViewer) {
         return;
     }
 
 
+    storyViewer.hidden =
+        true;
+
+    storyViewer.style.display =
+        "none";
+
+    storyViewer.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    if (storyViewerContent) {
+
+        storyViewerContent.innerHTML =
+            "";
+    }
+
+
     selectedStoryId =
-        story.id;
+        null;
+}
 
 
-    storyViewerContent.innerHTML =
-        "";
+if (closeStoryViewer) {
+
+    closeStoryViewer.addEventListener(
+        "click",
+        closeStory
+    );
+}
 
 
-    if (
-        String(
-            story.mediaType ||
-            ""
-        ).startsWith(
-            "video"
-        )
-    ) {
+/* =========================================================
+   VIEW ALL STORIES
+   ========================================================= */
 
-        const video =
-            document.createElement(
-                "video"
+if (viewAllStories) {
+
+    viewAllStories.addEventListener(
+        "click",
+        () => {
+
+            if (
+                stories.length ===
+                0
+            ) {
+
+                showNotification(
+                    "No stories yet."
+                );
+
+                return;
+            }
+
+
+            openStory(
+                stories[0].id
             );
-
-        video.src =
-            getMediaURL(
-                story.media
-            );
-
-        video.controls =
-            true;
-
-        video.autoplay =
-            true;
-
-        video.playsInline =
-            true;
+        }
+    );
+}
 
 
-        storyViewerContent.appendChild(
-            video
+/* =========================================================
+   RENDER STORIES
+   Video stories show a thumbnail preview
+   ========================================================= */
+
+function renderStories() {
+
+    if (!storiesContainer) {
+        return;
+    }
+
+    storiesContainer.innerHTML = "";
+
+
+    /* =====================================================
+       YOUR STORY
+       ===================================================== */
+
+    const yourStory =
+        document.createElement("div");
+
+    yourStory.className =
+        "story create-story";
+
+    yourStory.innerHTML = `
+
+        <div
+            class="story-avatar-wrapper"
+        >
+
+            <div
+                class="story-avatar"
+                id="storyAvatar"
+            >
+                ${escapeHTML(
+                    getAvatarLetter(
+                        getUsername()
+                    )
+                )}
+            </div>
+
+            <button
+                class="add-story"
+                type="button"
+                aria-label="Add a story"
+            >
+                +
+            </button>
+
+        </div>
+
+        <span>
+            Your story
+        </span>
+    `;
+
+
+    const storyAddButton =
+        yourStory.querySelector(
+            ".add-story"
         );
 
-    } else {
 
-        const image =
-            document.createElement(
-                "img"
-            );
+    if (storyAddButton) {
 
-        image.src =
-            getMediaURL(
-                story.media
-            );
+        storyAddButton.addEventListener(
+            "click",
+            event => {
 
-        image.alt =
-            "NEXA Story";
+                event.stopPropagation();
 
-
-        storyViewerContent.appendChild(
-            image
+                createStoryFileInput();
+            }
         );
     }
 
 
-    storyViewer.hidden =
-        false;
+    storiesContainer.appendChild(
+        yourStory
+    );
 
-    storyViewer.style.display =
-        "flex";
 
-    storyViewer.setAttribute(
-        "aria-hidden",
-        "false"
+    /* =====================================================
+       OTHER STORIES
+       ===================================================== */
+
+    stories.forEach(
+        story => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "story";
+
+
+            const ring =
+                document.createElement(
+                    "div"
+                );
+
+            ring.className =
+                "story-ring";
+
+
+            const mediaType =
+                String(
+                    story.mediaType || ""
+                ).toLowerCase();
+
+
+           /* =================================================
+   VIDEO STORY → SHOW FIRST VIDEO FRAME
+   ================================================= */
+
+if (
+    mediaType.startsWith("video")
+) {
+
+    const video =
+        document.createElement("video");
+
+    video.src =
+        getMediaURL(
+            story.media
+        );
+
+    video.muted =
+        true;
+
+    video.playsInline =
+        true;
+
+    video.preload =
+        "auto";
+
+    video.setAttribute(
+        "webkit-playsinline",
+        "true"
+    );
+
+
+    video.addEventListener(
+        "loadeddata",
+        () => {
+
+            try {
+
+                video.currentTime =
+                    0.1;
+
+                video.pause();
+
+            } catch {}
+        }
+    );
+
+
+    ring.appendChild(
+        video
+    );
+
+} else {
+
+    /* =============================================
+       IMAGE STORY
+       ============================================= */
+
+    const image =
+        document.createElement(
+            "img"
+        );
+
+    image.src =
+        getMediaURL(
+            story.media
+        );
+
+    image.alt =
+        "Story";
+
+
+    ring.appendChild(
+        image
+    );
+}
+
+
+            const username =
+                document.createElement(
+                    "span"
+                );
+
+            username.textContent =
+                story.username ||
+                "NEXA User";
+
+
+            item.appendChild(
+                ring
+            );
+
+            item.appendChild(
+                username
+            );
+
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    openStory(
+                        story.id
+                    );
+                }
+            );
+
+
+            storiesContainer.appendChild(
+                item
+            );
+        }
+    );
+}
+
+
+
+
+/* =========================================================
+   STORY COMMENT BUTTON
+   ========================================================= */
+
+if (storyViewerComment) {
+
+    storyViewerComment.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!selectedStoryId) {
+                return;
+            }
+
+            openStoryCommentPanel(
+                selectedStoryId
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   STORY COMMENT FORM
+   Supabase-backed
+   ========================================================= */
+
+if (storyCommentForm) {
+
+    storyCommentForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            if (!selectedStoryId) {
+                return;
+            }
+
+
+            const story =
+                stories.find(
+                    item =>
+                        String(item.id) ===
+                        String(selectedStoryId)
+                );
+
+
+            if (!story) {
+                return;
+            }
+
+
+            const text =
+                storyCommentInput
+                    ? storyCommentInput.value.trim()
+                    : "";
+
+
+            if (!text) {
+                return;
+            }
+
+
+            if (
+                !Array.isArray(
+                    story.comments
+                )
+            ) {
+
+                story.comments =
+                    [];
+            }
+
+
+            const oldComments =
+                [
+                    ...story.comments
+                ];
+
+
+            const newComment = {
+
+                id:
+                    Date.now(),
+
+                userId:
+                    String(
+                        getUserId()
+                    ),
+
+                username:
+                    getUsername(),
+
+                text:
+                    text,
+
+                createdAt:
+                    new Date()
+                        .toISOString()
+            };
+
+
+            story.comments.push(
+                newComment
+            );
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await nexaSupabase
+                        .from("stories")
+                        .update({
+
+                            comments:
+                                story.comments
+
+                        })
+                        .eq(
+                            "id",
+                            story.id
+                        )
+                        .select(
+                            "id, comments"
+                        )
+                        .single();
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                story.comments =
+                    Array.isArray(
+                        data.comments
+                    )
+                        ? data.comments
+                        : [];
+
+
+                if (storyViewerComments) {
+
+                    storyViewerComments.textContent =
+                        story.comments.length;
+                }
+
+
+                closeStoryCommentPanel();
+
+
+                showNotification(
+                    "Comment posted."
+                );
+
+
+                console.log(
+                    "NEXA Story comment saved:",
+                    data
+                );
+
+
+            } catch (error) {
+
+                story.comments =
+                    oldComments;
+
+
+                console.error(
+                    "NEXA Story comment error:",
+                    error.message,
+                    error.details,
+                    error.hint,
+                    error.code
+                );
+
+
+                showNotification(
+                    "Could not save your Story comment."
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   STORY LIKE BUTTON
+   ========================================================= */
+
+if (storyViewerLike) {
+
+    storyViewerLike.addEventListener(
+        "click",
+        async event => {
+
+            event.preventDefault();
+            const story =
+    selectedStoryCommentId
+        ? stories.find(
+            item =>
+                String(item.id) ===
+                String(selectedStoryCommentId)
+        )
+        : null;
+
+if (story) {
+
+    const text =
+        commentInput
+            ? commentInput.value.trim()
+            : "";
+
+    if (!text) {
+        return;
+    }
+
+
+    if (!Array.isArray(story.comments)) {
+        story.comments = [];
+    }
+
+
+    const oldComments =
+        [...story.comments];
+
+
+    const newComment = {
+
+        id:
+            Date.now(),
+
+        userId:
+            String(
+                getUserId()
+            ),
+
+        username:
+            getUsername(),
+
+        text:
+            text,
+
+        createdAt:
+            new Date().toISOString()
+    };
+
+
+    story.comments.push(
+        newComment
+    );
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("stories")
+                .update({
+                    comments:
+                        story.comments
+                })
+                .eq(
+                    "id",
+                    story.id
+                )
+                .select(
+                    "id, comments"
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        story.comments =
+            Array.isArray(data.comments)
+                ? data.comments
+                : [];
+
+
+        if (commentInput) {
+            commentInput.value = "";
+        }
+
+
+        if (storyViewerComments) {
+
+            storyViewerComments.textContent =
+                story.comments.length;
+        }
+
+
+        openStoryComments(
+            story.id
+        );
+
+
+        showNotification(
+            "Story comment posted."
+        );
+
+
+        return;
+
+    } catch (error) {
+
+        story.comments =
+            oldComments;
+
+        console.error(
+            "NEXA Story comment error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
+        );
+
+        showNotification(
+            "Could not save your Story comment."
+        );
+
+        return;
+    }
+}
+            event.stopPropagation();
+
+            if (!selectedStoryId) {
+                return;
+            }
+
+            await toggleStoryLike(
+                selectedStoryId
+            );
+        }
     );
 }
 
@@ -5234,9 +7231,8 @@ async function initializeHome() {
 
     updateHomeAvatars();
 
-    loadStories();
-
-    renderStories();
+   await loadStories();
+renderStories();
 
 
     /*
