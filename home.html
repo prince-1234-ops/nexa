@@ -1220,34 +1220,161 @@
 
 
 
-    <!-- =====================================================
-         STORY VIEWER
-    ====================================================== -->
+<!-- =====================================================
+     STORY VIEWER
+====================================================== -->
+
+<div
+    id="storyViewer"
+    class="story-viewer"
+    hidden
+    aria-hidden="true"
+>
+
+    <button
+        id="closeStoryViewer"
+        class="story-viewer-close"
+        type="button"
+        aria-label="Close story"
+    >
+        ×
+    </button>
+
 
     <div
-        id="storyViewer"
-        class="story-viewer"
-        hidden
-        aria-hidden="true"
-    >
+        id="storyViewerContent"
+        class="story-viewer-content"
+    ></div>
 
+
+    <!-- =================================================
+     STORY COMMENT PANEL
+================================================== -->
+
+<div
+    id="storyCommentPanel"
+    class="story-comment-panel"
+    hidden
+>
+<div class="story-comment-panel-box">
+
+    <div class="story-comment-panel-header">
+
+        <strong>
+            Reply to story
+        </strong>
 
         <button
-            id="closeStoryViewer"
-            class="story-viewer-close"
             type="button"
-            aria-label="Close story"
+            id="closeStoryComment"
+            aria-label="Close story comment"
         >
             ×
         </button>
 
+    </div>
 
-        <div
-            id="storyViewerContent"
-            class="story-viewer-content"
-        ></div>
+
+    <div
+        class="story-existing-comments"
+    ></div>
+
+
+    <form
+        id="storyCommentForm"
+        class="story-comment-form"
+    >
+
+        <input
+            type="text"
+            id="storyCommentInput"
+            placeholder="Write a reply..."
+            maxlength="500"
+            autocomplete="off"
+        >
+
+        <button type="submit">
+            Post
+        </button>
+
+    </form>
+
+</div>
+
+</div>
+
+
+    <!-- =================================================
+         STORY ACTIONS
+    ================================================== -->
+
+    <div
+        id="storyViewerActions"
+        class="story-viewer-actions"
+    >
+
+        <button
+            type="button"
+            id="storyViewerLike"
+            class="story-viewer-action"
+            aria-label="Like story"
+        >
+            <span
+                class="story-viewer-action-icon"
+            >
+                ♡
+            </span>
+
+            <span
+                id="storyViewerLikes"
+            >
+                0
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            id="storyViewerComment"
+            class="story-viewer-action"
+            aria-label="Comment on story"
+        >
+            <span
+                class="story-viewer-action-icon"
+            >
+                💬
+            </span>
+
+            <span
+                id="storyViewerComments"
+            >
+                0
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            id="storyViewerShare"
+            class="story-viewer-action"
+            aria-label="Share story"
+        >
+            <span
+                class="story-viewer-action-icon"
+            >
+                ↗
+            </span>
+
+            <span
+                id="storyViewerShares"
+            >
+                0
+            </span>
+        </button>
 
     </div>
+
+</div>
 
 
 
@@ -1373,6 +1500,12 @@
                     playsinline
                     preload="metadata"
                 ></video>
+                <button
+    id="reelCenterToggle"
+    class="reel-center-toggle"
+    type="button"
+    aria-label="Play or pause Reel"
+></button>
 
 
                 <img
