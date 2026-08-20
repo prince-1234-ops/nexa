@@ -2,558 +2,1406 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#050816"
+    >
+
+    <meta
+        name="color-scheme"
+        content="dark"
+    >
+
+    <meta
+        name="description"
+        content="NEXA Messages"
+    >
 
     <title>NEXA Messages</title>
 
-    <link rel="stylesheet" href="messages.css">
+    <link
+        rel="stylesheet"
+        href="messages.css"
+    >
+
 </head>
+
 
 <body>
 
-    <!-- NEXA HEADER -->
 
-    <header class="site-header">
+    <!-- =========================================================
+         BACKGROUND
+    ========================================================== -->
 
-        <div class="header-left">
-            <a href="home.html" class="nexa-logo">
-                NEXA
-            </a>
-        </div>
+    <div class="messages-background">
 
-        <nav class="main-nav">
+        <div class="background-orb background-orb-one"></div>
 
-            <a href="home.html">
-                <span class="nav-icon">⌂</span>
-                <span>Home</span>
-            </a>
+        <div class="background-orb background-orb-two"></div>
 
-            <a href="people.html">
-                <span class="nav-icon">◉</span>
-                <span>People</span>
-            </a>
+        <div class="background-orb background-orb-three"></div>
 
-            <a href="messages.html" class="active">
-                <span class="nav-icon">✉</span>
-                <span>Messages</span>
-            </a>
+        <div class="background-grid"></div>
 
-            <a href="profile.html">
-                <span class="nav-icon">●</span>
-                <span>Profile</span>
-            </a>
-
-            <a href="settings.html">
-                <span class="nav-icon">⚙</span>
-                <span>Settings</span>
-            </a>
-
-        </nav>
-
-    </header>
+    </div>
 
 
-    <!-- MESSAGES APPLICATION -->
 
-    <main class="messages-page">
+    <!-- =========================================================
+         APP
+    ========================================================== -->
 
-        <div class="messages-shell">
+    <div class="nexa-messages-app">
 
 
-            <!-- LEFT: CONVERSATIONS -->
+        <!-- =====================================================
+             DESKTOP HEADER
+        ====================================================== -->
 
-            <aside
-                id="conversationsPanel"
-                class="conversations-panel"
+        <header class="site-header">
+
+            <div class="header-left">
+
+                <a
+                    href="home.html"
+                    class="nexa-logo"
+                    aria-label="NEXA Home"
+                >
+
+                    <span class="logo-symbol">
+                        N
+                    </span>
+
+                    <span class="logo-text">
+                        NEXA
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- =================================================
+                 MAIN NAVIGATION
+            ================================================== -->
+
+            <nav
+                class="main-nav"
+                aria-label="Main navigation"
             >
 
-                <div class="conversations-top">
+                <a
+                    href="home.html"
+                    class="main-nav-link"
+                >
 
-                    <div class="messages-title-row">
+                    <span
+                        class="nav-icon"
+                        aria-hidden="true"
+                    >
+                        ⌂
+                    </span>
 
-                        <div>
+                    <span class="nav-label">
+                        Home
+                    </span>
 
-                            <h1>
-                                Messages
-                            </h1>
-
-                            <p>
-                                Stay connected
-                            </p>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            id="newMessageButton"
-                            class="new-message-button"
-                            title="New message"
-                        >
-                            +
-                        </button>
-
-                    </div>
+                </a>
 
 
-                    <div class="conversation-search">
+                <a
+                    href="people.html"
+                    class="main-nav-link"
+                >
 
-                        <span class="search-icon">
-                            ⌕
-                        </span>
+                    <span
+                        class="nav-icon"
+                        aria-hidden="true"
+                    >
+                        ◉
+                    </span>
 
-                        <input
-                            type="text"
-                            id="conversationSearch"
-                            placeholder="Search conversations"
-                            autocomplete="off"
-                        >
+                    <span class="nav-label">
+                        People
+                    </span>
 
-                    </div>
+                </a>
+
+
+                <a
+                    href="messages.html"
+                    class="main-nav-link active"
+                    aria-current="page"
+                >
+
+                    <span
+                        class="nav-icon"
+                        aria-hidden="true"
+                    >
+                        ✉
+                    </span>
+
+                    <span class="nav-label">
+                        Messages
+                    </span>
+
+                    <span class="nav-notification-dot"></span>
+
+                </a>
+
+
+                <a
+                    href="profile.html"
+                    class="main-nav-link"
+                >
+
+                    <span
+                        class="nav-icon"
+                        aria-hidden="true"
+                    >
+                        ●
+                    </span>
+
+                    <span class="nav-label">
+                        Profile
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="settings.html"
+                    class="main-nav-link"
+                >
+
+                    <span
+                        class="nav-icon"
+                        aria-hidden="true"
+                    >
+                        ⚙
+                    </span>
+
+                    <span class="nav-label">
+                        Settings
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- =================================================
+                 HEADER RIGHT
+            ================================================== -->
+
+            <div class="header-right">
+
+                <button
+                    type="button"
+                    class="header-glow-button"
+                    aria-label="Notifications"
+                >
+
+                    <span class="header-glow-icon">
+                        ◌
+                    </span>
+
+                </button>
+
+
+                <div class="header-profile-indicator">
+
+                    <span class="header-profile-dot"></span>
 
                 </div>
 
+            </div>
 
-                <div
-                    id="conversationsList"
-                    class="conversations-list"
-                ></div>
-
-            </aside>
+        </header>
 
 
-            <!-- RIGHT: CHAT -->
 
-            <section
-                id="chatSection"
-                class="chat-section"
-            >
 
-                <!-- CHAT HEADER -->
+        <!-- =====================================================
+             MAIN PAGE
+        ====================================================== -->
 
-                <div class="chat-header">
+        <main class="messages-page">
 
-                    <div class="chat-user-info">
 
-                        <button
-                            type="button"
-                            id="backToConversations"
-                            class="mobile-back-button"
-                        >
-                            ←
-                        </button>
+            <div class="messages-shell">
 
-                        <div
-                            id="chatAvatar"
-                            class="chat-avatar"
-                        >
-                            N
+
+                <!-- =================================================
+                     CONVERSATIONS
+                ================================================== -->
+
+                <aside
+                    id="conversationsPanel"
+                    class="conversations-panel"
+                    aria-label="Conversations"
+                >
+
+
+                    <!-- =============================================
+                         SIDEBAR TOP
+                    ============================================== -->
+
+                    <div class="conversations-top">
+
+                        <div class="sidebar-branding">
+
+                            <div class="sidebar-title-area">
+
+                                <span class="sidebar-eyebrow">
+                                    NEXA CONNECT
+                                </span>
+
+                                <h1 class="messages-heading">
+                                    Messages
+                                </h1>
+
+                                <p class="messages-subheading">
+                                    Stay connected
+                                </p>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                id="newMessageButton"
+                                class="new-message-button"
+                                title="New message"
+                                aria-label="New message"
+                            >
+
+                                <span class="new-message-icon">
+                                    +
+                                </span>
+
+                            </button>
+
                         </div>
 
-                        <div class="chat-user-text">
 
-                            <h2 id="chatWith">
-                                Chat
-                            </h2>
+                        <!-- =========================================
+                             SEARCH
+                        ========================================== -->
+
+                        <div
+                            class="conversation-search"
+                            role="search"
+                        >
 
                             <span
-                                id="chatOnlineStatus"
-                                class="chat-online-status"
+                                class="search-icon"
+                                aria-hidden="true"
                             >
-                                NEXA
+                                ⌕
+                            </span>
+
+
+                            <input
+                                type="text"
+                                id="conversationSearch"
+                                placeholder="Search conversations"
+                                autocomplete="off"
+                                aria-label="Search conversations"
+                            >
+
+
+                            <span
+                                class="search-shortcut"
+                                aria-hidden="true"
+                            >
+                                /
+                            </span>
+
+                        </div>
+
+
+                        <!-- =========================================
+                             FILTERS
+                        ========================================== -->
+
+                        <div class="conversation-filters">
+
+                            <button
+                                type="button"
+                                class="conversation-filter active"
+                            >
+                                All
+                            </button>
+
+                            <button
+                                type="button"
+                                class="conversation-filter"
+                            >
+                                Unread
+                            </button>
+
+                            <button
+                                type="button"
+                                class="conversation-filter"
+                            >
+                                Online
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         SECTION HEADING
+                    ================================================== -->
+
+                    <div class="sidebar-section-heading">
+
+                        <span>
+                            Conversations
+                        </span>
+
+                        <span class="sidebar-count">
+                            0
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         FRIENDS / CONVERSATIONS
+                    ================================================== -->
+
+                    <div
+                        id="conversationsList"
+                        class="conversations-list"
+                    ></div>
+
+
+
+                    <!-- =================================================
+                         FOOTER
+                    ================================================== -->
+
+                    <div class="conversations-footer">
+
+                        <div class="sidebar-footer-line"></div>
+
+                        <div class="sidebar-footer-status">
+
+                            <span class="online-status-indicator"></span>
+
+                            <span>
+                                NEXA is online
                             </span>
 
                         </div>
 
                     </div>
 
-
-                    <!-- CHAT ACTIONS -->
-
-                    <div
-                        id="callControls"
-                        class="call-controls"
-                    >
-
-                        <button
-                            type="button"
-                            id="voiceCallButton"
-                            title="Voice call"
-                            class="chat-control"
-                        >
-                            📞
-                        </button>
-
-                        <button
-                            type="button"
-                            id="videoCallButton"
-                            title="Video call"
-                            class="chat-control"
-                        >
-                            📹
-                        </button>
-
-                        <button
-                            type="button"
-                            id="endCallButton"
-                            title="End call"
-                            class="chat-control end-call"
-                            style="display: none;"
-                        >
-                            🔴
-                        </button>
-
-                        <button
-                            type="button"
-                            class="chat-control"
-                            title="More options"
-                        >
-                            ⋯
-                        </button>
-
-                    </div>
-
-                </div>
+                </aside>
 
 
-                <!-- CALL STATUS -->
-
-                <div
-                    id="callStatus"
-                    class="call-status"
-                ></div>
 
 
-                <!-- REMOTE CALL AREA -->
+                <!-- =====================================================
+                     CHAT SECTION
+                ====================================================== -->
 
-                <div
-                    id="remoteCallArea"
-                    class="remote-call-area"
-                    style="display: none;"
+                <section
+                    id="chatSection"
+                    class="chat-section"
+                    aria-label="Chat"
                 >
 
-                    <div class="remote-video-wrapper">
 
-                        <video
-                            id="remoteVideo"
-                            autoplay
-                            playsinline
-                            style="display: none;"
-                        ></video>
+                    <!-- =================================================
+                         CHAT HEADER
+                    ================================================== -->
 
-                        <div
-                            id="remoteVideoName"
-                            class="remote-video-name"
-                        ></div>
-
-                    </div>
-
-                    <audio
-                        id="remoteAudio"
-                        autoplay
-                        playsinline
-                    ></audio>
-
-                </div>
+                    <header class="chat-header">
 
 
-                <!-- MESSAGES -->
-
-                <div
-                    id="messagesContainer"
-                    class="messages-container"
-                ></div>
+                        <div class="chat-user-info">
 
 
-                <!-- MESSAGE COMPOSER -->
-
-                <div class="message-composer-area">
-
-                    <form
-                        id="messageForm"
-                        class="message-form"
-                    >
-
-                        <button
-                            type="button"
-                            class="composer-action"
-                            title="Add emoji"
-                        >
-                            😊
-                        </button>
-
-                        <div class="message-input-wrapper">
-
-                            <input
-                                type="text"
-                                id="messageInput"
-                                placeholder="Message..."
-                                autocomplete="off"
+                            <button
+                                type="button"
+                                id="backToConversations"
+                                class="mobile-back-button"
+                                aria-label="Back to conversations"
                             >
+
+                                <span>
+                                    ←
+                                </span>
+
+                            </button>
+
+
+                            <div
+                                id="chatAvatar"
+                                class="chat-avatar"
+                            >
+
+                                <span class="chat-avatar-letter">
+                                    N
+                                </span>
+
+                                <span class="chat-avatar-online"></span>
+
+                            </div>
+
+
+                            <div class="chat-user-text">
+
+                                <div class="chat-user-name-row">
+
+                                    <h2 id="chatWith">
+                                        Chat
+                                    </h2>
+
+                                    <span class="verified-badge">
+                                        ✓
+                                    </span>
+
+                                </div>
+
+
+                                <div class="chat-status-row">
+
+                                    <span
+                                        id="chatOnlineStatus"
+                                        class="chat-online-status"
+                                    >
+                                        Offline
+                                    </span>
+
+                                    <span class="chat-status-separator">
+                                        •
+                                    </span>
+
+                                    <span class="chat-encryption">
+                                        Private
+                                    </span>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
 
-                        <label
-                            for="mediaInput"
-                            class="composer-action"
-                            title="Attach photo or video"
-                        >
-                            📎
-                        </label>
 
+                        <!-- =================================================
+                             CALL CONTROLS
+                        ================================================== -->
 
-                        <input
-                            type="file"
-                            id="mediaInput"
-                            accept="image/*,video/*"
-                            hidden
+                        <div
+                            id="callControls"
+                            class="call-controls"
                         >
 
+                            <button
+                                type="button"
+                                id="voiceCallButton"
+                                title="Voice call"
+                                class="chat-control"
+                                aria-label="Voice call"
+                            >
+                                📞
+                            </button>
 
-                        <button
-                            type="submit"
-                            class="send-button"
+
+                            <button
+                                type="button"
+                                id="videoCallButton"
+                                title="Video call"
+                                class="chat-control"
+                                aria-label="Video call"
+                            >
+                                📹
+                            </button>
+
+
+                            <button
+                                type="button"
+                                id="endCallButton"
+                                title="End call"
+                                class="chat-control end-call"
+                                aria-label="End call"
+                                style="display:none;"
+                            >
+                                🔴
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="chat-control"
+                                title="More options"
+                                aria-label="More options"
+                            >
+                                ⋯
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="chat-close-button"
+                                title="Close conversation"
+                                aria-label="Close conversation"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                    </header>
+
+
+
+
+                    <!-- =====================================================
+                         CHAT BODY
+                    ====================================================== -->
+
+                    <div class="chat-body">
+
+
+                        <div
+                            id="callStatus"
+                            class="call-status"
+                        ></div>
+
+
+                        <!-- =================================================
+                             REMOTE CALL
+                        ================================================== -->
+
+                        <div
+                            id="remoteCallArea"
+                            class="remote-call-area"
+                            style="display:none;"
                         >
-                            Send
-                        </button>
 
-                    </form>
+                            <div class="remote-call-topbar">
+
+                                <div class="remote-call-label">
+                                    NEXA CALL
+                                </div>
+
+                            </div>
 
 
-                    <!-- VOICE MESSAGE -->
+                            <div class="remote-video-wrapper">
 
-                    <div
-                        id="voiceControls"
-                        class="voice-controls"
-                    >
+                                <video
+                                    id="remoteVideo"
+                                    autoplay
+                                    playsinline
+                                    style="display:none;"
+                                ></video>
 
-                        <button
-                            type="button"
-                            id="recordButton"
-                        >
-                            🎤 Record Voice
-                        </button>
+                                <div
+                                    id="remoteVideoName"
+                                    class="remote-video-name"
+                                ></div>
 
-                        <button
-                            type="button"
-                            id="stopButton"
-                            disabled
-                        >
-                            ⏹ Stop
-                        </button>
+                            </div>
 
-                        <span id="recordingStatus"></span>
+
+                            <audio
+                                id="remoteAudio"
+                                autoplay
+                                playsinline
+                            ></audio>
+
+                        </div>
+
+
+
+
+                        <!-- =================================================
+                             MESSAGES
+                        ================================================== -->
+
+                        <div
+                            id="messagesContainer"
+                            class="messages-container"
+                            aria-live="polite"
+                        ></div>
 
                     </div>
 
 
-                    <!-- LOCATION -->
 
-                    <div
-                        id="locationControls"
-                        class="location-controls"
-                    >
 
-                        <button
-                            type="button"
-                            id="locationButton"
+                    <!-- =====================================================
+                         COMPOSER
+                    ====================================================== -->
+
+                    <div class="message-composer-area">
+
+
+                        <div class="composer-top-line">
+
+                            <span class="composer-private-indicator">
+
+                                <span class="composer-lock">
+                                    ◆
+                                </span>
+
+                                Private conversation
+
+                            </span>
+
+
+                            <span class="composer-status">
+                                NEXA messaging
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             ONE AND ONLY MESSAGE FORM
+                        ================================================== -->
+
+                        <form
+                            id="messageForm"
+                            class="message-form"
                         >
-                            📍 Send Location
-                        </button>
-
-                        <span id="locationStatus"></span>
-
-                    </div>
-
-                </div>
-
-            </section>
 
 
-            <!-- EMPTY CHAT -->
+                            <!-- =================================================
+                                 EMOJI
+                            ================================================== -->
 
-            <section
-                id="emptyChatState"
-                class="empty-chat-state"
-            >
+                            <div class="emoji-picker-wrapper">
 
-                <div class="empty-chat-content">
-
-                    <div class="empty-chat-icon">
-                        💬
-                    </div>
-
-                    <h2>
-                        Your Messages
-                    </h2>
-
-                    <p>
-                        Choose a conversation from the left
-                        or start a new message.
-                    </p>
-
-                    <button
-                        type="button"
-                        id="emptyNewMessageButton"
-                        class="empty-new-message"
-                    >
-                        Send a message
-                    </button>
-
-                </div>
-
-            </section>
-
-        </div>
-
-    </main>
+                                <button
+                                    type="button"
+                                    id="emojiButton"
+                                    class="composer-action"
+                                    title="Emoji"
+                                    aria-label="Emoji"
+                                >
+                                    😊
+                                </button>
 
 
-    <!-- MOBILE BOTTOM NAV -->
+                                <div
+                                    id="emojiPicker"
+                                    class="emoji-picker"
+                                >
 
-    <nav class="mobile-nav">
+                                    <div class="emoji-picker-header">
 
-        <a
-            href="home.html"
-            class="mobile-nav-item"
-        >
-            <span>⌂</span>
-            <small>Home</small>
-        </a>
-
-        <a
-            href="people.html"
-            class="mobile-nav-item"
-        >
-            <span>◉</span>
-            <small>People</small>
-        </a>
-
-        <a
-            href="messages.html"
-            class="mobile-nav-item active"
-        >
-            <span>✉</span>
-            <small>Messages</small>
-        </a>
-
-        <a
-            href="profile.html"
-            class="mobile-nav-item"
-        >
-            <span>●</span>
-            <small>Profile</small>
-        </a>
-
-    </nav>
+                                        <strong>
+                                            Emojis
+                                        </strong>
 
 
-    <!-- INCOMING CALL SCREEN -->
+                                        <input
+                                            type="text"
+                                            id="emojiSearch"
+                                            placeholder="Search emoji..."
+                                            autocomplete="off"
+                                        >
 
-    <div
-        id="incomingCall"
-        class="incoming-call"
-        style="display: none;"
+                                    </div>
+
+
+                                    <div
+                                        id="emojiCategories"
+                                        class="emoji-categories"
+                                    ></div>
+
+
+                                    <div
+                                        id="emojiList"
+                                        class="emoji-list"
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+
+
+
+                            <!-- =================================================
+                                 NORMAL COMPOSER
+                            ================================================== -->
+
+                            <div
+                                id="normalComposer"
+                                class="normal-composer"
+                            >
+
+
+                                <!-- MESSAGE INPUT -->
+
+                                <div class="message-input-wrapper">
+
+                                    <input
+                                        type="text"
+                                        id="messageInput"
+                                        placeholder="Write a message..."
+                                        autocomplete="off"
+                                        aria-label="Message"
+                                    >
+
+                                    <span class="input-command-hint">
+                                        Enter
+                                    </span>
+
+                                </div>
+
+
+
+                                <!-- ATTACHMENT -->
+
+                                <label
+                                    for="mediaInput"
+                                    class="composer-action"
+                                    title="Attach photo or video"
+                                    aria-label="Attach photo or video"
+                                >
+                                    📎
+                                </label>
+
+
+                                <input
+                                    type="file"
+                                    id="mediaInput"
+                                    accept="image/*,video/*"
+                                    hidden
+                                >
+
+
+
+                                <!-- VOICE NOTE -->
+
+                                <button
+                                    type="button"
+                                    id="recordButton"
+                                    class="composer-action voice-record-button"
+                                    title="Record voice note"
+                                    aria-label="Record voice note"
+                                >
+                                    🎤
+                                </button>
+
+
+
+                                <!-- LOCATION -->
+
+                                <div
+                                    id="locationControls"
+                                    class="location-controls"
+                                >
+
+                                    <button
+                                        type="button"
+                                        id="locationButton"
+                                        class="composer-action"
+                                        title="Send location"
+                                        aria-label="Send location"
+                                    >
+                                        📍
+                                    </button>
+
+                                    <span
+                                        id="locationStatus"
+                                        class="location-status"
+                                    ></span>
+
+                                </div>
+
+
+
+                                <!-- SEND -->
+
+                                <button
+                                    type="submit"
+                                    class="send-button"
+                                    aria-label="Send message"
+                                >
+
+                                    <span class="send-button-text">
+                                        Send
+                                    </span>
+
+                                    <span class="send-button-icon">
+                                        ➤
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+
+
+
+                            <!-- =================================================
+                                 VOICE RECORDING MODE
+                                 THIS REPLACES THE TEXT INPUT AREA
+                            ================================================== -->
+
+                              <div
+    id="voiceComposer"
+    class="voice-composer"
+    hidden
+>
+
+    <!-- CANCEL -->
+    <button
+        type="button"
+        id="cancelVoiceButton"
+        class="voice-composer-button voice-cancel-button"
+        title="Cancel voice note"
+        aria-label="Cancel voice note"
     >
+        ✕
+    </button>
+
+
+    <!-- RECORDING / PREVIEW AREA -->
+    <div class="voice-recording-middle">
 
         <div
-            id="incomingCallBox"
-            class="incoming-call-box"
-        >
+            id="voiceWaveform"
+            class="voice-live-wave"
+            aria-label="Voice waveform"
+        ></div>
 
-            <div
-                id="incomingCallTop"
-                class="incoming-call-top"
+
+        <div class="voice-recording-info">
+
+            <span
+                id="recordingStatus"
+                class="recording-status"
             >
+                Recording…
+            </span>
 
-                <span id="incomingCallLabel">
-                    INCOMING CALL
-                </span>
-
-            </div>
-
-
-            <div
-                id="incomingCallAvatar"
-                class="incoming-call-avatar"
+            <span
+                id="voiceDuration"
+                class="voice-live-duration"
             >
-
-                <span id="incomingCallIcon">
-                    📞
-                </span>
-
-            </div>
-
-
-            <h2 id="incomingCallTitle">
-                Incoming Voice Call
-            </h2>
-
-
-            <p id="incomingCaller">
-                Someone is calling you
-            </p>
-
-
-            <p id="incomingCallType">
-                NEXA Call
-            </p>
-
-
-            <div
-                id="incomingCallButtons"
-                class="incoming-call-buttons"
-            >
-
-                <button
-                    type="button"
-                    id="declineCallButton"
-                    class="callAction decline"
-                >
-
-                    <span class="callButtonIcon">
-                        ✕
-                    </span>
-
-                    <span>
-                        Decline
-                    </span>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    id="acceptCallButton"
-                    class="callAction accept"
-                >
-
-                    <span class="callButtonIcon">
-                        ✓
-                    </span>
-
-                    <span>
-                        Accept
-                    </span>
-
-                </button>
-
-            </div>
+                00:00
+            </span>
 
         </div>
 
     </div>
 
 
-    <!-- SOCKET.IO -->
+    <!-- STOP -->
+    <button
+        type="button"
+        id="stopButton"
+        class="voice-composer-button voice-stop-button"
+        title="Finish recording"
+        aria-label="Finish recording"
+    >
+        ✓
+    </button>
 
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+    <!-- PLAY PREVIEW -->
+    <button
+        type="button"
+        id="voicePlayButton"
+        class="voice-composer-button voice-play-button"
+        title="Play voice note"
+        aria-label="Play voice note"
+        disabled
+    >
+        ▶
+    </button>
 
 
-    <!-- NEXA MESSAGES JAVASCRIPT -->
+    <!-- SEND VOICE -->
+    <button
+        type="button"
+        id="sendVoiceButton"
+        class="voice-composer-button voice-send-button"
+        title="Send voice note"
+        aria-label="Send voice note"
+        disabled
+    >
+        ➤
+    </button>
 
-    <script src="messages.js"></script>
+
+    <!-- HIDDEN PREVIEW AUDIO -->
+    <audio
+        id="voicePreview"
+        preload="metadata"
+        style="display:none;"
+    ></audio>
+
+</div>
+
+
+                        </form>
+
+
+                        <!-- =================================================
+                             RECORDING STATUS
+                        ================================================== -->
+
+                        <div
+                            id="recordingStatus"
+                            class="recording-status"
+                        ></div>
+
+                    </div>
+
+                </section>
+
+
+
+
+                <!-- =====================================================
+                     EMPTY CHAT STATE
+                ====================================================== -->
+
+                <section
+                    id="emptyChatState"
+                    class="empty-chat-state"
+                    aria-label="No conversation selected"
+                >
+
+                    <div class="empty-chat-background">
+
+                        <div class="empty-glow empty-glow-one"></div>
+
+                        <div class="empty-glow empty-glow-two"></div>
+
+                        <div class="empty-ring empty-ring-one"></div>
+
+                        <div class="empty-ring empty-ring-two"></div>
+
+                    </div>
+
+
+                    <div class="empty-chat-content">
+
+                        <div class="empty-chat-icon-wrapper">
+
+                            <div class="empty-chat-icon">
+                                💬
+                            </div>
+
+                            <div class="empty-icon-pulse"></div>
+
+                        </div>
+
+
+                        <span class="empty-eyebrow">
+                            NEXA PRIVATE MESSAGING
+                        </span>
+
+
+                        <h2>
+                            Your Messages
+                        </h2>
+
+
+                        <p>
+                            Choose a conversation from the left
+                            or start a new message.
+                        </p>
+
+
+                        <button
+                            type="button"
+                            id="emptyNewMessageButton"
+                            class="empty-new-message"
+                        >
+
+                            <span>
+                                +
+                            </span>
+
+                            <span>
+                                Send a message
+                            </span>
+
+                        </button>
+
+
+                        <div class="empty-trust-row">
+
+                            <div class="empty-trust-item">
+
+                                <span>
+                                    ◈
+                                </span>
+
+                                <span>
+                                    Private
+                                </span>
+
+                            </div>
+
+
+                            <div class="empty-trust-item">
+
+                                <span>
+                                    ●
+                                </span>
+
+                                <span>
+                                    Connected
+                                </span>
+
+                            </div>
+
+
+                            <div class="empty-trust-item">
+
+                                <span>
+                                    ✦
+                                </span>
+
+                                <span>
+                                    NEXA
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+
+
+
+        <!-- =====================================================
+             MOBILE NAV
+        ====================================================== -->
+
+        <nav
+            class="mobile-nav"
+            aria-label="Mobile navigation"
+        >
+
+            <a
+                href="home.html"
+                class="mobile-nav-item"
+            >
+
+                <span class="mobile-nav-icon">
+                    ⌂
+                </span>
+
+                <small>
+                    Home
+                </small>
+
+            </a>
+
+
+            <a
+                href="people.html"
+                class="mobile-nav-item"
+            >
+
+                <span class="mobile-nav-icon">
+                    ◉
+                </span>
+
+                <small>
+                    People
+                </small>
+
+            </a>
+
+
+            <a
+                href="messages.html"
+                class="mobile-nav-item active"
+                aria-current="page"
+            >
+
+                <span class="mobile-nav-icon">
+                    ✉
+                </span>
+
+                <span class="mobile-nav-notification"></span>
+
+                <small>
+                    Messages
+                </small>
+
+            </a>
+
+
+            <a
+                href="profile.html"
+                class="mobile-nav-item"
+            >
+
+                <span class="mobile-nav-icon">
+                    ●
+                </span>
+
+                <small>
+                    Profile
+                </small>
+
+            </a>
+
+        </nav>
+
+
+
+
+        <!-- =====================================================
+             INCOMING CALL
+        ====================================================== -->
+
+        <div
+            id="incomingCall"
+            class="incoming-call"
+            style="display:none;"
+        >
+
+            <div
+                id="incomingCallBox"
+                class="incoming-call-box"
+            >
+
+                <div
+                    id="incomingCallTop"
+                    class="incoming-call-top"
+                >
+
+                    <div class="incoming-call-brand">
+
+                        <span class="incoming-call-brand-mark">
+                            N
+                        </span>
+
+                        <span class="incoming-call-brand-name">
+                            NEXA
+                        </span>
+
+                    </div>
+
+
+                    <span id="incomingCallLabel">
+                        INCOMING CALL
+                    </span>
+
+
+                    <span class="incoming-call-signal">
+                        ●
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="incomingCallAvatar"
+                    class="incoming-call-avatar"
+                >
+
+                    <div class="incoming-avatar-ring ring-one"></div>
+
+                    <div class="incoming-avatar-ring ring-two"></div>
+
+
+                    <div
+                        id="incomingCallIcon"
+                        class="incoming-call-icon"
+                    >
+                        📞
+                    </div>
+
+                </div>
+
+
+                <div class="incoming-call-text">
+
+                    <span class="incoming-call-kicker">
+                        NEXA PRIVATE CALL
+                    </span>
+
+
+                    <h2 id="incomingCallTitle">
+                        Incoming Voice Call
+                    </h2>
+
+
+                    <p id="incomingCaller">
+                        Someone is calling you
+                    </p>
+
+
+                    <p id="incomingCallType">
+                        NEXA Call
+                    </p>
+
+                </div>
+
+
+                <div class="incoming-call-wave">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <div
+                    id="incomingCallButtons"
+                    class="incoming-call-buttons"
+                >
+
+                    <button
+                        type="button"
+                        id="declineCallButton"
+                        class="callAction decline"
+                    >
+
+                        <span class="callButtonIcon">
+                            ✕
+                        </span>
+
+                        <span class="callButtonLabel">
+                            Decline
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="acceptCallButton"
+                        class="callAction accept"
+                    >
+
+                        <span class="callButtonIcon">
+                            ✓
+                        </span>
+
+                        <span class="callButtonLabel">
+                            Accept
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <div class="incoming-call-footer">
+
+                    <span>
+                        NEXA secure communication
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+        <!-- =====================================================
+             MOBILE OVERLAY
+        ====================================================== -->
+
+        <div
+            class="mobile-chat-overlay"
+            aria-hidden="true"
+        ></div>
+
+
+
+
+        <!-- =====================================================
+             TOAST
+        ====================================================== -->
+
+        <div
+            class="nexa-toast-area"
+            aria-live="polite"
+            aria-atomic="true"
+        ></div>
+
+
+
+
+        <!-- =====================================================
+             SCREEN DECORATION
+        ====================================================== -->
+
+        <div class="screen-corner screen-corner-top-left"></div>
+
+        <div class="screen-corner screen-corner-top-right"></div>
+
+        <div class="screen-corner screen-corner-bottom-left"></div>
+
+        <div class="screen-corner screen-corner-bottom-right"></div>
+
+    </div>
+
+
+
+
+    <!-- =========================================================
+         SCRIPTS
+    ========================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+    <script
+        src="supabase.js"
+    ></script>
+
+    <script
+        src="messages.js"
+    ></script>
 
 </body>
 
