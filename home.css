@@ -10207,3 +10207,223 @@ button[data-action="save"] span:first-child {
     ) !important;
     color: #ffffff !important;
 }
+
+
+/* =========================================================
+   NEXA — FINAL DARK POLISH + ANIMATION LAYER
+   Appended last on purpose so it always wins the cascade.
+   Nothing above this line was changed, reordered, or
+   removed — this section only finishes converting the
+   last light/white leftovers to the black+gold theme and
+   layers in some motion.
+========================================================= */
+
+/* ---------------------------------------------------------
+   REMAINING LIGHT/WHITE SURFACES -> DARK
+--------------------------------------------------------- */
+
+.quick-stat {
+    background:
+        linear-gradient(145deg, #14140f, #0a0a08) !important;
+    border-color: rgba(212,175,55,.14) !important;
+    color: #eee2c2 !important;
+}
+.quick-stat strong { color: #f3e6c4 !important; }
+.quick-stat small { color: rgba(238,226,194,.55) !important; }
+
+.home-intro {
+    background:
+        radial-gradient(circle at 85% 0%, rgba(212,175,55,.16), transparent 45%),
+        linear-gradient(120deg, #0d0c09 0%, #17140c 55%, #0a0908 100%) !important;
+    border-color: rgba(212,175,55,.18) !important;
+}
+.home-intro h1 { color: #f3e6c4 !important; }
+.home-intro h1 span {
+    background:
+        linear-gradient(90deg, #f5e6a8, #d4af37, #9b7420) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+.home-intro p { color: rgba(238,226,194,.60) !important; }
+
+.intro-action.secondary {
+    background: rgba(212,175,55,.07) !important;
+    border-color: rgba(212,175,55,.22) !important;
+    color: #eadfbd !important;
+}
+
+#postInput,
+.composer-action {
+    background: #101008 !important;
+    border-color: rgba(212,175,55,.14) !important;
+    color: #eee2c2 !important;
+}
+#postInput::placeholder { color: rgba(238,226,194,.38) !important; }
+.composer-action:hover {
+    background: rgba(212,175,55,.10) !important;
+    color: #f3e6c4 !important;
+}
+
+.feed-filter {
+    background: rgba(255,255,255,.03) !important;
+    border-color: rgba(212,175,55,.14) !important;
+}
+.feed-filter button { color: rgba(238,226,194,.52) !important; }
+.feed-filter .feed-filter-active {
+    background:
+        linear-gradient(135deg, #a27a16, #d4af37) !important;
+    color: #0a0906 !important;
+    box-shadow: 0 0 14px rgba(212,175,55,.30) !important;
+}
+
+.trend-item:hover { background: rgba(212,175,55,.06) !important; }
+.trend-item strong { color: #eee2c2 !important; }
+
+.connection-placeholder {
+    background: rgba(255,255,255,.03) !important;
+    border-color: rgba(212,175,55,.10) !important;
+}
+.connection-placeholder strong { color: #eee2c2 !important; }
+
+.post-menu:hover {
+    background: rgba(212,175,55,.08) !important;
+    color: #f3e6c4 !important;
+}
+
+.media-preview-content { background: #0a0a08 !important; }
+
+.comments-modal-header button,
+.media-preview-header button {
+    background: rgba(255,255,255,.06) !important;
+    color: #eee2c2 !important;
+    border-color: rgba(212,175,55,.14) !important;
+}
+.media-preview-header h2 { color: #f3e6c4 !important; }
+
+.topbar-search,
+.topbar-search input,
+.topbar-search input:focus {
+    background: rgba(255,255,255,.055) !important;
+    color: #f3e6c4 !important;
+    border-color: rgba(212,175,55,.20) !important;
+    box-shadow: none !important;
+}
+.topbar-search input::placeholder { color: rgba(238,226,194,.38) !important; }
+.search-icon { color: rgba(212,175,55,.68) !important; }
+
+.mini-avatar,
+.post-user-avatar {
+    border-color: rgba(212,175,55,.38) !important;
+}
+
+.story-ring img,
+.story-ring video,
+.story-avatar {
+    border-color: #0a0a08 !important;
+}
+
+.reel-viewer-progress span {
+    background:
+        linear-gradient(90deg, #d4af37, #f5e6a8) !important;
+}
+
+
+/* ---------------------------------------------------------
+   MOTION — a little life in the gold
+--------------------------------------------------------- */
+
+@keyframes nexaGoldDrift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.logo,
+.mobile-logo {
+    background-size: 200% auto !important;
+    animation: nexaGoldDrift 6s ease-in-out infinite;
+}
+
+@keyframes nexaCardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.stories-section,
+.create-post,
+.feed-post,
+.reel-card,
+.home-side-card,
+.nexa-side-banner,
+.quick-stat {
+    animation: nexaCardIn .45s cubic-bezier(.2,.7,.3,1) both;
+}
+
+@keyframes nexaGlowPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+    50%      { box-shadow: 0 0 26px 2px rgba(212,175,55,.18); }
+}
+
+.nexa-side-banner {
+    animation:
+        nexaCardIn .45s cubic-bezier(.2,.7,.3,1) both,
+        nexaGlowPulse 4.5s ease-in-out infinite;
+}
+
+.nav-item.active {
+    animation: nexaGlowPulse 3.4s ease-in-out infinite;
+}
+
+.composer-post-button,
+.intro-action.primary,
+.discover-button,
+.empty-feed-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.composer-post-button::after,
+.intro-action.primary::after,
+.discover-button::after,
+.empty-feed-button::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background:
+        linear-gradient(
+            115deg,
+            transparent,
+            rgba(255,255,255,.30),
+            transparent
+        );
+    transform: skewX(-20deg);
+    animation: nexaShine 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes nexaShine {
+    0%   { left: -60%; }
+    45%  { left: 130%; }
+    100% { left: 130%; }
+}
+
+.story-ring {
+    background-size: 200% 200% !important;
+    animation: nexaGoldDrift 5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logo, .mobile-logo,
+    .stories-section, .create-post, .feed-post, .reel-card,
+    .home-side-card, .nexa-side-banner, .quick-stat,
+    .nav-item.active,
+    .composer-post-button::after, .intro-action.primary::after,
+    .discover-button::after, .empty-feed-button::after,
+    .story-ring {
+        animation: none !important;
+    }
+}
