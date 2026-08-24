@@ -1,1405 +1,5 @@
 /* =========================================================
    NEXA PEOPLE
-   Premium people discovery
-========================================================= */
-
-
-/* =========================================================
-   CURRENT USER
-========================================================= */
-
-const currentUser = JSON.parse(
-    localStorage.getItem("nexaCurrentUser")
-);
-
-if (!currentUser) {
-
-    window.location.href = "index.html";
-
-    throw new Error(
-        "No NEXA user is logged in."
-    );
-
-}
-
-
-/* =========================================================
-   API
-========================================================= */
-
-const API_URL = "http://localhost:3000";
-
-
-/* =========================================================
-   ELEMENTS
-========================================================= */
-
-const searchInput =
-    document.getElementById("searchInput");
-
-const clearSearchButton =
-    document.getElementById("clearSearchButton");
-
-const usersList =
-    document.getElementById("usersList");
-
-const emptyPeople =
-    document.getElementById("emptyPeople");
-
-const peopleLoading =
-    document.getElementById("peopleLoading");
-
-const peopleCount =
-    document.getElementById("peopleCount");
-
-const searchStatus =
-    document.getElementById("searchStatus");
-
-const miniAvatar =
-    document.getElementById("miniAvatar");
-
-const logoutButton =
-    document.getElementById("logoutButton");
-
-const notificationArea =
-    document.getElementById("notificationArea");
-
-
-/* =========================================================
-   YOUR PROFILE
-========================================================= */
-
-const myProfileAvatar =
-    document.getElementById("myProfileAvatar");
-
-const myProfileName =
-    document.getElementById("myProfileName");
-
-const myProfileUsername =
-    document.getElementById(
-        "myProfileUsername"
-    );
-
-const myProfileBio =
-    document.getElementById(
-        "myProfileBio"
-    );
-
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let allUsers = [];
-
-let isLoadingUsers = false;
-
-let searchTimer = null;
-
-
-/* =========================================================
-   USER HELPERS
-========================================================= */
-
-function getUserId(user = currentUser) {
-
-    return (
-        user?.id ??
-        user?._id ??
-        user?.userId ??
-        user?.email ??
-        user?.username ??
-        null
-    );
-
-}
-
-
-function getUserName(user) {
-
-    return (
-        user?.name ||
-        user?.username ||
-        user?.email ||
-        "NEXA User"
-    );
-
-}
-
-
-function getUsername(user) {
-
-    return (
-        user?.username ||
-        user?.name ||
-        user?.email ||
-        "nexauser"
-    );
-
-}
-
-
-function getAvatarLetter(user) {
-
-    return (
-        String(
-            getUserName(user)
-        )
-        .trim()
-        .charAt(0)
-        .toUpperCase() || "N"
-    );
-
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        String(value ?? "");
-
-    return div.innerHTML;
-
-}
-
-
-/* =========================================================
-   NOTIFICATION
-========================================================= */
-
-function showNotification(text) {
-
-    if (!notificationArea) {
-        return;
-    }
-
-    const notice =
-        document.createElement("div");
-
-    notice.className =
-        "nexa-notification";
-
-    notice.textContent =
-        text;
-
-    notificationArea.appendChild(
-        notice
-    );
-
-    setTimeout(() => {
-
-        notice.remove();
-
-    }, 3000);
-
-}
-
-
-/* =========================================================
-   DISPLAY MY PROFILE
-========================================================= */
-
-function displayMyProfile() {
-
-    const users =
-        JSON.parse(
-            localStorage.getItem("nexaUsers")
-        ) || [];
-
-
-    const latestUser =
-        users.find(
-            user =>
-                String(
-                    getUserId(user)
-                ) ===
-                String(
-                    getUserId(currentUser)
-                )
-        );
-
-
-    const user =
-        latestUser || currentUser;
-
-
-    /*
-     * Synchronize current user.
-     */
-
-    Object.assign(
-        currentUser,
-        user
-    );
-
-
-    const name =
-        getUserName(currentUser);
-
-    const username =
-        getUsername(currentUser);
-
-    const bio =
-        currentUser.bio ||
-        "No bio yet.";
-
-    const avatar =
-        currentUser.profilePicture ||
-        currentUser.avatar ||
-        currentUser.photo ||
-        currentUser.profileImage ||
-        null;
-
-
-    /* =====================================================
-       MINI AVATAR
-    ===================================================== */
-
-    if (miniAvatar) {
-
-        if (avatar) {
-
-            miniAvatar.innerHTML = `
-                <img
-                    src="${escapeHTML(avatar)}"
-                    alt="${escapeHTML(name)}"
-                >
-            `;
-
-        } else {
-
-            miniAvatar.textContent =
-                getAvatarLetter(currentUser);
-
-        }
-
-    }
-
-
-    /* =====================================================
-       BIG PROFILE AVATAR
-    ===================================================== */
-
-    if (myProfileAvatar) {
-
-        if (avatar) {
-
-            myProfileAvatar.innerHTML = `
-                <img
-                    src="${escapeHTML(avatar)}"
-                    alt="${escapeHTML(name)}"
-                >
-            `;
-
-        } else {
-
-            myProfileAvatar.textContent =
-                getAvatarLetter(currentUser);
-
-        }
-
-    }
-
-
-    /* =====================================================
-       NAME
-    ===================================================== */
-
-    if (myProfileName) {
-
-        myProfileName.textContent =
-            name;
-
-    }
-
-
-    /* =====================================================
-       USERNAME
-    ===================================================== */
-
-    if (myProfileUsername) {
-
-        myProfileUsername.textContent =
-            `@${username}`;
-
-    }
-
-
-    /* =====================================================
-       BIO
-    ===================================================== */
-
-    if (myProfileBio) {
-
-        myProfileBio.textContent =
-            bio;
-
-    }
-
-}
-
-
-/* =========================================================
-   FRIENDS
-========================================================= */
-
-function getCurrentFriends() {
-
-    if (!Array.isArray(currentUser.friends)) {
-
-        currentUser.friends = [];
-
-    }
-
-    return currentUser.friends;
-
-}
-
-
-/* ---------------------------------------------------------
-   CHECK FRIEND
---------------------------------------------------------- */
-
-function isFriend(userId) {
-
-    return getCurrentFriends().some(
-        id =>
-            String(id) ===
-            String(userId)
-    );
-
-}
-
-
-/* ---------------------------------------------------------
-   UPDATE LOCAL FRIEND STATE
---------------------------------------------------------- */
-
-function setLocalFriendState(
-    userId,
-    shouldBeFriend
-) {
-
-    const id =
-        Number(userId);
-
-
-    if (!Number.isFinite(id)) {
-        return;
-    }
-
-
-    const friends =
-        getCurrentFriends();
-
-
-    if (shouldBeFriend) {
-
-        if (
-            !friends.some(
-                friendId =>
-                    String(friendId) ===
-                    String(id)
-            )
-        ) {
-
-            currentUser.friends.push(
-                id
-            );
-
-        }
-
-    } else {
-
-        currentUser.friends =
-            friends.filter(
-                friendId =>
-                    String(friendId) !==
-                    String(id)
-            );
-
-    }
-
-
-    localStorage.setItem(
-        "nexaCurrentUser",
-        JSON.stringify(
-            currentUser
-        )
-    );
-
-}
-
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-function setLoading(loading) {
-
-    isLoadingUsers =
-        loading;
-
-
-    if (peopleLoading) {
-
-        peopleLoading.hidden =
-            !loading;
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD USERS
-========================================================= */
-
-async function getUsers() {
-
-    if (isLoadingUsers) {
-
-        return allUsers;
-
-    }
-
-
-    try {
-
-        setLoading(true);
-
-
-        const response =
-            await fetch(
-                `${API_URL}/api/users`
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Server returned ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (Array.isArray(data)) {
-
-            allUsers =
-                data;
-
-        }
-
-        else if (
-            data &&
-            Array.isArray(data.users)
-        ) {
-
-            allUsers =
-                data.users;
-
-        }
-
-        else {
-
-            allUsers = [];
-
-        }
-
-
-        /*
-         * Find the newest version of the
-         * logged-in user from the server.
-         */
-
-        const serverCurrentUser =
-            allUsers.find(
-                user =>
-                    String(
-                        getUserId(user)
-                    ) ===
-                    String(
-                        getUserId(currentUser)
-                    )
-            );
-
-
-        if (serverCurrentUser) {
-
-            Object.assign(
-                currentUser,
-                serverCurrentUser
-            );
-
-
-            localStorage.setItem(
-                "nexaCurrentUser",
-                JSON.stringify(
-                    currentUser
-                )
-            );
-
-        }
-
-
-        return allUsers;
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "NEXA people error:",
-            error
-        );
-
-
-        showNotification(
-            "Could not connect to NEXA."
-        );
-
-
-        allUsers = [];
-
-
-        return [];
-
-    }
-
-
-    finally {
-
-        setLoading(false);
-
-    }
-
-}
-
-
-/* =========================================================
-   FILTER
-========================================================= */
-
-function filterUsers(search = "") {
-
-    const text =
-        String(search)
-            .trim()
-            .toLowerCase();
-
-
-    const currentId =
-        getUserId();
-
-
-    return allUsers.filter(
-        user => {
-
-            const userId =
-                getUserId(user);
-
-
-            /*
-             * NEVER SHOW YOURSELF
-             */
-
-            if (
-                currentId !== null &&
-                userId !== null &&
-                String(userId) ===
-                String(currentId)
-            ) {
-
-                return false;
-
-            }
-
-
-            /*
-             * NO SEARCH
-             */
-
-            if (!text) {
-
-                return true;
-
-            }
-
-
-            const name =
-                String(
-                    user.name || ""
-                )
-                .toLowerCase();
-
-
-            const username =
-                String(
-                    user.username || ""
-                )
-                .toLowerCase();
-
-
-            const bio =
-                String(
-                    user.bio || ""
-                )
-                .toLowerCase();
-
-
-            return (
-                name.includes(text) ||
-                username.includes(text) ||
-                bio.includes(text)
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   COUNT
-========================================================= */
-
-function updateCount(count) {
-
-    if (!peopleCount) {
-        return;
-    }
-
-
-    peopleCount.textContent =
-        `${count} ${
-            count === 1
-                ? "person"
-                : "people"
-        }`;
-
-}
-
-
-/* =========================================================
-   SEARCH UI
-========================================================= */
-
-function updateSearchUI(
-    search,
-    count
-) {
-
-    const text =
-        String(search).trim();
-
-
-    if (clearSearchButton) {
-
-        clearSearchButton.hidden =
-            !text;
-
-    }
-
-
-    if (!searchStatus) {
-        return;
-    }
-
-
-    if (!text) {
-
-        searchStatus.textContent =
-            "";
-
-        return;
-
-    }
-
-
-    searchStatus.textContent =
-        `${count} result${
-            count === 1
-                ? ""
-                : "s"
-        } for "${text}"`;
-
-}
-
-
-/* =========================================================
-   USER CARD
-========================================================= */
-
-function createUserCard(user) {
-
-    const userId =
-        getUserId(user);
-
-
-    const name =
-        getUserName(user);
-
-
-    const username =
-        getUsername(user);
-
-
-    const bio =
-        user.bio ||
-        "No bio yet.";
-
-
-    const friend =
-        isFriend(userId);
-
-
-    const avatar =
-        user.profilePicture ||
-        user.avatar ||
-        user.photo ||
-        user.profileImage ||
-        null;
-
-
-    const card =
-        document.createElement("article");
-
-
-    card.className =
-        "people-user-card";
-
-
-    card.dataset.userId =
-        String(userId);
-
-
-    const avatarHTML =
-        avatar
-
-            ? `
-                <img
-                    src="${escapeHTML(avatar)}"
-                    alt="${escapeHTML(name)}"
-                >
-              `
-
-            : escapeHTML(
-                getAvatarLetter(user)
-            );
-
-
-    card.innerHTML = `
-
-        <div class="people-user-main">
-
-            <div class="people-user-avatar">
-
-                ${avatarHTML}
-
-            </div>
-
-
-            <div class="people-user-info">
-
-                <h3>
-                    ${escapeHTML(name)}
-                </h3>
-
-
-                <span class="people-username">
-                    @${escapeHTML(username)}
-                </span>
-
-
-                <p>
-                    ${escapeHTML(bio)}
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="people-user-actions">
-
-            <button
-                type="button"
-                class="friendButton ${
-                    friend
-                        ? "is-friend"
-                        : ""
-                }"
-                data-action="friend"
-                data-user-id="${escapeHTML(
-                    String(userId)
-                )}"
-            >
-
-                ${
-                    friend
-                        ? "✓ Friends"
-                        : "Add Friend"
-                }
-
-            </button>
-
-
-            <button
-                type="button"
-                class="messageButton"
-                data-action="message"
-                data-user-id="${escapeHTML(
-                    String(userId)
-                )}"
-            >
-                Message
-            </button>
-
-        </div>
-
-    `;
-
-
-    return card;
-
-}
-
-
-/* =========================================================
-   RENDER
-========================================================= */
-
-function renderUsers(search = "") {
-
-    if (!usersList) {
-        return;
-    }
-
-
-    const results =
-        filterUsers(search);
-
-
-    usersList.innerHTML =
-        "";
-
-
-    updateCount(
-        results.length
-    );
-
-
-    updateSearchUI(
-        search,
-        results.length
-    );
-
-
-    if (emptyPeople) {
-
-        emptyPeople.hidden =
-            results.length !== 0;
-
-    }
-
-
-    if (results.length === 0) {
-
-        return;
-
-    }
-
-
-    const fragment =
-        document.createDocumentFragment();
-
-
-    results.forEach(
-        user => {
-
-            fragment.appendChild(
-                createUserCard(user)
-            );
-
-        }
-    );
-
-
-    usersList.appendChild(
-        fragment
-    );
-
-}
-
-
-/* =========================================================
-   UPDATE FRIEND ON SERVER
-========================================================= */
-
-async function updateFriendOnServer(
-    userId,
-    action
-) {
-
-    const currentId =
-        getUserId();
-
-
-    if (
-        currentId === null
-    ) {
-
-        throw new Error(
-            "Current user ID is missing."
-        );
-
-    }
-
-
-    const response =
-        await fetch(
-            `${API_URL}/api/users/${encodeURIComponent(
-                currentId
-            )}/friends`,
-            {
-
-                method: "PUT",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        friendId:
-                            Number(
-                                userId
-                            ),
-
-                        action
-
-                    })
-
-            }
-        );
-
-
-    const data =
-        await response.json()
-            .catch(
-                () => ({})
-            );
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            data.message ||
-            `Server returned ${response.status}`
-        );
-
-    }
-
-
-    return data;
-
-}
-
-
-/* =========================================================
-   TOGGLE FRIEND
-========================================================= */
-
-async function toggleFriend(userId) {
-
-    const alreadyFriend =
-        isFriend(userId);
-
-
-    const action =
-        alreadyFriend
-            ? "remove"
-            : "add";
-
-
-    /*
-     * Optimistic UI:
-     * update immediately.
-     */
-
-    setLocalFriendState(
-        userId,
-        !alreadyFriend
-    );
-
-
-    renderUsers(
-        searchInput
-            ? searchInput.value
-            : ""
-    );
-
-
-    try {
-
-        const result =
-            await updateFriendOnServer(
-                userId,
-                action
-            );
-
-
-        /*
-         * The server returns the
-         * updated current user.
-         */
-
-        if (
-            result &&
-            result.user
-        ) {
-
-            Object.assign(
-                currentUser,
-                result.user
-            );
-
-        }
-
-
-        /*
-         * Save latest current user.
-         */
-
-        localStorage.setItem(
-            "nexaCurrentUser",
-            JSON.stringify(
-                currentUser
-            )
-        );
-
-
-        /*
-         * Also update the matching
-         * users in the local list.
-         */
-
-        if (
-            result &&
-            result.friend
-        ) {
-
-            const friendIndex =
-                allUsers.findIndex(
-                    user =>
-                        String(
-                            getUserId(user)
-                        ) ===
-                        String(
-                            getUserId(
-                                result.friend
-                            )
-                        )
-                );
-
-
-            if (
-                friendIndex !== -1
-            ) {
-
-                allUsers[
-                    friendIndex
-                ] =
-                    result.friend;
-
-            }
-
-        }
-
-
-        renderUsers(
-            searchInput
-                ? searchInput.value
-                : ""
-        );
-
-
-        showNotification(
-            action === "add"
-                ? "Friend added."
-                : "Friend removed."
-        );
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "NEXA friend update error:",
-            error
-        );
-
-
-        /*
-         * Roll back optimistic UI.
-         */
-
-        setLocalFriendState(
-            userId,
-            alreadyFriend
-        );
-
-
-        renderUsers(
-            searchInput
-                ? searchInput.value
-                : ""
-        );
-
-
-        showNotification(
-            error.message ||
-            "Could not update your friends."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   BUTTON ACTIONS
-========================================================= */
-
-if (usersList) {
-
-    usersList.addEventListener(
-        "click",
-        async event => {
-
-            const button =
-                event.target.closest(
-                    "[data-action]"
-                );
-
-
-            if (!button) {
-                return;
-            }
-
-
-            const action =
-                button.dataset.action;
-
-
-            const userId =
-                button.dataset.userId;
-
-
-            if (!userId) {
-                return;
-            }
-
-
-            if (
-                action === "friend"
-            ) {
-
-                if (
-                    button.disabled
-                ) {
-                    return;
-                }
-
-
-                button.disabled =
-                    true;
-
-
-                try {
-
-                    await toggleFriend(
-                        userId
-                    );
-
-                }
-
-                finally {
-
-                    /*
-                     * The card may have been
-                     * re-rendered, so this is
-                     * harmless.
-                     */
-
-                    button.disabled =
-                        false;
-
-                }
-
-
-                return;
-
-            }
-
-
-            if (
-                action === "message"
-            ) {
-
-                window.location.href =
-                    `messages.html?user=${encodeURIComponent(
-                        userId
-                    )}`;
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-if (searchInput) {
-
-    searchInput.addEventListener(
-        "input",
-        function () {
-
-            const value =
-                this.value;
-
-
-            clearTimeout(
-                searchTimer
-            );
-
-
-            searchTimer =
-                setTimeout(
-                    () => {
-
-                        renderUsers(
-                            value
-                        );
-
-                    },
-                    100
-                );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CLEAR SEARCH
-========================================================= */
-
-if (clearSearchButton) {
-
-    clearSearchButton.addEventListener(
-        "click",
-        () => {
-
-            if (!searchInput) {
-                return;
-            }
-
-
-            searchInput.value =
-                "";
-
-
-            searchInput.focus();
-
-
-            renderUsers("");
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-if (logoutButton) {
-
-    logoutButton.addEventListener(
-        "click",
-        () => {
-
-            localStorage.removeItem(
-                "nexaCurrentUser"
-            );
-
-
-            window.location.href =
-                "index.html";
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   INITIALIZE
-========================================================= */
-
-async function initializePeople() {
-
-    displayMyProfile();
-
-
-    await getUsers();
-
-
-    /*
-     * Refresh profile information after
-     * receiving the latest server users.
-     */
-
-    displayMyProfile();
-
-
-    renderUsers(
-        searchInput
-            ? searchInput.value
-            : ""
-    );
-
-}
-
-
-initializePeople();/* =========================================================
-   NEXA PEOPLE
    Real server-connected people discovery
 ========================================================= */
 
@@ -1427,6 +27,9 @@ const searchInput =
 
 const clearSearchButton =
     document.getElementById("clearSearchButton");
+
+const searchPeopleButton =
+    document.getElementById("searchPeopleButton");
 
 const usersList =
     document.getElementById("usersList");
@@ -1638,6 +241,7 @@ function showNotification(text) {
 function getProfileImage(user) {
 
     return (
+        user?.profile_picture ||
         user?.profilePicture ||
         user?.avatar ||
         user?.photo ||
@@ -1756,71 +360,70 @@ async function loadCurrentUser() {
     }
 
 
-    const response =
-        await fetch(
-            `${API_URL}/api/users`
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("profiles")
+                .select("*")
+                .eq(
+                    "id",
+                    userId
+                )
+                .single();
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (!data) {
+
+            throw new Error(
+                "Your NEXA profile was not found."
+            );
+        }
+
+
+        currentUser = {
+
+            ...currentUser,
+
+            ...data,
+
+            profilePicture:
+                data.profile_picture ||
+                ""
+        };
+
+
+        localStorage.setItem(
+            "nexaCurrentUser",
+            JSON.stringify(
+                currentUser
+            )
         );
 
 
-    if (!response.ok) {
+        displayMyProfile();
 
-        throw new Error(
-            `Server returned ${response.status}`
+
+        return currentUser;
+
+
+    } catch (error) {
+
+        console.error(
+            "NEXA People current user Supabase error:",
+            error
         );
+
+        throw error;
     }
-
-
-    const data =
-        await response.json();
-
-
-    const users =
-        Array.isArray(data)
-            ? data
-            : Array.isArray(data.users)
-                ? data.users
-                : [];
-
-
-    const serverUser =
-        users.find(
-            user =>
-                String(
-                    getUserId(user)
-                ) ===
-                String(userId)
-        );
-
-
-    if (!serverUser) {
-
-        throw new Error(
-            "Logged-in user was not found on the server."
-        );
-    }
-
-
-    /*
-     * Replace the local copy with
-     * the real server copy.
-     */
-
-    currentUser =
-        serverUser;
-
-
-    localStorage.setItem(
-        "nexaCurrentUser",
-        JSON.stringify(
-            currentUser
-        )
-    );
-
-
-    displayMyProfile();
-
-
-    return currentUser;
 }
 
 
@@ -1881,72 +484,65 @@ async function getUsers() {
         return allUsers;
     }
 
-
     try {
 
         setLoading(true);
 
+        const {
+            data,
+            error
+        } =
+            await nexaSupabase
+                .from("profiles")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                );
 
-        const response =
-            await fetch(
-                `${API_URL}/api/users`
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Server returned ${response.status}`
-            );
+        if (error) {
+            throw error;
         }
 
-
-        const data =
-            await response.json();
-
-
-        if (Array.isArray(data)) {
-
-            allUsers =
-                data;
-
-        } else if (
-            data &&
-            Array.isArray(data.users)
-        ) {
-
-            allUsers =
-                data.users;
-
-        } else {
-
-            allUsers = [];
-        }
+        allUsers =
+            Array.isArray(data)
+                ? data
+                : [];
 
 
-        /*
-         * Update current user from
-         * the same server response.
-         */
+        /* -------------------------------------------------
+           FIND CURRENT USER
+        ------------------------------------------------- */
 
         const currentId =
             getUserId(currentUser);
 
-
-        const freshCurrentUser =
+        const serverCurrentUser =
             allUsers.find(
                 user =>
                     String(
-                        getUserId(user)
+                        user.id
                     ) ===
-                    String(currentId)
+                    String(
+                        currentId
+                    )
             );
 
 
-        if (freshCurrentUser) {
+        if (serverCurrentUser) {
 
-            currentUser =
-                freshCurrentUser;
+            currentUser = {
+
+                ...currentUser,
+
+                ...serverCurrentUser,
+
+                profilePicture:
+                    serverCurrentUser.profile_picture ||
+                    ""
+            };
 
 
             localStorage.setItem(
@@ -1956,9 +552,14 @@ async function getUsers() {
                 )
             );
 
-
             displayMyProfile();
         }
+
+
+        console.log(
+            "NEXA People loaded from Supabase:",
+            allUsers.length
+        );
 
 
         return allUsers;
@@ -1966,17 +567,15 @@ async function getUsers() {
     } catch (error) {
 
         console.error(
-            "NEXA People error:",
+            "NEXA People Supabase error:",
             error
         );
 
+        allUsers = [];
 
         showNotification(
-            "Could not load people from NEXA."
+            "Could not load NEXA people."
         );
-
-
-        allUsers = [];
 
         return [];
 
@@ -2333,16 +932,13 @@ function renderUsers(
 
 
 /* =========================================================
-   SAVE FRIENDS
-========================================================= */
+   SAVE FRIENDS TO SUPABASE
+   ========================================================= */
 
-async function saveFriendsToServer(
-    friendIds
-) {
+async function saveFriendsToServer(friendIds) {
 
     const currentId =
         getUserId(currentUser);
-
 
     if (!currentId) {
 
@@ -2352,115 +948,294 @@ async function saveFriendsToServer(
     }
 
 
-    const response =
-        await fetch(
-            `${API_URL}/api/users/${encodeURIComponent(
+    const cleanFriends =
+        Array.from(
+            new Set(
+                (Array.isArray(friendIds)
+                    ? friendIds
+                    : []
+                )
+                .map(id => String(id))
+                .filter(
+                    id =>
+                        id !==
+                        String(currentId)
+                )
+            )
+        );
+
+
+    const {
+        data,
+        error
+    } =
+        await nexaSupabase
+            .from("profiles")
+            .update({
+                friends:
+                    cleanFriends
+            })
+            .eq(
+                "id",
                 currentId
-            )}/friends`,
-            {
-
-                method: "PUT",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:
-                    JSON.stringify({
-                        friendIds:
-                            friendIds
-                    })
-            }
-        );
+            )
+            .select("*")
+            .single();
 
 
-    if (!response.ok) {
-
-        const text =
-            await response.text();
-
-
-        throw new Error(
-            text ||
-            `Server returned ${response.status}`
-        );
+    if (error) {
+        throw error;
     }
 
 
-    return response.json();
+    return {
+        success: true,
+        user: data
+    };
 }
-
 
 /* =========================================================
    TOGGLE FRIEND
-========================================================= */
+   Supabase-backed
+   Mutual friendship
+   ========================================================= */
 
-async function toggleFriend(
-    userId
-) {
+async function toggleFriend(userId) {
 
-    const originalFriends =
+    const currentId =
+        String(
+            getUserId(currentUser)
+        );
+
+    const friendId =
+        String(userId);
+
+
+    if (!currentId || !friendId) {
+        return;
+    }
+
+
+    if (currentId === friendId) {
+
+        showNotification(
+            "You cannot add yourself."
+        );
+
+        return;
+    }
+
+
+    const alreadyFriend =
+        isFriend(friendId);
+
+
+    const originalCurrentFriends =
         [
             ...getCurrentFriends()
         ];
 
 
-    const alreadyFriend =
-        isFriend(userId);
-
-
-    if (alreadyFriend) {
-
-        currentUser.friends =
-            getCurrentFriends()
-                .filter(
-                    id =>
-                        String(id) !==
-                        String(userId)
-                );
-
-    } else {
-
-        currentUser.friends = [
-            ...getCurrentFriends(),
-            Number(userId)
-        ];
-    }
-
-
-    /*
-     * Update screen immediately.
-     */
-
-    renderUsers(
-        searchInput
-            ? searchInput.value
-            : ""
-    );
-
-
     try {
 
-        const result =
-            await saveFriendsToServer(
-                currentUser.friends
+        /* =================================================
+           LOAD BOTH PROFILES
+        ================================================= */
+
+        const {
+            data: profiles,
+            error: profilesError
+        } =
+            await nexaSupabase
+                .from("profiles")
+                .select(
+                    "id, friends"
+                )
+                .in(
+                    "id",
+                    [
+                        currentId,
+                        friendId
+                    ]
+                );
+
+
+        if (profilesError) {
+            throw profilesError;
+        }
+
+
+        const currentProfile =
+            profiles?.find(
+                profile =>
+                    String(profile.id) ===
+                    currentId
             );
 
 
-        /*
-         * Server returns the
-         * authoritative user.
-         */
+        const friendProfile =
+            profiles?.find(
+                profile =>
+                    String(profile.id) ===
+                    friendId
+            );
+
 
         if (
-            result &&
-            result.user
+            !currentProfile ||
+            !friendProfile
         ) {
 
-            currentUser =
-                result.user;
+            throw new Error(
+                "Could not find both profiles."
+            );
         }
+
+
+        let currentFriends =
+            Array.isArray(
+                currentProfile.friends
+            )
+                ? [
+                    ...currentProfile.friends
+                ]
+                : [];
+
+
+        let friendFriends =
+            Array.isArray(
+                friendProfile.friends
+            )
+                ? [
+                    ...friendProfile.friends
+                ]
+                : [];
+
+
+        /* =================================================
+           ADD OR REMOVE
+        ================================================= */
+
+        if (alreadyFriend) {
+
+            currentFriends =
+                currentFriends.filter(
+                    id =>
+                        String(id) !==
+                        friendId
+                );
+
+
+            friendFriends =
+                friendFriends.filter(
+                    id =>
+                        String(id) !==
+                        currentId
+                );
+
+        } else {
+
+            if (
+                !currentFriends.some(
+                    id =>
+                        String(id) ===
+                        friendId
+                )
+            ) {
+
+                currentFriends.push(
+                    friendId
+                );
+            }
+
+
+            if (
+                !friendFriends.some(
+                    id =>
+                        String(id) ===
+                        currentId
+                )
+            ) {
+
+                friendFriends.push(
+                    currentId
+                );
+            }
+        }
+
+
+        /* =================================================
+           SAVE CURRENT USER
+        ================================================= */
+
+        const {
+            data: updatedCurrent,
+            error: currentError
+        } =
+            await nexaSupabase
+                .from("profiles")
+                .update({
+
+                    friends:
+                        currentFriends
+
+                })
+                .eq(
+                    "id",
+                    currentId
+                )
+                .select("*")
+                .single();
+
+
+        if (currentError) {
+            throw currentError;
+        }
+
+
+        /* =================================================
+           SAVE FRIEND
+        ================================================= */
+
+        const {
+            data: updatedFriend,
+            error: friendError
+        } =
+            await nexaSupabase
+                .from("profiles")
+                .update({
+
+                    friends:
+                        friendFriends
+
+                })
+                .eq(
+                    "id",
+                    friendId
+                )
+                .select("*")
+                .single();
+
+
+        if (friendError) {
+            throw friendError;
+        }
+
+
+        /* =================================================
+           UPDATE LOCAL CURRENT USER
+        ================================================= */
+
+        currentUser =
+            {
+                ...currentUser,
+
+                ...updatedCurrent,
+
+                profilePicture:
+                    updatedCurrent.profile_picture ||
+                    ""
+            };
 
 
         localStorage.setItem(
@@ -2469,6 +1244,38 @@ async function toggleFriend(
                 currentUser
             )
         );
+
+
+        /* =================================================
+           UPDATE LOCAL USER LIST
+        ================================================= */
+
+        const friendIndex =
+            allUsers.findIndex(
+                user =>
+                    String(
+                        getUserId(user)
+                    ) ===
+                    friendId
+            );
+
+
+        if (
+            friendIndex !==
+            -1
+        ) {
+
+            allUsers[
+                friendIndex
+            ] =
+                {
+                    ...allUsers[
+                        friendIndex
+                    ],
+
+                    ...updatedFriend
+                };
+        }
 
 
         displayMyProfile();
@@ -2487,20 +1294,20 @@ async function toggleFriend(
                 : "Friend added."
         );
 
+
     } catch (error) {
 
         console.error(
-            "Friend update error:",
-            error
+            "NEXA Supabase friend update error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
         );
 
 
-        /*
-         * Roll back.
-         */
-
         currentUser.friends =
-            originalFriends;
+            originalCurrentFriends;
 
 
         localStorage.setItem(
@@ -2595,6 +1402,26 @@ if (usersList) {
     );
 }
 
+/* =========================================================
+   SEARCH BUTTON
+   ========================================================= */
+
+if (searchPeopleButton) {
+
+    searchPeopleButton.addEventListener(
+        "click",
+        () => {
+
+            const value =
+                searchInput
+                    ? searchInput.value.trim()
+                    : "";
+
+            renderUsers(value);
+
+        }
+    );
+}
 
 /* =========================================================
    SEARCH
@@ -2626,6 +1453,26 @@ if (searchInput) {
                     },
                     120
                 );
+        }
+    );
+}
+
+if (searchInput) {
+
+    searchInput.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                renderUsers(
+                    searchInput.value.trim()
+                );
+            }
         }
     );
 }
