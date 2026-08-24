@@ -98,7 +98,7 @@ const storyViewerContent =
 
 const closeStoryViewer =
     document.getElementById("closeStoryViewer");
-    const storyViewerLike =
+const storyViewerLike =
     document.getElementById("storyViewerLike");
 
 const storyViewerLikes =
@@ -267,12 +267,72 @@ function getUsername() {
 function getUserAvatar() {
 
     return (
+        currentUser.profile_picture ||
         currentUser.profilePicture ||
         currentUser.profileImage ||
         currentUser.avatar ||
         currentUser.image ||
         ""
     );
+}
+
+async function loadCurrentProfileForHome() {
+
+    try {
+
+        const {
+            data,
+            error
+        } = await nexaSupabase
+            .from("profiles")
+            .select(`
+                id,
+                name,
+                username,
+                profile_picture
+            `)
+            .eq(
+                "id",
+                String(getUserId())
+            )
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data) {
+            return;
+        }
+
+        currentUser.name =
+            data.name ||
+            currentUser.name;
+
+        currentUser.username =
+            data.username ||
+            currentUser.username;
+
+        currentUser.profile_picture =
+            data.profile_picture ||
+            "";
+
+        currentUser.profilePicture =
+            data.profile_picture ||
+            "";
+
+        localStorage.setItem(
+            "nexaCurrentUser",
+            JSON.stringify(currentUser)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "NEXA current profile refresh error:",
+            error
+        );
+    }
 }
 
 
@@ -458,43 +518,54 @@ function showNotification(text) {
 
 function updateHomeAvatars() {
 
+    const username =
+        getUsername();
+
+    const avatar =
+        getUserAvatar();
+
     const letter =
-        getAvatarLetter(
-            getUsername()
-        );
+        getAvatarLetter(username);
 
     [
         miniAvatar,
         postAvatar,
         storyAvatar
-    ].forEach(
-        element => {
+    ].forEach(element => {
 
-            if (!element) {
-                return;
-            }
-
-            const avatar =
-                getUserAvatar();
-
-            if (avatar) {
-
-                element.innerHTML = `
-                    <img
-                        src="${escapeHTML(avatar)}"
-                        alt="${escapeHTML(
-                            getUsername()
-                        )}"
-                    >
-                `;
-
-            } else {
-
-                element.textContent =
-                    letter;
-            }
+        if (!element) {
+            return;
         }
-    );
+
+        if (avatar) {
+
+            element.innerHTML = `
+                <img
+                    src="${escapeHTML(
+                getMediaURL(avatar)
+            )}"
+                    alt="${escapeHTML(username)}"
+                    loading="lazy"
+                >
+            `;
+
+            element.classList.add(
+                "has-avatar"
+            );
+
+        } else {
+
+            element.innerHTML = `
+                <span>
+                    ${escapeHTML(letter)}
+                </span>
+            `;
+
+            element.classList.remove(
+                "has-avatar"
+            );
+        }
+    });
 }
 
 function formatEngagementCount(number) {
@@ -573,9 +644,9 @@ function getLikesCount(post) {
             : Number(post.likes || 0);
 
     return formatEngagementCount(
-    Number(post.demoLikes || 0) +
-    realLikes
-);
+        Number(post.demoLikes || 0) +
+        realLikes
+    );
 }
 
 
@@ -673,6 +744,60 @@ async function loadPosts() {
 
 
         /* -----------------------------------------------------
+           LOAD CURRENT AUTHOR PROFILES
+        ----------------------------------------------------- */
+
+        const authorIds = [
+            ...new Set(
+                (postData || [])
+                    .map(post =>
+                        post.author_id
+                            ? String(post.author_id)
+                            : null
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        let profileMap = new Map();
+
+
+        if (authorIds.length) {
+
+            const {
+                data: profileData,
+                error: profileError
+            } = await nexaSupabase
+                .from("profiles")
+                .select(`
+                    id,
+                    name,
+                    username,
+                    profile_picture
+                `)
+                .in(
+                    "id",
+                    authorIds
+                );
+
+            if (profileError) {
+                throw profileError;
+            }
+
+            (profileData || []).forEach(
+                profile => {
+
+                    profileMap.set(
+                        String(profile.id),
+                        profile
+                    );
+                }
+            );
+        }
+
+
+        /* -----------------------------------------------------
            GROUP LIKES BY POST
         ----------------------------------------------------- */
 
@@ -688,19 +813,13 @@ async function loadPosts() {
                     );
 
                 if (
-                    !likesByPost[
-                        postId
-                    ]
+                    !likesByPost[postId]
                 ) {
 
-                    likesByPost[
-                        postId
-                    ] = [];
+                    likesByPost[postId] = [];
                 }
 
-                likesByPost[
-                    postId
-                ].push(
+                likesByPost[postId].push(
                     String(
                         like.user_id
                     )
@@ -722,20 +841,34 @@ async function loadPosts() {
                             post.id
                         );
 
+                    const authorProfile =
+                        profileMap.get(
+                            String(
+                                post.author_id
+                            )
+                        );
+
                     return {
 
-
                         demoLikes:
-                            Number(post.demo_likes || 0),
+                            Number(
+                                post.demo_likes || 0
+                            ),
 
                         demoComments:
-                             Number(post.demo_comments || 0),
+                            Number(
+                                post.demo_comments || 0
+                            ),
 
                         demoShares:
-                             Number(post.demo_shares || 0),
+                            Number(
+                                post.demo_shares || 0
+                            ),
 
                         demoSaves:
-                             Number(post.demo_saves || 0),
+                            Number(
+                                post.demo_saves || 0
+                            ),
 
                         id:
                             post.id,
@@ -747,10 +880,13 @@ async function loadPosts() {
                             post.author_id,
 
                         authorName:
-                            post.author_name,
+                            authorProfile?.name ||
+                            authorProfile?.username ||
+                            post.author_name ||
+                            "NEXA User",
 
                         authorAvatar:
-                            post.author_avatar ||
+                            authorProfile?.profile_picture ||
                             "",
 
                         text:
@@ -766,22 +902,27 @@ async function loadPosts() {
                             "",
 
                         likes:
-                            likesByPost[
-                                postId
-                            ] || [],
+                            likesByPost[postId] ||
+                            [],
 
-             comments:
-    Array.isArray(post.comments)
-        ? post.comments
-        : [],
+                        comments:
+                            Array.isArray(
+                                post.comments
+                            )
+                                ? post.comments
+                                : [],
 
-shares:
-    Number(post.shares || 0),
+                        shares:
+                            Number(
+                                post.shares || 0
+                            ),
 
-savedBy:
-    Array.isArray(post.saved_by)
-        ? post.saved_by
-        : [],
+                        savedBy:
+                            Array.isArray(
+                                post.saved_by
+                            )
+                                ? post.saved_by
+                                : []
                     };
                 }
             );
@@ -1040,60 +1181,46 @@ function renderReel(post) {
 
             <div class="post-author">
 
-                <div class="post-user-avatar">
+        <div class="post-user-avatar">
 
-                    ${
-                        post.authorAvatar &&
-                        (
-                            String(
-                                post.authorAvatar
-                            ).startsWith(
-                                "http"
-                            ) ||
-                            String(
-                                post.authorAvatar
-                            ).startsWith(
-                                "/"
-                            )
-                        )
-                            ? `
-                                <img
-                                    src="${escapeHTML(
-                                        getMediaURL(
-                                            post.authorAvatar
-                                        )
-                                    )}"
-                                    alt="${escapeHTML(
-                                        post.authorName ||
-                                        "NEXA User"
-                                    )}"
-                                >
-                            `
-                            : escapeHTML(
-                                post.authorAvatar ||
-                                getAvatarLetter(
-                                    post.authorName
-                                )
-                            )
-                    }
+    ${post.authorAvatar
+            ? `
+                <img
+                    src="${escapeHTML(
+                post.authorAvatar
+            )}"
+                    alt="${escapeHTML(
+                post.authorName ||
+                "NEXA User"
+            )}"
+                >
+              `
+            : `
+                ${escapeHTML(
+                getAvatarLetter(
+                    post.authorName
+                )
+            )}
+              `
+        }
 
-                </div>
+</div>
 
                 <div>
 
                     <h3>
                         ${escapeHTML(
-                            post.authorName ||
-                            "NEXA User"
-                        )}
+            post.authorName ||
+            "NEXA User"
+        )}
                     </h3>
 
                     <span>
                         ${escapeHTML(
-                            timeAgo(
-                                post.createdAt
-                            )
-                        )}
+            timeAgo(
+                post.createdAt
+            )
+        )}
                     </span>
 
                 </div>
@@ -1116,8 +1243,8 @@ function renderReel(post) {
             <video
                 class="reel-player"
                 src="${escapeHTML(
-                    mediaURL
-                )}"
+            mediaURL
+        )}"
                 loop
                 muted
                 playsinline
@@ -1138,23 +1265,22 @@ function renderReel(post) {
 
                 <div class="reel-caption">
 
-                    ${
-                        post.text
-                            ? `
+                    ${post.text
+            ? `
                                 <h3>
                                     ${escapeHTML(
-                                        post.text
-                                    )}
+                post.text
+            )}
                                 </h3>
                             `
-                            : ""
-                    }
+            : ""
+        }
 
                     <p>
                         @${escapeHTML(
-                            post.authorName ||
-                            "NEXA"
-                        )}
+            post.authorName ||
+            "NEXA"
+        )}
                     </p>
 
                 </div>
@@ -1166,32 +1292,30 @@ function renderReel(post) {
                         type="button"
                         class="
                             reel-action
-                            ${
-                                liked
-                                    ? "liked"
-                                    : ""
-                            }
+                            ${liked
+            ? "liked"
+            : ""
+        }
                         "
                         data-action="like"
                         data-id="${escapeHTML(
-                            post.id
-                        )}"
+            post.id
+        )}"
                     >
 
                         <span
                             class="reel-action-icon"
                         >
-                            ${
-                                liked
-                                    ? "♥"
-                                    : "♡"
-                            }
+                            ${liked
+            ? "♥"
+            : "♡"
+        }
                         </span>
 
                         <span>
                             ${getLikesCount(
-                                post
-                            )}
+            post
+        )}
                         </span>
 
                     </button>
@@ -1202,8 +1326,8 @@ function renderReel(post) {
                         class="reel-action"
                         data-action="comment"
                         data-id="${escapeHTML(
-                            post.id
-                        )}"
+            post.id
+        )}"
                     >
 
                         <span
@@ -1214,8 +1338,8 @@ function renderReel(post) {
 
                         <span>
                             ${getCommentsCount(
-                                post
-                            )}
+            post
+        )}
                         </span>
 
                     </button>
@@ -1226,8 +1350,8 @@ function renderReel(post) {
                         class="reel-action"
                         data-action="share"
                         data-id="${escapeHTML(
-                            post.id
-                        )}"
+            post.id
+        )}"
                     >
 
                         <span
@@ -1238,8 +1362,8 @@ function renderReel(post) {
 
                         <span>
                             ${getSharesCount(
-                                post
-                            )}
+            post
+        )}
                         </span>
 
                     </button>
@@ -1249,26 +1373,24 @@ function renderReel(post) {
                         type="button"
                         class="
                             reel-action
-                            ${
-                                saved
-                                    ? "saved"
-                                    : ""
-                            }
+                            ${saved
+            ? "saved"
+            : ""
+        }
                         "
                         data-action="save"
                         data-id="${escapeHTML(
-                            post.id
-                        )}"
+            post.id
+        )}"
                     >
 
                         <span
                             class="reel-action-icon"
                         >
-                            ${
-                                saved
-                                    ? "★"
-                                    : "☆"
-                            }
+                            ${saved
+            ? "★"
+            : "☆"
+        }
                         </span>
 
                     </button>
@@ -1337,7 +1459,7 @@ function renderReel(post) {
                 video
                     .play()
                     .catch(
-                        () => {}
+                        () => { }
                     );
             }
         );
@@ -1368,24 +1490,24 @@ function renderReel(post) {
     );
 
 
-   /* =========================================================
-   OPEN REEL FULLSCREEN WITH ONE TAP
-   ========================================================= */
+    /* =========================================================
+    OPEN REEL FULLSCREEN WITH ONE TAP
+    ========================================================= */
 
-video.addEventListener(
-    "click",
-    event => {
+    video.addEventListener(
+        "click",
+        event => {
 
-        event.preventDefault();
-        event.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
 
-        video.pause();
+            video.pause();
 
-        openViewer(
-            post
-        );
-    }
-);
+            openViewer(
+                post
+            );
+        }
+    );
 }
 
 
@@ -1396,27 +1518,16 @@ video.addEventListener(
 function renderRegularPost(post) {
 
     const article =
-        document.createElement(
-            "article"
-        );
+        document.createElement("article");
 
-    article.className =
-        "feed-post";
+    article.className = "feed-post";
+    article.dataset.id = post.id;
 
-    article.dataset.id =
-        post.id;
-
-    const liked =
-        userLiked(post);
-
-    const saved =
-        userSaved(post);
+    const liked = userLiked(post);
+    const saved = userSaved(post);
 
     const mediaType =
-        String(
-            post.mediaType ||
-            ""
-        ).toLowerCase();
+        String(post.mediaType || "").toLowerCase();
 
     const hasImage =
         mediaType === "image" ||
@@ -1425,38 +1536,57 @@ function renderRegularPost(post) {
     const hasVideo =
         mediaType === "video";
 
+    const authorAvatar =
+        post.authorAvatar ||
+        "";
+
+    const authorName =
+        post.authorName ||
+        "NEXA User";
+
+    const avatarHTML =
+        authorAvatar
+            ? `
+                <img
+                    src="${escapeHTML(getMediaURL(authorAvatar))}"
+                    alt="${escapeHTML(authorName)}"
+                    loading="lazy"
+                >
+              `
+            : `
+                <span>
+                    ${escapeHTML(
+                getAvatarLetter(authorName)
+            )}
+                </span>
+              `;
+
     article.innerHTML = `
 
         <div class="post-header">
 
             <div class="post-author">
 
-                <div class="post-user-avatar">
-
-                    ${escapeHTML(
-                        post.authorAvatar ||
-                        getAvatarLetter(
-                            post.authorName
-                        )
-                    )}
-
-                </div>
+                <a
+                    href="profile.html?user=${encodeURIComponent(
+        String(post.authorId || "")
+    )}"
+                    class="post-user-avatar"
+                    aria-label="Open ${escapeHTML(authorName)}'s profile"
+                >
+                    ${avatarHTML}
+                </a>
 
                 <div>
 
                     <h3>
-                        ${escapeHTML(
-                            post.authorName ||
-                            "NEXA User"
-                        )}
+                        ${escapeHTML(authorName)}
                     </h3>
 
                     <span>
                         ${escapeHTML(
-                            timeAgo(
-                                post.createdAt
-                            )
-                        )}
+        timeAgo(post.createdAt)
+    )}
                     </span>
 
                 </div>
@@ -1472,164 +1602,120 @@ function renderRegularPost(post) {
 
         </div>
 
-
-        ${
-            post.text
-                ? `
+        ${post.text
+            ? `
                     <div class="post-caption">
-
-                        ${escapeHTML(
-                            post.text
-                        )}
-
+                        ${escapeHTML(post.text)}
                     </div>
-                `
-                : ""
+                  `
+            : ""
         }
 
-
-        ${
-            hasImage
-                ? `
+        ${hasImage
+            ? `
                     <div
                         class="post-media"
                         data-media-type="image"
                     >
-
                         <img
                             src="${escapeHTML(
-                                getMediaURL(
-                                    post.media
-                                )
-                            )}"
+                getMediaURL(post.media)
+            )}"
                             alt="NEXA post"
                         >
-
                     </div>
-                `
-                : ""
+                  `
+            : ""
         }
 
-
-        ${
-            hasVideo
-                ? `
+        ${hasVideo
+            ? `
                     <div
                         class="post-media"
                         data-media-type="video"
                     >
-
                         <video
-                            class="feed-normal-video"
-                            src="${escapeHTML(
-                                getMediaURL(
-                                    post.media
-                                )
-                            )}"
-                            controls
-                            playsinline
-                            preload="metadata"
-                        ></video>
-
+    class="feed-normal-video"
+    src="${escapeHTML(
+                getMediaURL(
+                    post.media
+                )
+            )}"
+    muted
+    playsinline
+    preload="metadata"
+></video>
                     </div>
-                `
-                : ""
+                  `
+            : ""
         }
 
+        <div class="post-actions post-actions-side">
 
-        <div class="post-actions">
+  <button
+    type="button"
+    data-action="like"
+    data-id="${escapeHTML(post.id)}"
+    aria-label="Like post"
+    class="${liked ? "active liked" : ""}"
+>
+        <span class="post-action-icon">
+            ${liked ? "♥" : "♡"}
+        </span>
 
-            <button
-                type="button"
-                data-action="like"
-                data-id="${escapeHTML(
-                    post.id
-                )}"
-            >
-
-                <span>
-                    ${
-                        liked
-                            ? "♥"
-                            : "♡"
-                    }
-                </span>
-
-                <span>
-                    ${getLikesCount(
-                        post
-                    )}
-                </span>
-
-            </button>
+        <span>
+            ${getLikesCount(post)}
+        </span>
+    </button>
 
 
-            <button
-                type="button"
-                data-action="comment"
-                data-id="${escapeHTML(
-                    post.id
-                )}"
-            >
+    <button
+        type="button"
+        data-action="comment"
+        data-id="${escapeHTML(post.id)}"
+        aria-label="Comment"
+    >
+        <span class="post-action-icon">
+            💬
+        </span>
 
-                <span>
-                    💬
-                </span>
-
-                <span>
-                    ${getCommentsCount(
-                        post
-                    )}
-                </span>
-
-            </button>
+        <span>
+            ${getCommentsCount(post)}
+        </span>
+    </button>
 
 
-            <button
-                type="button"
-                data-action="share"
-                data-id="${escapeHTML(
-                    post.id
-                )}"
-            >
+    <button
+        type="button"
+        data-action="share"
+        data-id="${escapeHTML(post.id)}"
+        aria-label="Share"
+    >
+        <span class="post-action-icon">
+            ↗
+        </span>
 
-                <span>
-                    ↗
-                </span>
-
-                <span>
-                    ${getSharesCount(
-                        post
-                    )}
-                </span>
-
-            </button>
+        <span>
+            ${getSharesCount(post)}
+        </span>
+    </button>
 
 
-            <button
-                type="button"
-                data-action="save"
-                data-id="${escapeHTML(
-                    post.id
-                )}"
-            >
+    <button
+        type="button"
+        data-action="save"
+        data-id="${escapeHTML(post.id)}"
+        aria-label="Save"
+    >
+        <span class="post-action-icon">
+            ${saved ? "★" : "☆"}
+        </span>
+    </button>
 
-                <span>
-                    ${
-                        saved
-                            ? "★"
-                            : "☆"
-                    }
-                </span>
-
-            </button>
-
-        </div>
+</div>
     `;
 
-    feedPosts.appendChild(
-        article
-    );
+    feedPosts.appendChild(article);
 }
 
 
@@ -1670,13 +1756,15 @@ function attachFeedVideoObservers() {
                         if (
                             entry.isIntersecting &&
                             entry.intersectionRatio >=
-                                0.65
+                            0.65
                         ) {
+
+                            video.muted = true;
 
                             video
                                 .play()
                                 .catch(
-                                    () => {}
+                                    () => { }
                                 );
 
                         } else {
@@ -1950,8 +2038,8 @@ function loadViewerPost(post) {
             };
 
 
-            
-             
+
+
 
         reelViewerVideo.onerror =
             () => {
@@ -1973,7 +2061,7 @@ function loadViewerPost(post) {
     }
 
 
-    
+
 
     /* -------------------------------------------------------
        IMAGE
@@ -2025,7 +2113,7 @@ if (reelCenterToggle) {
                 reelViewerVideo
                     .play()
                     .catch(
-                        () => {}
+                        () => { }
                     );
 
             } else {
@@ -2219,7 +2307,7 @@ function showNextViewerPost() {
 
     loadViewerPost(
         viewerPosts[
-            nextIndex
+        nextIndex
         ]
     );
 
@@ -2286,7 +2374,7 @@ function showPreviousViewerPost() {
 
     loadViewerPost(
         viewerPosts[
-            previousIndex
+        previousIndex
         ]
     );
 
@@ -2574,7 +2662,7 @@ if (reelViewerLike) {
                         video.currentTime =
                             currentTime;
 
-                    } catch {}
+                    } catch { }
                 }
 
                 /*
@@ -2589,7 +2677,7 @@ if (reelViewerLike) {
                     video
                         .play()
                         .catch(
-                            () => {}
+                            () => { }
                         );
                 }
             }
@@ -2860,11 +2948,11 @@ async function toggleLike(postId) {
     } catch (error) {
 
         console.error(
-    "NEXA Supabase like error:",
-    error.message,
-    error.details,
-    error.hint,
-    error.code
+            "NEXA Supabase like error:",
+            error.message,
+            error.details,
+            error.hint,
+            error.code
         );
 
         showNotification(
@@ -3154,18 +3242,18 @@ function openComments(postId) {
 
                     <strong>
                         ${escapeHTML(
-                            comment.username ||
-                            comment.userName ||
-                            comment.authorName ||
-                            "NEXA User"
-                        )}
+                    comment.username ||
+                    comment.userName ||
+                    comment.authorName ||
+                    "NEXA User"
+                )}
                     </strong>
 
                     <p>
                         ${escapeHTML(
-                            comment.text ||
-                            ""
-                        )}
+                    comment.text ||
+                    ""
+                )}
                     </p>
 
                 `;
@@ -4062,9 +4150,9 @@ async function createTextPost() {
                 0,
 
             savedBy:
-    Array.isArray(post.saved_by)
-        ? post.saved_by
-        : [],
+                Array.isArray(post.saved_by)
+                    ? post.saved_by
+                    : [],
         };
 
 
@@ -4317,7 +4405,7 @@ if (videoFileInput) {
 
             const type =
                 videoFileInput.dataset.mode ===
-                "reel"
+                    "reel"
                     ? "reel"
                     : "video";
 
@@ -4626,9 +4714,7 @@ if (publishMediaButton) {
                         .insert({
 
                             author_id:
-                                String(
-                                    getUserId()
-                                ),
+                                String(getUserId()),
 
                             author_name:
                                 getUsername(),
@@ -4648,11 +4734,44 @@ if (publishMediaButton) {
                                 mediaURL,
 
                             media_type:
-                                type
+                                type,
+
+                            demo_likes:
+                                type === "reel"
+                                    ? Math.floor(
+                                        1200 +
+                                        Math.random() * 8800
+                                    )
+                                    : 0,
+
+                            demo_comments:
+                                type === "reel"
+                                    ? Math.floor(
+                                        80 +
+                                        Math.random() * 920
+                                    )
+                                    : 0,
+
+                            demo_shares:
+                                type === "reel"
+                                    ? Math.floor(
+                                        40 +
+                                        Math.random() * 460
+                                    )
+                                    : 0,
+
+                            demo_saves:
+                                type === "reel"
+                                    ? Math.floor(
+                                        20 +
+                                        Math.random() * 280
+                                    )
+                                    : 0
 
                         })
                         .select()
                         .single();
+
 
 
                 if (error) {
@@ -4664,7 +4783,6 @@ if (publishMediaButton) {
                 /* -----------------------------------------
                    5. ADD THE NEW POST TO THE FEED
                    ----------------------------------------- */
-
                 const newPost = {
 
                     id:
@@ -4690,6 +4808,18 @@ if (publishMediaButton) {
 
                     mediaType:
                         data.media_type || "",
+
+                    demoLikes:
+                        Number(post.demo_likes ?? post.likes_count ?? 0),
+
+                    demoComments:
+                        Number(post.demo_comments ?? post.comments_count ?? 0),
+
+                    demoShares:
+                        Number(post.demo_shares ?? post.shares_count ?? 0),
+
+                    demoSaves:
+                        Number(post.demo_saves ?? post.saves_count ?? 0),
 
                     likes:
                         [],
@@ -4811,32 +4941,32 @@ async function loadStories() {
                         story.media_type,
 
                     createdAt:
-    story.created_at,
+                        story.created_at,
 
-likes:
-    Array.isArray(story.likes)
-        ? story.likes
-        : [],
+                    likes:
+                        Array.isArray(story.likes)
+                            ? story.likes
+                            : [],
 
-comments:
-    Array.isArray(story.comments)
-        ? story.comments
-        : [],
+                    comments:
+                        Array.isArray(story.comments)
+                            ? story.comments
+                            : [],
 
-shares:
-    Number(story.shares || 0)
+                    shares:
+                        Number(story.shares || 0)
 
                 })
             );
 
-            console.log(
-    "NEXA STORY COMMENTS AFTER REFRESH:",
-    stories.map(story => ({
-        id: story.id,
-        username: story.username,
-        comments: story.comments
-    }))
-);
+        console.log(
+            "NEXA STORY COMMENTS AFTER REFRESH:",
+            stories.map(story => ({
+                id: story.id,
+                username: story.username,
+                comments: story.comments
+            }))
+        );
 
         console.log(
             "NEXA stories loaded from Supabase:",
@@ -4888,16 +5018,34 @@ function renderStories() {
             class="story-avatar-wrapper"
         >
 
-            <div
-                class="story-avatar"
-                id="storyAvatar"
-            >
-                ${escapeHTML(
-                    getAvatarLetter(
-                        getUsername()
-                    )
-                )}
-            </div>
+     <div
+    class="story-avatar"
+    id="storyAvatar"
+>
+    ${getUserAvatar()
+            ? `
+                <img
+                    src="${escapeHTML(
+                getMediaURL(
+                    getUserAvatar()
+                )
+            )}"
+                    alt="${escapeHTML(
+                getUsername()
+            )}"
+                >
+              `
+            : `
+                <span>
+                    ${escapeHTML(
+                getAvatarLetter(
+                    getUsername()
+                )
+            )}
+                </span>
+              `
+        }
+</div>
 
             <button
                 class="add-story"
@@ -4967,41 +5115,40 @@ function renderStories() {
                     class="story-ring"
                 >
 
-                    ${
-                        String(
-                            story.mediaType ||
-                            ""
-                        ).startsWith(
-                            "video"
-                        )
+                    ${String(
+                story.mediaType ||
+                ""
+            ).startsWith(
+                "video"
+            )
 
-                            ? `
+                    ? `
                                 <video
                                     src="${escapeHTML(
-                                        mediaURL
-                                    )}"
+                        mediaURL
+                    )}"
                                     muted
                                     playsinline
                                 ></video>
                               `
 
-                            : `
+                    : `
                                 <img
                                     src="${escapeHTML(
-                                        mediaURL
-                                    )}"
+                        mediaURL
+                    )}"
                                     alt="Story"
                                 >
                               `
-                    }
+                }
 
                 </div>
 
                 <span>
                     ${escapeHTML(
-                        story.username ||
-                        "NEXA User"
-                    )}
+                    story.username ||
+                    "NEXA User"
+                )}
                 </span>
             `;
 
@@ -5314,7 +5461,11 @@ async function openStory(storyId) {
 
 
         video.src =
-            mediaURL;
+            mediaURL +
+            "?v=" +
+            Date.now();
+
+        video.load();
 
         video.controls =
             true;
@@ -6149,11 +6300,11 @@ function createStoryFileInput() {
                                     file.type
                             }
                         );
-                        
-                          console.log(
-    "NEXA STORY: Storage upload finished",
-    uploadError
-);
+
+                console.log(
+                    "NEXA STORY: Storage upload finished",
+                    uploadError
+                );
 
                 if (uploadError) {
                     throw uploadError;
@@ -6166,7 +6317,7 @@ function createStoryFileInput() {
 
                 const {
                     data:
-                        publicURLData
+                    publicURLData
                 } =
                     nexaSupabase
                         .storage
@@ -6314,31 +6465,31 @@ if (addStoryButton) {
 
 
 
-    /* =====================================================
-       OPEN PANEL
-    ===================================================== */
+/* =====================================================
+   OPEN PANEL
+===================================================== */
 
-    storyCommentPanel.hidden =
-        false;
+storyCommentPanel.hidden =
+    false;
 
-    storyCommentPanel.style.display =
-        "flex";
+storyCommentPanel.style.display =
+    "flex";
 
 
-    if (storyCommentInput) {
+if (storyCommentInput) {
 
-        storyCommentInput.value =
-            "";
+    storyCommentInput.value =
+        "";
 
-        setTimeout(
-            () => {
+    setTimeout(
+        () => {
 
-                storyCommentInput.focus();
+            storyCommentInput.focus();
 
-            },
-            100
-        );
-    }
+        },
+        100
+    );
+}
 
 
 /* =========================================================
@@ -6485,16 +6636,28 @@ function renderStories() {
             class="story-avatar-wrapper"
         >
 
-            <div
-                class="story-avatar"
-                id="storyAvatar"
-            >
-                ${escapeHTML(
-                    getAvatarLetter(
-                        getUsername()
-                    )
-                )}
-            </div>
+       <div
+    class="story-avatar"
+    id="storyAvatar"
+>
+    ${getUserAvatar()
+            ? `
+                <img
+                    src="${escapeHTML(
+                getUserAvatar()
+            )}"
+                    alt="${escapeHTML(
+                getUsername()
+            )}"
+                >
+              `
+            : escapeHTML(
+                getAvatarLetter(
+                    getUsername()
+                )
+            )
+        }
+</div>
 
             <button
                 class="add-story"
@@ -6568,81 +6731,83 @@ function renderStories() {
                 ).toLowerCase();
 
 
-           /* =================================================
-   VIDEO STORY → SHOW FIRST VIDEO FRAME
-   ================================================= */
+            /* =================================================
+    VIDEO STORY → SHOW FIRST VIDEO FRAME
+    ================================================= */
 
-if (
-    mediaType.startsWith("video")
-) {
+            if (
+                mediaType.startsWith("video")
+            ) {
 
-    const video =
-        document.createElement("video");
+                const video =
+                    document.createElement("video");
 
-    video.src =
-        getMediaURL(
-            story.media
-        );
+                video.src =
+                    getMediaURL(
+                        story.media
+                    ) + "?v=" + Date.now();
 
-    video.muted =
-        true;
+                video.muted =
+                    true;
 
-    video.playsInline =
-        true;
+                video.playsInline =
+                    true;
 
-    video.preload =
-        "auto";
+                video.preload =
+                    "metadata";
 
-    video.setAttribute(
-        "webkit-playsinline",
-        "true"
-    );
+                video.load();
 
-
-    video.addEventListener(
-        "loadeddata",
-        () => {
-
-            try {
-
-                video.currentTime =
-                    0.1;
-
-                video.pause();
-
-            } catch {}
-        }
-    );
+                video.setAttribute(
+                    "webkit-playsinline",
+                    "true"
+                );
 
 
-    ring.appendChild(
-        video
-    );
+                video.addEventListener(
+                    "loadeddata",
+                    () => {
 
-} else {
+                        try {
 
-    /* =============================================
-       IMAGE STORY
-       ============================================= */
+                            video.currentTime =
+                                0.1;
 
-    const image =
-        document.createElement(
-            "img"
-        );
+                            video.pause();
 
-    image.src =
-        getMediaURL(
-            story.media
-        );
-
-    image.alt =
-        "Story";
+                        } catch { }
+                    }
+                );
 
 
-    ring.appendChild(
-        image
-    );
-}
+                ring.appendChild(
+                    video
+                );
+
+            } else {
+
+                /* =============================================
+                   IMAGE STORY
+                   ============================================= */
+
+                const image =
+                    document.createElement(
+                        "img"
+                    );
+
+                image.src =
+                    getMediaURL(
+                        story.media
+                    );
+
+                image.alt =
+                    "Story";
+
+
+                ring.appendChild(
+                    image
+                );
+            }
 
 
             const username =
@@ -6892,138 +7057,138 @@ if (storyViewerLike) {
 
             event.preventDefault();
             const story =
-    selectedStoryCommentId
-        ? stories.find(
-            item =>
-                String(item.id) ===
-                String(selectedStoryCommentId)
-        )
-        : null;
+                selectedStoryCommentId
+                    ? stories.find(
+                        item =>
+                            String(item.id) ===
+                            String(selectedStoryCommentId)
+                    )
+                    : null;
 
-if (story) {
+            if (story) {
 
-    const text =
-        commentInput
-            ? commentInput.value.trim()
-            : "";
+                const text =
+                    commentInput
+                        ? commentInput.value.trim()
+                        : "";
 
-    if (!text) {
-        return;
-    }
-
-
-    if (!Array.isArray(story.comments)) {
-        story.comments = [];
-    }
+                if (!text) {
+                    return;
+                }
 
 
-    const oldComments =
-        [...story.comments];
+                if (!Array.isArray(story.comments)) {
+                    story.comments = [];
+                }
 
 
-    const newComment = {
-
-        id:
-            Date.now(),
-
-        userId:
-            String(
-                getUserId()
-            ),
-
-        username:
-            getUsername(),
-
-        text:
-            text,
-
-        createdAt:
-            new Date().toISOString()
-    };
+                const oldComments =
+                    [...story.comments];
 
 
-    story.comments.push(
-        newComment
-    );
+                const newComment = {
+
+                    id:
+                        Date.now(),
+
+                    userId:
+                        String(
+                            getUserId()
+                        ),
+
+                    username:
+                        getUsername(),
+
+                    text:
+                        text,
+
+                    createdAt:
+                        new Date().toISOString()
+                };
 
 
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await nexaSupabase
-                .from("stories")
-                .update({
-                    comments:
-                        story.comments
-                })
-                .eq(
-                    "id",
-                    story.id
-                )
-                .select(
-                    "id, comments"
-                )
-                .single();
+                story.comments.push(
+                    newComment
+                );
 
 
-        if (error) {
-            throw error;
-        }
+                try {
+
+                    const {
+                        data,
+                        error
+                    } =
+                        await nexaSupabase
+                            .from("stories")
+                            .update({
+                                comments:
+                                    story.comments
+                            })
+                            .eq(
+                                "id",
+                                story.id
+                            )
+                            .select(
+                                "id, comments"
+                            )
+                            .single();
 
 
-        story.comments =
-            Array.isArray(data.comments)
-                ? data.comments
-                : [];
+                    if (error) {
+                        throw error;
+                    }
 
 
-        if (commentInput) {
-            commentInput.value = "";
-        }
+                    story.comments =
+                        Array.isArray(data.comments)
+                            ? data.comments
+                            : [];
 
 
-        if (storyViewerComments) {
-
-            storyViewerComments.textContent =
-                story.comments.length;
-        }
+                    if (commentInput) {
+                        commentInput.value = "";
+                    }
 
 
-        openStoryComments(
-            story.id
-        );
+                    if (storyViewerComments) {
+
+                        storyViewerComments.textContent =
+                            story.comments.length;
+                    }
 
 
-        showNotification(
-            "Story comment posted."
-        );
+                    openStoryComments(
+                        story.id
+                    );
 
 
-        return;
+                    showNotification(
+                        "Story comment posted."
+                    );
 
-    } catch (error) {
 
-        story.comments =
-            oldComments;
+                    return;
 
-        console.error(
-            "NEXA Story comment error:",
-            error.message,
-            error.details,
-            error.hint,
-            error.code
-        );
+                } catch (error) {
 
-        showNotification(
-            "Could not save your Story comment."
-        );
+                    story.comments =
+                        oldComments;
 
-        return;
-    }
-}
+                    console.error(
+                        "NEXA Story comment error:",
+                        error.message,
+                        error.details,
+                        error.hint,
+                        error.code
+                    );
+
+                    showNotification(
+                        "Could not save your Story comment."
+                    );
+
+                    return;
+                }
+            }
             event.stopPropagation();
 
             if (!selectedStoryId) {
@@ -7226,23 +7391,17 @@ if (reelViewerBackdrop) {
 /* =========================================================
    INITIALIZE
    ========================================================= */
-
 async function initializeHome() {
+
+    await loadCurrentProfileForHome();
 
     updateHomeAvatars();
 
-   await loadStories();
-renderStories();
+    await loadStories();
 
-
-    /*
-     * IMPORTANT:
-     * Load the real posts from posts.json
-     * on your server.
-     */
+    renderStories();
 
     await loadPosts();
-
 
     renderFeed();
 
