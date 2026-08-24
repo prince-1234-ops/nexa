@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -11,74 +12,241 @@
 
     <meta
         name="description"
-        content="Find and connect with people on NEXA."
+        content="Discover and connect with people on NEXA."
+    >
+
+    <meta
+        name="theme-color"
+        content="#050505"
     >
 
     <title>NEXA — People</title>
+
+    <link rel="icon" type="image/jpeg" href="images/hub.jpg">
 
     <link
         rel="stylesheet"
         href="people.css"
     >
+
 </head>
+
 
 <body>
 
+
 <div class="people-page">
 
+
     <!-- =====================================================
-         SIDEBAR
+         DESKTOP SIDEBAR
     ====================================================== -->
 
     <aside class="people-sidebar">
 
         <div class="people-brand">
-            <span class="brand-mark">N</span>
-            <span class="brand-name">NEXA</span>
+
+            <div class="brand-symbol">
+                N
+            </div>
+
+            <div class="brand-copy">
+
+                <strong>
+                    NEXA
+                </strong>
+
+                <span>
+                    SOCIAL NETWORK
+                </span>
+
+            </div>
+
         </div>
+
+
+        <div class="sidebar-profile">
+
+            <a
+                href="profile.html"
+                class="sidebar-profile-link"
+            >
+
+                <div
+                    id="sidebarAvatar"
+                    class="sidebar-avatar"
+                >
+                    N
+                </div>
+
+                <div class="sidebar-profile-text">
+
+                    <strong id="sidebarUserName">
+                        NEXA User
+                    </strong>
+
+                    <span id="sidebarUsername">
+                        @nexauser
+                    </span>
+
+                </div>
+
+            </a>
+
+            <span class="sidebar-online"></span>
+
+        </div>
+
 
         <nav class="people-nav">
 
-            <a href="home.html" class="people-nav-item">
-                <span>⌂</span>
-                <strong>Home</strong>
+            <a
+                href="home.html"
+                class="people-nav-item"
+            >
+
+                <span class="nav-symbol">
+                    ⌂
+                </span>
+
+                <span>
+                    Home
+                </span>
+
             </a>
+
 
             <a
                 href="people.html"
                 class="people-nav-item active"
             >
-                <span>◉</span>
-                <strong>People</strong>
+
+                <span class="nav-symbol">
+                    ◉
+                </span>
+
+                <span>
+                    People
+                </span>
+
             </a>
 
-            <a href="messages.html" class="people-nav-item">
-                <span>✉</span>
-                <strong>Messages</strong>
+
+            <a
+                href="messages.html"
+                class="people-nav-item"
+            >
+
+                <span class="nav-symbol">
+                    ✉
+                </span>
+
+                <span>
+                    Messages
+                </span>
+
             </a>
 
-            <a href="profile.html" class="people-nav-item">
-                <span>●</span>
-                <strong>Profile</strong>
+
+            <a
+                href="profile.html"
+                class="people-nav-item"
+            >
+
+                <span class="nav-symbol">
+                    ●
+                </span>
+
+                <span>
+                    Profile
+                </span>
+
             </a>
 
-            <a href="settings.html" class="people-nav-item">
-                <span>⚙</span>
-                <strong>Settings</strong>
+
+            <a
+                href="settings.html"
+                class="people-nav-item"
+            >
+
+                <span class="nav-symbol">
+                    ⚙
+                </span>
+
+                <span>
+                    Settings
+                </span>
+
             </a>
 
         </nav>
 
-        <button
-            id="logoutButton"
-            class="logout-button"
-            type="button"
-        >
-            <span>↪</span>
-            Logout
-        </button>
+
+        <div class="sidebar-divider"></div>
+
+
+        <div class="sidebar-discovery">
+
+            <span class="sidebar-title">
+                DISCOVER
+            </span>
+
+            <a href="#peopleSection">
+                <span>✦</span>
+                Everyone
+            </a>
+
+            <a href="#peopleSection">
+                <span>●</span>
+                New people
+            </a>
+
+            <a href="#peopleSection">
+                <span>♡</span>
+                Connections
+            </a>
+
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <button
+                id="logoutButton"
+                class="logout-button"
+                type="button"
+            >
+
+                <span>
+                    ↪
+                </span>
+
+                Logout
+
+            </button>
+
+
+            <div class="sidebar-footer">
+
+                <span>
+                    NEXA
+                </span>
+
+                <span>
+                    •
+                </span>
+
+                <span>
+                    Connect freely
+                </span>
+
+            </div>
+
+        </div>
 
     </aside>
+
+
 
 
     <!-- =====================================================
@@ -87,38 +255,63 @@
 
     <main class="people-main">
 
-        <!-- TOPBAR -->
+
+        <!-- =================================================
+             TOP BAR
+        ================================================== -->
 
         <header class="people-topbar">
 
-            <div class="mobile-brand">
-                NEXA
-            </div>
+
+            <a
+                href="home.html"
+                class="mobile-brand"
+            >
+
+                <span class="mobile-brand-symbol">
+                    N
+                </span>
+
+                <span>
+                    NEXA
+                </span>
+
+            </a>
+
 
             <div class="search-box">
 
-                <span class="search-icon">
-                    ⌕
-                </span>
+    <span class="search-icon">
+        ⌕
+    </span>
 
-                <input
-                    id="searchInput"
-                    type="search"
-                    placeholder="Search people..."
-                    autocomplete="off"
-                    spellcheck="false"
-                >
+    <input
+        id="searchInput"
+        type="search"
+        placeholder="Search people..."
+        autocomplete="off"
+        spellcheck="false"
+    >
 
-                <button
-                    id="clearSearchButton"
-                    class="clear-search"
-                    type="button"
-                    hidden
-                >
-                    ×
-                </button>
+    <button
+        id="searchPeopleButton"
+        class="search-people-button"
+        type="button"
+    >
+        Search
+    </button>
 
-            </div>
+    <button
+        id="clearSearchButton"
+        class="clear-search"
+        type="button"
+        hidden
+        aria-label="Clear search"
+    >
+        ×
+    </button>
+
+</div>
 
 
             <div class="top-actions">
@@ -131,44 +324,120 @@
                     ✉
                 </a>
 
-                <a
-                    href="profile.html"
-                    class="my-profile"
-                    title="My profile"
+
+                <div
+                    id="miniAvatar"
+                    class="mini-avatar"
                 >
-
-                    <div
-                        id="miniAvatar"
-                        class="mini-avatar"
-                    >
-                        N
-                    </div>
-
-                </a>
+                    N
+                </div>
 
             </div>
 
         </header>
 
 
-        <!-- =====================================================
+
+
+        <!-- =================================================
              CONTENT
-        ====================================================== -->
+        ================================================== -->
 
         <section class="people-content">
 
-            <!-- YOUR PROFILE MINI CARD -->
+
+            <!-- =================================================
+                 HERO
+            ================================================== -->
+
+            <section class="people-hero">
+
+                <div class="hero-glow hero-glow-one"></div>
+
+                <div class="hero-glow hero-glow-two"></div>
+
+
+                <div class="hero-content">
+
+                    <span class="hero-eyebrow">
+                        THE NEXA COMMUNITY
+                    </span>
+
+                    <h1>
+                        Find people<br>
+                        worth knowing.
+                    </h1>
+
+                    <p>
+                        Discover new people, reconnect with
+                        friends and start meaningful conversations
+                        across NEXA.
+                    </p>
+
+                    <div class="hero-line"></div>
+
+                </div>
+
+
+                <div class="hero-art">
+
+                    <div class="hero-orbit orbit-one"></div>
+
+                    <div class="hero-orbit orbit-two"></div>
+
+                    <div class="hero-orbit orbit-three"></div>
+
+
+                    <div class="hero-center">
+
+                        <div class="hero-center-letter">
+                            N
+                        </div>
+
+                    </div>
+
+
+                    <div class="floating-avatar floating-avatar-one">
+                        A
+                    </div>
+
+                    <div class="floating-avatar floating-avatar-two">
+                        M
+                    </div>
+
+                    <div class="floating-avatar floating-avatar-three">
+                        J
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+
+            <!-- =================================================
+                 YOUR PROFILE
+            ================================================== -->
 
             <section class="my-profile-card">
 
-                <div class="my-profile-glow"></div>
+                <div class="profile-card-decoration"></div>
 
-                <div
-                    id="myProfileAvatar"
-                    class="my-profile-avatar"
-                >
-                    N
+
+                <div class="my-profile-avatar-wrap">
+
+                    <div
+                        id="myProfileAvatar"
+                        class="my-profile-avatar"
+                    >
+                        N
+                    </div>
+
+                    <span class="my-profile-online"></span>
+
                 </div>
+
 
                 <div class="my-profile-info">
 
@@ -176,16 +445,16 @@
                         YOUR PROFILE
                     </span>
 
-                    <h1 id="myProfileName">
+                    <h2 id="myProfileName">
                         NEXA User
-                    </h1>
+                    </h2>
 
-                    <div
+                    <span
                         id="myProfileUsername"
                         class="my-profile-username"
                     >
                         @nexauser
-                    </div>
+                    </span>
 
                     <p
                         id="myProfileBio"
@@ -196,100 +465,245 @@
 
                 </div>
 
-                <a
-                    href="profile.html"
-                    class="view-profile-button"
-                >
-                    View Profile
-                </a>
+
+                <div class="profile-card-actions">
+
+                    <a
+                        href="profile.html"
+                        class="view-profile-button"
+                    >
+                        View Profile
+                    </a>
+
+                </div>
 
             </section>
 
 
-            <!-- HEADING -->
 
-            <div class="people-heading">
 
-                <div>
+            <!-- =================================================
+                 DISCOVERY HEADER
+            ================================================== -->
 
-                    <span class="eyebrow">
-                        NEXA COMMUNITY
-                    </span>
+            <section
+                id="peopleSection"
+                class="discovery-section"
+            >
 
-                    <h2>
-                        Discover People
-                    </h2>
+                <div class="discovery-header">
 
-                    <p>
-                        Find people, make friends and start conversations.
-                    </p>
+                    <div>
+
+                        <span class="section-label">
+                            DISCOVER
+                        </span>
+
+                        <h2>
+                            People
+                        </h2>
+
+                        <p>
+                            Meet people and grow your NEXA circle.
+                        </p>
+
+                    </div>
+
+
+                    <div class="people-total">
+
+                        <span>
+                            COMMUNITY
+                        </span>
+
+                        <strong id="peopleCount">
+                            0 people
+                        </strong>
+
+                    </div>
 
                 </div>
+
+
+
+
+                <!-- =============================================
+                     SEARCH STATUS
+                ============================================== -->
 
                 <div
-                    id="peopleCount"
-                    class="people-count"
+                    id="searchStatus"
+                    class="search-status"
+                ></div>
+
+
+
+
+                <!-- =============================================
+                     PEOPLE TOOLBAR
+                ============================================== -->
+
+                <div class="people-toolbar">
+
+                    <div class="toolbar-title">
+
+                        <span class="toolbar-dot"></span>
+
+                        <span>
+                            NEXA MEMBERS
+                        </span>
+
+                    </div>
+
+
+                    <div class="toolbar-note">
+                        Discover your next connection
+                    </div>
+
+                </div>
+
+
+
+
+                <!-- =============================================
+                     USERS
+                ============================================== -->
+
+                <section
+                    id="usersList"
+                    class="users-list"
+                ></section>
+
+
+
+
+                <!-- =============================================
+                     EMPTY
+                ============================================== -->
+
+                <section
+                    id="emptyPeople"
+                    class="empty-people"
+                    hidden
                 >
-                    0 people
+
+                    <div class="empty-icon">
+                        ⌕
+                    </div>
+
+                    <span class="empty-label">
+                        NO MATCHES
+                    </span>
+
+                    <h3>
+                        Nobody found
+                    </h3>
+
+                    <p>
+                        Try searching with another name,
+                        username or keyword.
+                    </p>
+
+                </section>
+
+
+
+
+                <!-- =============================================
+                     LOADING
+                ============================================== -->
+
+                <div
+                    id="peopleLoading"
+                    class="people-loading"
+                    hidden
+                >
+
+                    <div class="gold-loader"></div>
+
+                    <div>
+
+                        <strong>
+                            Discovering people
+                        </strong>
+
+                        <span>
+                            Loading the NEXA community...
+                        </span>
+
+                    </div>
+
                 </div>
-
-            </div>
-
-
-            <div
-                id="searchStatus"
-                class="search-status"
-            ></div>
-
-
-            <!-- USERS -->
-
-            <section
-                id="usersList"
-                class="users-list"
-            ></section>
-
-
-            <!-- EMPTY -->
-
-            <section
-                id="emptyPeople"
-                class="empty-people"
-                hidden
-            >
-
-                <div class="empty-icon">
-                    ◉
-                </div>
-
-                <h3>
-                    No people found
-                </h3>
-
-                <p>
-                    Try another name or username.
-                </p>
 
             </section>
 
 
-            <!-- LOADING -->
 
-            <div
-                id="peopleLoading"
-                class="people-loading"
-                hidden
-            >
 
-                <span class="loading-spinner"></span>
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
 
-                Loading people...
+            <footer class="people-footer">
 
-            </div>
+                <div class="footer-brand">
+
+                    <div class="footer-logo">
+                        N
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            NEXA
+                        </strong>
+
+                        <span>
+                            Connect. Discover. Belong.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="footer-links">
+
+                    <a href="home.html">
+                        Home
+                    </a>
+
+                    <a href="people.html">
+                        People
+                    </a>
+
+                    <a href="messages.html">
+                        Messages
+                    </a>
+
+                    <a href="profile.html">
+                        Profile
+                    </a>
+
+                    <a href="settings.html">
+                        Settings
+                    </a>
+
+                </div>
+
+
+                <div class="footer-copy">
+                    © 2026 NEXA
+                </div>
+
+            </footer>
+
 
         </section>
 
     </main>
+
+
 
 
     <!-- =====================================================
@@ -299,33 +713,68 @@
     <nav class="mobile-nav">
 
         <a href="home.html">
-            <span>⌂</span>
-            <small>Home</small>
+
+            <span>
+                ⌂
+            </span>
+
+            <small>
+                Home
+            </small>
+
         </a>
+
 
         <a
             href="people.html"
             class="active"
         >
-            <span>◉</span>
-            <small>People</small>
+
+            <span>
+                ◉
+            </span>
+
+            <small>
+                People
+            </small>
+
         </a>
+
 
         <a href="messages.html">
-            <span>✉</span>
-            <small>Messages</small>
+
+            <span>
+                ✉
+            </span>
+
+            <small>
+                Messages
+            </small>
+
         </a>
 
+
         <a href="profile.html">
-            <span>●</span>
-            <small>Profile</small>
+
+            <span
+                id="mobileProfileAvatar"
+            >
+                N
+            </span>
+
+            <small>
+                Profile
+            </small>
+
         </a>
 
     </nav>
 
 
+
+
     <!-- =====================================================
-         NOTIFICATIONS
+         NOTIFICATION AREA
     ====================================================== -->
 
     <div
@@ -333,10 +782,22 @@
         class="notification-area"
     ></div>
 
+
 </div>
 
 
-<script src="people.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script
+    src="supabase.js"
+></script>
+
+<script
+    src="people.js"
+></script>
+
 
 </body>
 </html>
