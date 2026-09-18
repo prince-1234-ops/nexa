@@ -342,6 +342,63 @@ if (registerForm) {
                     data.user
                 );
 
+                /* =====================================================
+   CREATE NEXA PROFILE IN SUPABASE
+   ===================================================== */
+
+if (data.user) {
+
+    const {
+        error: profileError
+    } =
+        await nexaSupabase
+            .from("profiles")
+            .insert({
+
+                id:
+                    data.user.id,
+
+                name:
+                    name,
+
+                username:
+                    username,
+
+                email:
+                    email,
+
+                bio:
+                    "",
+
+                profile_picture:
+                    "",
+
+                friends:
+                    []
+            });
+
+
+    if (profileError) {
+
+        console.error(
+            "NEXA profile creation error:",
+            profileError
+        );
+
+        showMessage(
+            "Account was created, but your NEXA profile could not be created.",
+            "error"
+        );
+
+        return;
+    }
+
+    console.log(
+        "NEXA profile created:",
+        data.user.id
+    );
+}
+
 
                 /*
                  * Supabase is our new authentication
