@@ -844,53 +844,98 @@ if (selectorBox) {
     }
 
 
-    /* =====================================================
-       TOGGLE
-    ===================================================== */
+/* =====================================================
+   TOGGLE NEXA VOICE
+===================================================== */
 
-    function toggleVoice() {
+function toggleVoice() {
 
-        /*
-         * TURN OFF
-         */
+    /*
+     * TURN OFF
+     *
+     * Clicking NEXA again should immediately stop
+     * listening, stop any reply audio, and close
+     * the voice selector if it is open.
+     */
 
-        if (voiceEnabled) {
+    if (
+        voiceEnabled ||
+        waitingForVoiceChoice
+    ) {
 
-            voiceEnabled =
-                false;
+        voiceEnabled = false;
+        waitingForVoiceChoice = false;
+        conversationRequestRunning = false;
 
-            waitingForVoiceChoice =
-                false;
-
-            conversationRequestRunning =
-                false;
-
-            if (recognition) {
-
-                try {
-                    recognition.stop();
-                } catch (_) {}
-            }
-
-            stopCurrentAudio();
-
-            updateVoiceUI(false);
-
-            return;
+        if (recognition) {
+            try {
+                recognition.stop();
+            } catch (_) {}
         }
 
+        stopCurrentAudio();
 
-        /*
-         * TURN ON
-         */
+        const selector =
+            document.getElementById(
+                "nexaVoiceSelector"
+            );
 
-        voiceEnabled =
-            true;
+        if (selector) {
+            selector.remove();
+        }
 
         updateVoiceUI(false);
 
-        showVoiceSelector();
+        console.log(
+            "NEXA AI: voice OFF."
+        );
+
+        return;
     }
+
+
+    /*
+     * TURN ON
+     *
+     * If the user has already chosen a voice,
+     * start immediately.
+     */
+
+    const savedGender =
+        localStorage.getItem(
+            "nexa_voice_gender"
+        );
+
+    if (savedGender) {
+
+        selectedVoiceGender =
+            savedGender;
+
+        voiceEnabled = true;
+        waitingForVoiceChoice = false;
+
+        ensureRecognition();
+
+        updateVoiceUI(false);
+
+        startListening();
+
+        console.log(
+            "NEXA AI: voice ON."
+        );
+
+        return;
+    }
+
+
+    /*
+     * FIRST TIME
+     *
+     * Ask the user to choose Male or Female.
+     */
+
+    showVoiceSelector();
+}
 
 /* =====================================================
    LOGO CONNECTION
