@@ -8619,6 +8619,8 @@ async function restoreSavedConversation() {
 
 async function initializeNEXA() {
 
+    loadNexaChatWallpaper();
+
     console.log("Initializing NEXA Messages...");
 
     updateConversationFilterButtons();
@@ -8681,6 +8683,58 @@ const groupPicturePreview =
 let selectedGroupFriendIds = [];
 
 let selectedGroupPicture = "";
+
+
+/* =========================================================
+   LOAD NEXA CHAT WALLPAPER
+========================================================= */
+
+function loadNexaChatWallpaper() {
+
+    try {
+
+        const savedSettings =
+            localStorage.getItem("nexaSettings");
+
+        if (!savedSettings) {
+            return;
+        }
+
+        const settings =
+            JSON.parse(savedSettings);
+
+        const wallpaper =
+            settings.chat_wallpaper;
+
+        if (!wallpaper) {
+            document.body.classList.remove(
+                "has-nexa-wallpaper"
+            );
+
+            document.body.style.removeProperty(
+                "--nexa-wallpaper"
+            );
+
+            return;
+        }
+
+        document.body.style.setProperty(
+            "--nexa-wallpaper",
+            `url("${wallpaper}")`
+        );
+
+        document.body.classList.add(
+            "has-nexa-wallpaper"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "NEXA wallpaper load error:",
+            error
+        );
+    }
+}
 
 
 /* =========================================================
