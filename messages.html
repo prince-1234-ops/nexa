@@ -1224,6 +1224,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const logo = document.getElementById("nexaLogoTest");
+
+    if (!logo) {
+        alert("NEXA TEST: Logo not found");
+        return;
+    }
+
+    logo.addEventListener("click", () => {
+        alert("NEXA TEST WORKS!");
+        console.log("NEXA TEST: logo click detected");
+    });
+
+});
+</script>
+
 </body>
 
 </html>
