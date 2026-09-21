@@ -858,41 +858,63 @@
         showVoiceSelector();
     }
 
+/* =====================================================
+   LOGO CONNECTION
+===================================================== */
 
-    /* =====================================================
-       LOGO CONNECTION
-    ===================================================== */
+function setupVoiceButtons() {
 
-    function setupVoiceButtons() {
+    if (window.__nexaVoiceLogoBound) {
+        return;
+    }
 
-        const selectors = [
-            ".nexa-logo",
-            ".logo",
-            ".mobile-logo"
-        ];
+    window.__nexaVoiceLogoBound = true;
 
-        const buttons =
-            document.querySelectorAll(
-                selectors.join(",")
-            );
+    document.addEventListener(
+        "click",
+        event => {
 
-        buttons.forEach(button => {
+            const target = event.target;
+
+            if (
+                !target ||
+                typeof target.closest !== "function"
+            ) {
+                return;
+            }
+
+            const button =
+                target.closest(
+                    ".nexa-logo, .logo, .mobile-logo"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
 
             button.classList.add(
                 "nexa-voice-toggle"
             );
 
-            button.addEventListener(
-                "click",
-                event => {
+            /*
+             * Clicking NEXA should always start
+             * the voice assistant.
+             */
+            if (!voiceEnabled) {
+                toggleVoice();
+            }
 
-                    event.preventDefault();
-
-                    toggleVoice();
-                }
+            console.log(
+                "NEXA AI: logo clicked and voice activated."
             );
-        });
-    }
+        },
+        true
+    );
+}
+
 
 
     /* =====================================================
