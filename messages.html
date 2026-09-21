@@ -1201,37 +1201,6 @@
 <script src="messages.js"></script>
 
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    const logo = document.querySelector(".nexa-logo");
-
-    if (!logo) {
-        alert("Logo not found");
-        return;
-    }
-
-    logo.addEventListener("click", (event) => {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (window.NEXAVoice) {
-            window.NEXAVoice.toggle();
-            console.log("NEXA Voice toggle called");
-        } else {
-            alert("NEXAVoice is missing");
-        }
-
-    });
-
-});
-</script>
-
-
-
-</script>
-
 </body>
 
 </html>
