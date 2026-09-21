@@ -2254,7 +2254,6 @@ video {
   display: block;
 
   margin-bottom: 8px;
-   
 
   color: #eee0b4;
 
@@ -7609,4 +7608,918 @@ button:disabled {
     .nexa-coming-soon-content h3 {
         font-size: 18px;
     }
+}
+
+/* =========================================================
+   NEXA MESSAGES — GLOBAL THEME BRIDGE
+   This connects messages.css to the global NEXA theme.
+========================================================= */
+
+/* ---------------------------------------------------------
+   MESSAGE-SPECIFIC VARIABLES
+--------------------------------------------------------- */
+
+html[data-nexa-theme] {
+    --nexa-bg:
+        var(--nexa-theme-bg);
+
+    --nexa-bg-soft:
+        var(--nexa-theme-bg-2);
+
+    --nexa-bg-deep:
+        var(--nexa-theme-bg);
+
+    --nexa-panel:
+        var(--nexa-theme-surface);
+
+    --nexa-panel-soft:
+        var(--nexa-theme-surface);
+
+    --nexa-panel-light:
+        var(--nexa-theme-surface-solid);
+
+    --nexa-border:
+        var(--nexa-theme-border);
+
+    --nexa-border-soft:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 10%,
+            transparent
+        );
+
+    --nexa-border-bright:
+        var(--nexa-theme-border-strong);
+
+    --nexa-white:
+        var(--nexa-theme-text);
+
+    --nexa-text:
+        var(--nexa-theme-text);
+
+    --nexa-text-soft:
+        var(--nexa-theme-muted);
+
+    --nexa-text-muted:
+        var(--nexa-theme-muted);
+
+    --nexa-blue:
+        var(--nexa-theme-primary);
+
+    --nexa-blue-2:
+        var(--nexa-theme-accent);
+
+    --nexa-blue-dark:
+        var(--nexa-theme-secondary);
+
+    --nexa-gold:
+        var(--nexa-theme-primary);
+
+    --nexa-gold-soft:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 65%,
+            transparent
+        );
+
+    --nexa-gold-pale:
+        var(--nexa-theme-accent);
+}
+
+
+/* ---------------------------------------------------------
+   MAIN MESSAGES BACKGROUND
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .messages-background {
+    background:
+        radial-gradient(
+            circle at 10% 15%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 12%,
+                transparent
+            ),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 88% 12%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 10%,
+                transparent
+            ),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 65% 90%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 7%,
+                transparent
+            ),
+            transparent 30%
+        ),
+        linear-gradient(
+            145deg,
+            var(--nexa-theme-bg),
+            var(--nexa-theme-bg-2),
+            var(--nexa-theme-bg)
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   BACKGROUND GRID
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .background-grid {
+    background-image:
+        linear-gradient(
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 5%,
+                transparent
+            ) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 5%,
+                transparent
+            ) 1px,
+            transparent 1px
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   BACKGROUND ORBS
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .background-orb-one {
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 18%,
+                transparent
+            ),
+            transparent 70%
+        ) !important;
+}
+
+html[data-nexa-theme] .background-orb-two {
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 15%,
+                transparent
+            ),
+            transparent 70%
+        ) !important;
+}
+
+html[data-nexa-theme] .background-orb-three {
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 10%,
+                transparent
+            ),
+            transparent 70%
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   HEADER
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .site-header {
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-bg) 94%,
+            transparent
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .site-header::after {
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--nexa-theme-primary),
+            transparent
+        ) !important;
+
+    opacity: .45;
+}
+
+
+/* ---------------------------------------------------------
+   LOGO
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .logo-symbol {
+    color:
+        var(--nexa-theme-primary) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 10%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .logo-text {
+    background:
+        linear-gradient(
+            90deg,
+            var(--nexa-theme-text),
+            var(--nexa-theme-primary),
+            var(--nexa-theme-secondary)
+        ) !important;
+
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
+
+/* ---------------------------------------------------------
+   MAIN NAV
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .main-nav-link {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .main-nav-link:hover {
+    color:
+        var(--nexa-theme-text) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 5%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .main-nav-link.active {
+    color:
+        var(--nexa-theme-accent) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 9%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .nav-notification-dot {
+    background:
+        var(--nexa-theme-primary) !important;
+
+    box-shadow:
+        0 0 12px
+        var(--nexa-theme-glow) !important;
+}
+
+
+/* ---------------------------------------------------------
+   CONVERSATIONS PANEL
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .conversations-panel {
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-bg-2) 96%,
+                transparent
+            ),
+            var(--nexa-theme-bg)
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .conversations-top {
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 4%,
+                transparent
+            ),
+            transparent
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   CONVERSATION BUTTONS
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .conversationButton {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .conversationButton:hover {
+    border-color:
+        var(--nexa-theme-border) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 5%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .conversationButton strong {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .conversationButton span {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .conversationButton::before {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 13%,
+                transparent
+            ),
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 12%,
+                transparent
+            )
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   SEARCH
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .conversation-search input {
+    color:
+        var(--nexa-theme-text) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-text) 3%,
+            transparent
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .conversation-search input::placeholder {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .conversation-search input:focus {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    box-shadow:
+        0 0 0 4px
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   FILTERS
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .conversation-filter {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .conversation-filter:hover,
+html[data-nexa-theme] .conversation-filter.active {
+    color:
+        var(--nexa-theme-accent) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+}
+
+
+/* ---------------------------------------------------------
+   CHAT SECTION
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .chat-section {
+    background:
+        radial-gradient(
+            circle at 78% 0%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 8%,
+                transparent
+            ),
+            transparent 28%
+        ),
+        linear-gradient(
+            180deg,
+            var(--nexa-theme-bg-2),
+            var(--nexa-theme-bg)
+        ) !important;
+}
+
+html[data-nexa-theme] .chat-header {
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-bg) 92%,
+            transparent
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .chat-user-name-row h2 {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .chat-avatar {
+    color:
+        var(--nexa-theme-accent) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 16%,
+                transparent
+            ),
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 20%,
+                transparent
+            )
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   CHAT CONTROLS
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .chat-control,
+html[data-nexa-theme] .chat-close-button,
+html[data-nexa-theme] .mobile-back-button {
+    color:
+        var(--nexa-theme-muted) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 3%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .chat-control:hover,
+html[data-nexa-theme] .chat-close-button:hover,
+html[data-nexa-theme] .mobile-back-button:hover {
+    color:
+        var(--nexa-theme-primary) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   MESSAGE COMPOSER
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .message-composer-area {
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-bg) 95%,
+            transparent
+        ) !important;
+
+    border-top-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .composer-box {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 6%,
+                transparent
+            ),
+            color-mix(
+                in srgb,
+                var(--nexa-theme-text) 2%,
+                transparent
+            )
+        ) !important;
+}
+
+html[data-nexa-theme] .composer-box:focus-within {
+    border-color:
+        var(--nexa-theme-primary) !important;
+
+    box-shadow:
+        0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .composer-inner-button,
+html[data-nexa-theme] .voice-composer-button {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .composer-inner-button:hover,
+html[data-nexa-theme] .voice-composer-button:hover {
+    color:
+        var(--nexa-theme-primary) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .message-input-wrapper input {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .message-input-wrapper input::placeholder {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .send-button {
+    color:
+        #fff !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--nexa-theme-secondary),
+            var(--nexa-theme-primary)
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   GROUP CREATION
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .create-group-box {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            150deg,
+            var(--nexa-theme-bg-2),
+            var(--nexa-theme-bg)
+        ) !important;
+}
+
+html[data-nexa-theme] .create-group-modal {
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 9%,
+                transparent
+            ),
+            transparent 35%
+        ),
+        rgba(0, 0, 0, .78) !important;
+}
+
+html[data-nexa-theme] .create-group-header h2,
+html[data-nexa-theme] .create-group-friends-heading strong,
+html[data-nexa-theme] .group-friend-info strong {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .create-group-header p,
+html[data-nexa-theme] .group-friend-info small,
+html[data-nexa-theme] .group-friends-loading,
+html[data-nexa-theme] .group-friends-empty {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+
+html[data-nexa-theme] .create-group-field input,
+html[data-nexa-theme] .create-group-field textarea {
+    color:
+        var(--nexa-theme-text) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-text) 3%,
+            transparent
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+html[data-nexa-theme] .create-group-field input:focus,
+html[data-nexa-theme] .create-group-field textarea:focus {
+    border-color:
+        var(--nexa-theme-primary) !important;
+}
+
+html[data-nexa-theme] .create-group-submit {
+    color: #fff !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--nexa-theme-secondary),
+            var(--nexa-theme-primary)
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+}
+
+
+/* ---------------------------------------------------------
+   EMOJI PICKER
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .emoji-picker {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--nexa-theme-bg-2),
+            var(--nexa-theme-bg)
+        ) !important;
+}
+
+html[data-nexa-theme] .emoji-picker-header strong,
+html[data-nexa-theme] .emoji-category-button.active {
+    color:
+        var(--nexa-theme-primary) !important;
+}
+
+html[data-nexa-theme] #emojiSearch {
+    color:
+        var(--nexa-theme-text) !important;
+
+    border-color:
+        var(--nexa-theme-border) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-text) 3%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .emoji-category-button:hover,
+html[data-nexa-theme] .emoji-category-button.active,
+html[data-nexa-theme] .emoji-option:hover {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 8%,
+            transparent
+        ) !important;
+}
+
+
+/* ---------------------------------------------------------
+   STATUS / READ TICKS
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .nexa-message-ticks,
+html[data-nexa-theme] .nexa-message-ticks.is-read {
+    color:
+        var(--nexa-theme-primary) !important;
+}
+
+html[data-nexa-theme] .chat-online-status,
+html[data-nexa-theme] .online-status-indicator {
+    color:
+        #67b88c !important;
+}
+
+
+/* ---------------------------------------------------------
+   CALL SCREEN
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .nexa-active-call-screen {
+    background:
+        radial-gradient(
+            circle at center,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 9%,
+                transparent
+            ),
+            transparent 32%
+        ),
+        var(--nexa-theme-bg) !important;
+}
+
+html[data-nexa-theme] .nexa-call-ring {
+    border-color:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 28%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .nexa-call-avatar {
+    color:
+        var(--nexa-theme-accent) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 18%,
+                transparent
+            ),
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 25%,
+                transparent
+            )
+        ) !important;
+}
+
+html[data-nexa-theme] .nexa-call-name {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+
+/* ---------------------------------------------------------
+   COMING SOON POPUP
+--------------------------------------------------------- */
+
+html[data-nexa-theme] .nexa-coming-soon-card {
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--nexa-theme-bg-2),
+            var(--nexa-theme-bg)
+        ) !important;
+}
+
+html[data-nexa-theme] .nexa-coming-soon-icon {
+    color:
+        var(--nexa-theme-primary) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 12%,
+            transparent
+        ) !important;
+}
+
+html[data-nexa-theme] .nexa-coming-soon-label,
+html[data-nexa-theme] .nexa-coming-soon-close:hover {
+    color:
+        var(--nexa-theme-primary) !important;
+}
+
+html[data-nexa-theme] .nexa-coming-soon-content h3 {
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+html[data-nexa-theme] .nexa-coming-soon-content p {
+    color:
+        var(--nexa-theme-muted) !important;
+}
+/* =========================================================
+   NEXA CHAT WALLPAPER
+========================================================= */
+
+body.has-nexa-wallpaper .chat-section {
+    background-image:
+        linear-gradient(
+            rgba(5, 8, 22, 0.82),
+            rgba(5, 8, 22, 0.88)
+        ),
+        var(--nexa-wallpaper) !important;
+
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
 }
