@@ -1200,72 +1200,21 @@
 
 <script src="messages.js"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const logo = document.getElementById("nexaLogoAiButton");
-
-    if (!logo) {
-        console.error("NEXA AI: Logo not found.");
-        return;
-    }
-
-    logo.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (window.NEXAVoice && typeof window.NEXAVoice.toggle === "function") {
-            window.NEXAVoice.toggle();
-        } else {
-            console.error(
-                "NEXA AI: NEXAVoice is not loaded. Check nexa-ai-voice.js."
-            );
-        }
-    });
-});
-</script>
-
     <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    const logo = document.getElementById("nexaLogoTest");
-
-    if (!logo) {
-        alert("NEXA TEST: Logo not found");
-        return;
+    if (window.NEXAVoice) {
+        alert("NEXA AI IS LOADED!");
+    } else {
+        alert("NEXA AI IS NOT LOADED!");
     }
-
-    logo.addEventListener("click", () => {
-        alert("NEXA TEST WORKS!");
-        console.log("NEXA TEST: logo click detected");
-    });
 
 });
 </script>
 
-    <script>
-document.addEventListener("DOMContentLoaded", () => {
 
-    const logo = document.querySelector(".nexa-logo");
 
-    if (!logo) {
-        alert("NEXA TEST: Logo not found");
-        return;
-    }
 
-    alert("NEXA TEST: Logo FOUND!");
-
-    logo.addEventListener("click", (event) => {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        alert("NEXA TEST WORKS!");
-
-        console.log("NEXA TEST: logo click detected");
-
-    });
-
-});
 </script>
 
 </body>
