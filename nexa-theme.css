@@ -1,0 +1,625 @@
+/* =========================================================
+   NEXA GLOBAL THEME ENGINE
+   This file controls the appearance shared by NEXA pages.
+========================================================= */
+
+:root {
+    --nexa-theme-bg: #050816;
+    --nexa-theme-bg-2: #0b1020;
+
+    --nexa-theme-primary: #00eaff;
+    --nexa-theme-secondary: #0066ff;
+    --nexa-theme-accent: #d4af37;
+
+    --nexa-theme-text: #ffffff;
+    --nexa-theme-muted: #a8b0c2;
+
+    --nexa-theme-surface: rgba(12, 18, 35, 0.82);
+    --nexa-theme-surface-solid: #101726;
+
+    --nexa-theme-border: rgba(255, 255, 255, 0.09);
+    --nexa-theme-border-strong: rgba(0, 234, 255, 0.25);
+
+    --nexa-theme-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+
+    --nexa-theme-glow:
+        rgba(0, 234, 255, 0.20);
+
+    --nexa-theme-background-image: none;
+
+    --nexa-theme-overlay:
+        rgba(5, 8, 22, 0.38);
+}
+
+
+/* =========================================================
+   ROYAL BLACK
+========================================================= */
+
+html[data-nexa-theme="royal-black"] {
+    --nexa-theme-bg: #030303;
+    --nexa-theme-bg-2: #12100b;
+
+    --nexa-theme-primary: #d4af37;
+    --nexa-theme-secondary: #9b7420;
+    --nexa-theme-accent: #f5e6a8;
+
+    --nexa-theme-text: #f7f1df;
+    --nexa-theme-muted: #aaa28d;
+
+    --nexa-theme-surface:
+        rgba(18, 18, 16, 0.88);
+
+    --nexa-theme-surface-solid:
+        #11110e;
+
+    --nexa-theme-border:
+        rgba(212, 175, 55, 0.15);
+
+    --nexa-theme-border-strong:
+        rgba(212, 175, 55, 0.35);
+
+    --nexa-theme-glow:
+        rgba(212, 175, 55, 0.16);
+}
+
+
+/* =========================================================
+   FUTURISTIC BLUE
+========================================================= */
+
+html[data-nexa-theme="futuristic-blue"] {
+    --nexa-theme-bg: #030817;
+    --nexa-theme-bg-2: #09152c;
+
+    --nexa-theme-primary: #00eaff;
+    --nexa-theme-secondary: #0066ff;
+    --nexa-theme-accent: #56eaff;
+
+    --nexa-theme-text: #eefcff;
+    --nexa-theme-muted: #8ea5bd;
+
+    --nexa-theme-surface:
+        rgba(7, 20, 43, 0.84);
+
+    --nexa-theme-surface-solid:
+        #0a1730;
+
+    --nexa-theme-border:
+        rgba(0, 234, 255, 0.12);
+
+    --nexa-theme-border-strong:
+        rgba(0, 234, 255, 0.32);
+
+    --nexa-theme-glow:
+        rgba(0, 234, 255, 0.24);
+}
+
+
+/* =========================================================
+   CYBER PURPLE
+========================================================= */
+
+html[data-nexa-theme="cyber-purple"] {
+    --nexa-theme-bg: #0a0416;
+    --nexa-theme-bg-2: #18082b;
+
+    --nexa-theme-primary: #c77dff;
+    --nexa-theme-secondary: #7b2cff;
+    --nexa-theme-accent: #e2b7ff;
+
+    --nexa-theme-text: #fbf5ff;
+    --nexa-theme-muted: #aa96bb;
+
+    --nexa-theme-surface:
+        rgba(27, 10, 48, 0.84);
+
+    --nexa-theme-surface-solid:
+        #1a0d2b;
+
+    --nexa-theme-border:
+        rgba(199, 125, 255, 0.13);
+
+    --nexa-theme-border-strong:
+        rgba(199, 125, 255, 0.35);
+
+    --nexa-theme-glow:
+        rgba(199, 125, 255, 0.22);
+}
+
+
+/* =========================================================
+   EMERALD
+========================================================= */
+
+html[data-nexa-theme="emerald"] {
+    --nexa-theme-bg: #02110c;
+    --nexa-theme-bg-2: #06251b;
+
+    --nexa-theme-primary: #00e6a8;
+    --nexa-theme-secondary: #00a875;
+    --nexa-theme-accent: #83ffdc;
+
+    --nexa-theme-text: #effff9;
+    --nexa-theme-muted: #8cb8aa;
+
+    --nexa-theme-surface:
+        rgba(5, 31, 23, 0.84);
+
+    --nexa-theme-surface-solid:
+        #09271e;
+
+    --nexa-theme-border:
+        rgba(0, 230, 168, 0.12);
+
+    --nexa-theme-border-strong:
+        rgba(0, 230, 168, 0.32);
+
+    --nexa-theme-glow:
+        rgba(0, 230, 168, 0.20);
+}
+
+
+/* =========================================================
+   CRIMSON
+========================================================= */
+
+html[data-nexa-theme="crimson"] {
+    --nexa-theme-bg: #120305;
+    --nexa-theme-bg-2: #29060b;
+
+    --nexa-theme-primary: #ff4f6d;
+    --nexa-theme-secondary: #c9153b;
+    --nexa-theme-accent: #ff9eae;
+
+    --nexa-theme-text: #fff5f7;
+    --nexa-theme-muted: #bd909a;
+
+    --nexa-theme-surface:
+        rgba(40, 8, 15, 0.84);
+
+    --nexa-theme-surface-solid:
+        #260910;
+
+    --nexa-theme-border:
+        rgba(255, 79, 109, 0.13);
+
+    --nexa-theme-border-strong:
+        rgba(255, 79, 109, 0.35);
+
+    --nexa-theme-glow:
+        rgba(255, 79, 109, 0.20);
+}
+
+
+/* =========================================================
+   OCEAN
+========================================================= */
+
+html[data-nexa-theme="ocean"] {
+    --nexa-theme-bg: #021015;
+    --nexa-theme-bg-2: #063345;
+
+    --nexa-theme-primary: #27d7ff;
+    --nexa-theme-secondary: #1976d2;
+    --nexa-theme-accent: #8beaff;
+
+    --nexa-theme-text: #effcff;
+    --nexa-theme-muted: #8fb3bd;
+
+    --nexa-theme-surface:
+        rgba(4, 32, 43, 0.84);
+
+    --nexa-theme-surface-solid:
+        #082b38;
+
+    --nexa-theme-border:
+        rgba(39, 215, 255, 0.13);
+
+    --nexa-theme-border-strong:
+        rgba(39, 215, 255, 0.34);
+
+    --nexa-theme-glow:
+        rgba(39, 215, 255, 0.20);
+}
+
+
+/* =========================================================
+   SUNSET
+========================================================= */
+
+html[data-nexa-theme="sunset"] {
+    --nexa-theme-bg: #16070a;
+    --nexa-theme-bg-2: #32120a;
+
+    --nexa-theme-primary: #ff914d;
+    --nexa-theme-secondary: #ff4d8d;
+    --nexa-theme-accent: #ffd166;
+
+    --nexa-theme-text: #fff9f2;
+    --nexa-theme-muted: #bfa18f;
+
+    --nexa-theme-surface:
+        rgba(45, 17, 13, 0.84);
+
+    --nexa-theme-surface-solid:
+        #2b1510;
+
+    --nexa-theme-border:
+        rgba(255, 145, 77, 0.13);
+
+    --nexa-theme-border-strong:
+        rgba(255, 145, 77, 0.34);
+
+    --nexa-theme-glow:
+        rgba(255, 145, 77, 0.20);
+}
+
+
+/* =========================================================
+   SAKURA
+========================================================= */
+
+html[data-nexa-theme="sakura"] {
+    --nexa-theme-bg: #170812;
+    --nexa-theme-bg-2: #311020;
+
+    --nexa-theme-primary: #ff79b0;
+    --nexa-theme-secondary: #c95c9e;
+    --nexa-theme-accent: #ffc1da;
+
+    --nexa-theme-text: #fff7fb;
+    --nexa-theme-muted: #bd96a9;
+
+    --nexa-theme-surface:
+        rgba(48, 13, 31, 0.84);
+
+    --nexa-theme-surface-solid:
+        #301322;
+
+    --nexa-theme-border:
+        rgba(255, 121, 176, 0.14);
+
+    --nexa-theme-border-strong:
+        rgba(255, 121, 176, 0.35);
+
+    --nexa-theme-glow:
+        rgba(255, 121, 176, 0.20);
+}
+
+
+/* =========================================================
+   COSMIC
+========================================================= */
+
+html[data-nexa-theme="cosmic"] {
+    --nexa-theme-bg: #05030f;
+    --nexa-theme-bg-2: #17103a;
+
+    --nexa-theme-primary: #9d7bff;
+    --nexa-theme-secondary: #4f7cff;
+    --nexa-theme-accent: #f0c8ff;
+
+    --nexa-theme-text: #f8f5ff;
+    --nexa-theme-muted: #a19abf;
+
+    --nexa-theme-surface:
+        rgba(23, 16, 58, 0.82);
+
+    --nexa-theme-surface-solid:
+        #17103a;
+
+    --nexa-theme-border:
+        rgba(157, 123, 255, 0.14);
+
+    --nexa-theme-border-strong:
+        rgba(157, 123, 255, 0.34);
+
+    --nexa-theme-glow:
+        rgba(157, 123, 255, 0.22);
+}
+
+
+/* =========================================================
+   LIGHT
+========================================================= */
+
+html[data-nexa-theme="light"] {
+    --nexa-theme-bg: #f4f6fb;
+    --nexa-theme-bg-2: #ffffff;
+
+    --nexa-theme-primary: #5964e9;
+    --nexa-theme-secondary: #33b8e8;
+    --nexa-theme-accent: #c59a45;
+
+    --nexa-theme-text: #182033;
+    --nexa-theme-muted: #7d879b;
+
+    --nexa-theme-surface:
+        rgba(255, 255, 255, 0.84);
+
+    --nexa-theme-surface-solid:
+        #ffffff;
+
+    --nexa-theme-border:
+        rgba(24, 32, 51, 0.09);
+
+    --nexa-theme-border-strong:
+        rgba(89, 100, 233, 0.22);
+
+    --nexa-theme-glow:
+        rgba(89, 100, 233, 0.10);
+}
+
+
+/* =========================================================
+   GLOBAL PAGE BACKGROUND
+========================================================= */
+
+html[data-nexa-theme] body {
+    background:
+        radial-gradient(
+            circle at 12% 8%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-primary) 18%,
+                transparent
+            ),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 88% 20%,
+            color-mix(
+                in srgb,
+                var(--nexa-theme-secondary) 15%,
+                transparent
+            ),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            var(--nexa-theme-bg),
+            var(--nexa-theme-bg-2)
+        ) !important;
+
+    color:
+        var(--nexa-theme-text) !important;
+}
+
+
+/* =========================================================
+   CUSTOM BACKGROUND
+========================================================= */
+
+html.has-nexa-custom-background body::before {
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: -2;
+
+    background:
+        var(--nexa-theme-background-image)
+        center / cover
+        no-repeat;
+
+    pointer-events: none;
+}
+
+
+html.has-nexa-custom-background body::after {
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: -1;
+
+    background:
+        var(--nexa-theme-overlay);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   COMMON NEXA SURFACES
+========================================================= */
+
+html[data-nexa-theme] .settings-card,
+html[data-nexa-theme] .profile-card,
+html[data-nexa-theme] .stories-section,
+html[data-nexa-theme] .create-post,
+html[data-nexa-theme] .feed-post,
+html[data-nexa-theme] .reel-card,
+html[data-nexa-theme] .home-side-card,
+html[data-nexa-theme] .quick-stat,
+html[data-nexa-theme] .empty-feed,
+html[data-nexa-theme] .settings-detail-modal {
+    border-color:
+        var(--nexa-theme-border) !important;
+}
+
+
+/* =========================================================
+   COMMON ACCENTS
+========================================================= */
+
+html[data-nexa-theme] .logo,
+html[data-nexa-theme] .mobile-logo,
+html[data-nexa-theme] .section-eyebrow,
+html[data-nexa-theme] .home-eyebrow,
+html[data-nexa-theme] .section-heading,
+html[data-nexa-theme] .setting-icon,
+html[data-nexa-theme] .modal-crown {
+    color:
+        var(--nexa-theme-primary) !important;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+html[data-nexa-theme] .composer-post-button,
+html[data-nexa-theme] .intro-action.primary,
+html[data-nexa-theme] .discover-button,
+html[data-nexa-theme] .empty-feed-button,
+html[data-nexa-theme] .save-button,
+html[data-nexa-theme] .detail-primary-button {
+    background:
+        linear-gradient(
+            135deg,
+            var(--nexa-theme-secondary),
+            var(--nexa-theme-primary)
+        ) !important;
+
+    color: #fff !important;
+}
+
+
+/* =========================================================
+   COMMON BORDER / FOCUS
+========================================================= */
+
+html[data-nexa-theme] input:focus,
+html[data-nexa-theme] textarea:focus {
+    border-color:
+        var(--nexa-theme-primary) !important;
+
+    box-shadow:
+        0 0 0 4px
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 10%,
+            transparent
+        ) !important;
+}
+
+
+/* =========================================================
+   PROFILE RINGS
+========================================================= */
+
+html[data-nexa-theme] .story-ring {
+    background:
+        conic-gradient(
+            var(--nexa-theme-primary),
+            var(--nexa-theme-secondary),
+            var(--nexa-theme-accent),
+            var(--nexa-theme-primary)
+        ) !important;
+}
+
+
+/* =========================================================
+   ACTIVE NAV
+========================================================= */
+
+html[data-nexa-theme] .nav-item.active {
+    color:
+        var(--nexa-theme-primary) !important;
+
+    border-color:
+        var(--nexa-theme-border-strong) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-primary) 9%,
+            transparent
+        ) !important;
+}
+
+
+/* =========================================================
+   TOGGLES
+========================================================= */
+
+html[data-nexa-theme] .switch input:checked + .slider {
+    background:
+        linear-gradient(
+            135deg,
+            var(--nexa-theme-primary),
+            var(--nexa-theme-secondary)
+        ) !important;
+
+    border-color:
+        var(--nexa-theme-primary) !important;
+}
+
+
+/* =========================================================
+   MOBILE NAV
+========================================================= */
+
+html[data-nexa-theme] .mobile-nav {
+    border-top-color:
+        var(--nexa-theme-border) !important;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--nexa-theme-bg) 92%,
+            transparent
+        ) !important;
+}
+
+
+html[data-nexa-theme] .mobile-nav-item.active {
+    color:
+        var(--nexa-theme-primary) !important;
+}
+
+
+html[data-nexa-theme] .mobile-nav-item.active::before {
+    background:
+        linear-gradient(
+            90deg,
+            var(--nexa-theme-secondary),
+            var(--nexa-theme-primary)
+        ) !important;
+}
+
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+html[data-nexa-theme] ::selection {
+    background:
+        var(--nexa-theme-primary);
+
+    color:
+        #050505;
+}
+html[data-nexa-theme="neon-pink"] {
+    --nexa-theme-bg: #12030d;
+    --nexa-theme-bg-2: #2b071b;
+
+    --nexa-theme-primary: #ff237f;
+    --nexa-theme-secondary: #d4145a;
+    --nexa-theme-accent: #ff9ac4;
+
+    --nexa-theme-text: #fff5fa;
+    --nexa-theme-muted: #bd8fa7;
+
+    --nexa-theme-surface:
+        rgba(43, 7, 27, 0.84);
+
+    --nexa-theme-surface-solid:
+        #290a1a;
+
+    --nexa-theme-border:
+        rgba(255, 35, 127, 0.14);
+
+    --nexa-theme-border-strong:
+        rgba(255, 35, 127, 0.35);
+
+    --nexa-theme-glow:
+        rgba(255, 35, 127, 0.22);
+}
