@@ -1199,6 +1199,30 @@
 
 <script src="messages.js"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const logo = document.getElementById("nexaLogoAiButton");
+
+    if (!logo) {
+        console.error("NEXA AI: Logo not found.");
+        return;
+    }
+
+    logo.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (window.NEXAVoice && typeof window.NEXAVoice.toggle === "function") {
+            window.NEXAVoice.toggle();
+        } else {
+            console.error(
+                "NEXA AI: NEXAVoice is not loaded. Check nexa-ai-voice.js."
+            );
+        }
+    });
+});
+</script>
+
 </body>
 
 </html>
