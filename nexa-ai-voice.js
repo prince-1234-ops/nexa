@@ -95,7 +95,41 @@
 
         document.body.appendChild(selector);
 
-        waitingForVoiceChoice = true;
+waitingForVoiceChoice = true;
+
+/*
+ * Force the selector to be visible above everything.
+ * This avoids problems caused by missing or conflicting CSS.
+ */
+Object.assign(selector.style, {
+    position: "fixed",
+    inset: "0",
+    zIndex: "2147483647",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    boxSizing: "border-box",
+    background: "rgba(0, 0, 0, 0.82)"
+});
+
+const selectorBox =
+    selector.querySelector(".nexa-voice-selector-box");
+
+if (selectorBox) {
+
+    Object.assign(selectorBox.style, {
+        width: "min(420px, 100%)",
+        padding: "30px",
+        boxSizing: "border-box",
+        borderRadius: "24px",
+        background: "#080808",
+        border: "1px solid #d4af37",
+        boxShadow: "0 25px 80px rgba(0, 0, 0, 0.8)",
+        color: "#f5f0df",
+        fontFamily: "Arial, sans-serif"
+    });
+}
 
         const buttons =
             selector.querySelectorAll(
