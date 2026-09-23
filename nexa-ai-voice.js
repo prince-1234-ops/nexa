@@ -378,8 +378,200 @@ Respond quickly and naturally.
                 };
 
 
-            liveSocket.onmessage =
-                async event => {
+           liveSocket.onmessage = async event => {
+
+    try {
+
+        let rawData = event.data;
+
+        /*
+         * Browser may receive the WebSocket message
+         * as a Blob instead of a string.
+         */
+        if (rawData instanceof Blob) {
+            rawData = await rawData.text();
+        }
+
+        /*
+         * Some browsers / WebSocket configurations
+         * may provide an ArrayBuffer.
+         */
+        else if (rawData instanceof ArrayBuffer) {
+            rawData = new TextDecoder().decode(rawData);
+        }
+
+        /*
+         * Ignore anything that isn't JSON text.
+         */
+        if (typeof rawData !== "string") {
+            console.warn(
+                "NEXA LIVE: unsupported WebSocket data:",
+                rawData
+            );
+            return;
+        }
+
+        const response =
+            JSON.parse(rawData);
+
+
+        console.log(
+            "NEXA LIVE: server message:",
+            response
+        );
+
+
+        /* =================================================
+           SETUP COMPLETE
+        ================================================= */
+
+        if (response.setupComplete) {
+
+            setupComplete = true;
+
+            console.log(
+                "NEXA LIVE: setup complete."
+            );
+
+            await startMicrophone();
+
+            /*
+             * Ask NEXA for an immediate greeting.
+             */
+            if (
+                liveSocket &&
+                liveSocket.readyState === WebSocket.OPEN
+            ) {
+
+                liveSocket.send(
+                    JSON.stringify({
+                        realtimeInput: {
+                            text:
+                                "Say a short friendly greeting to the user. Just say: Hey there! How are you?"
+                        }
+                    })
+                );
+
+                console.log(
+                    "NEXA LIVE: greeting requested."
+                );
+            }
+
+            return;
+        }
+
+
+        /* =================================================
+           SERVER CONTENT
+        ================================================= */
+
+        const serverContent =
+            response.serverContent;
+
+        if (!serverContent) {
+            return;
+        }
+
+
+        /* =================================================
+           INTERRUPTION
+        ================================================= */
+
+        if (serverContent.interrupted) {
+
+            stopOutputImmediately();
+
+            console.log(
+                "NEXA LIVE: response interrupted."
+            );
+        }
+
+
+        /* =================================================
+           INPUT TRANSCRIPTION
+        ================================================= */
+
+        if (
+            serverContent.inputTranscription
+        ) {
+
+            console.log(
+                "YOU:",
+                serverContent
+                    .inputTranscription
+                    .text
+            );
+        }
+
+
+        /* =================================================
+           OUTPUT TRANSCRIPTION
+        ================================================= */
+
+        if (
+            serverContent.outputTranscription
+        ) {
+
+            console.log(
+                "NEXA:",
+                serverContent
+                    .outputTranscription
+                    .text
+            );
+        }
+
+
+        /* =================================================
+           STREAM AUDIO
+        ================================================= */
+
+        const parts =
+            serverContent
+                ?.modelTurn
+                ?.parts || [];
+
+
+        for (
+            const part
+            of parts
+        ) {
+
+            const inlineData =
+                part?.inlineData;
+
+            if (
+                inlineData?.data
+            ) {
+
+                playPcmChunk(
+                    inlineData.data,
+                    inlineData.mimeType
+                );
+            }
+        }
+
+
+        /* =================================================
+           TURN COMPLETE
+        ================================================= */
+
+        if (
+            serverContent.turnComplete
+        ) {
+
+            console.log(
+                "NEXA LIVE: turn complete."
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "NEXA LIVE message error:",
+            error
+        );
+    }
+};
 
                     try {
 
