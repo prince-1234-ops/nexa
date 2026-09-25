@@ -8523,3 +8523,401 @@ body.has-nexa-wallpaper .chat-section {
     background-position: center !important;
     background-repeat: no-repeat !important;
 }
+/* =========================================================
+   NEXA AI VOICE
+========================================================= */
+
+.nexa-ai-logo {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.nexa-ai-logo:hover {
+    transform: translateY(-1px);
+}
+
+
+.nexa-ai-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(212, 175, 55, 0.08),
+            rgba(0, 0, 0, 0.92) 55%,
+            rgba(0, 0, 0, 0.98)
+        );
+
+    backdrop-filter: blur(18px);
+}
+
+
+.nexa-ai-overlay.is-visible {
+    display: flex;
+}
+
+
+.nexa-ai-panel,
+.nexa-ai-session-panel {
+    position: relative;
+
+    width: min(460px, 100%);
+
+    padding: 38px 30px;
+
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 20, 20, 0.98),
+            rgba(5, 5, 5, 0.98)
+        );
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.7),
+        inset 0 0 40px rgba(212, 175, 55, 0.025);
+
+    text-align: center;
+}
+
+
+.nexa-ai-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.03);
+    color: #d4af37;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+.nexa-ai-mark {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 16px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(212, 175, 55, 0.18),
+            rgba(212, 175, 55, 0.02)
+        );
+
+    color: #f4d77d;
+
+    font-family: Cinzel, serif;
+    font-size: 32px;
+    font-weight: 700;
+
+    box-shadow:
+        0 0 35px rgba(212, 175, 55, 0.12);
+}
+
+
+.nexa-ai-kicker {
+    color: #d4af37;
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+}
+
+
+.nexa-ai-panel h2,
+.nexa-ai-session-panel h2 {
+    margin: 10px 0 8px;
+
+    color: #f4d77d;
+
+    font-family: Cinzel, serif;
+    font-size: 27px;
+}
+
+
+.nexa-ai-panel p,
+.nexa-ai-session-panel p {
+    margin: 0 auto 24px;
+
+    max-width: 340px;
+
+    color: #a9a08e;
+    line-height: 1.6;
+}
+
+
+.nexa-voice-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 14px;
+
+    margin-top: 24px;
+}
+
+
+.nexa-voice-option {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    width: 100%;
+
+    padding: 16px;
+
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 18px;
+
+    background: rgba(255,255,255,0.025);
+
+    color: #ffffff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.nexa-voice-option:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(212, 175, 55, 0.6);
+
+    background: rgba(212, 175, 55, 0.06);
+}
+
+
+.nexa-voice-option-icon {
+    width: 45px;
+    height: 45px;
+
+    flex: 0 0 45px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 14px;
+
+    background: rgba(212, 175, 55, 0.08);
+
+    color: #f4d77d;
+
+    font-size: 22px;
+}
+
+
+.nexa-voice-option strong {
+    display: block;
+
+    color: #f5f1e8;
+
+    font-size: 15px;
+}
+
+
+.nexa-voice-option small {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #8d8575;
+}
+
+
+.nexa-ai-disclosure {
+    display: block;
+
+    margin-top: 22px;
+
+    color: #6f695d;
+}
+
+
+.nexa-ai-session-panel {
+    min-height: 460px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.nexa-ai-orb {
+    width: 150px;
+    height: 150px;
+
+    margin-bottom: 26px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(244, 215, 125, 0.34),
+            rgba(212, 175, 55, 0.1) 40%,
+            rgba(0,0,0,0) 72%
+        );
+
+    box-shadow:
+        0 0 25px rgba(212, 175, 55, 0.25),
+        0 0 80px rgba(212, 175, 55, 0.1);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+.nexa-ai-orb span {
+    width: 72px;
+    height: 72px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: #0d0d0d;
+
+    border: 1px solid rgba(212, 175, 55, 0.5);
+
+    color: #f4d77d;
+
+    font-family: Cinzel, serif;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+
+.nexa-ai-orb.is-listening {
+    animation: nexaVoicePulse 1.4s infinite ease-in-out;
+}
+
+
+.nexa-ai-orb.is-speaking {
+    animation: nexaVoiceSpeak 0.75s infinite alternate ease-in-out;
+}
+
+
+@keyframes nexaVoicePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.09);
+    }
+}
+
+
+@keyframes nexaVoiceSpeak {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.14);
+    }
+}
+
+
+.nexa-ai-session-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-top: 26px;
+}
+
+
+.nexa-ai-control {
+    width: 56px;
+    height: 56px;
+
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 50%;
+
+    background: rgba(212, 175, 55, 0.08);
+
+    color: #f4d77d;
+
+    font-size: 21px;
+
+    cursor: pointer;
+}
+
+
+.nexa-ai-end {
+    padding: 13px 18px;
+
+    border: 1px solid rgba(216, 74, 74, 0.35);
+    border-radius: 14px;
+
+    background: rgba(216, 74, 74, 0.08);
+
+    color: #ef8b8b;
+
+    cursor: pointer;
+}
+
+
+@media (max-width: 600px) {
+
+    .nexa-ai-panel,
+    .nexa-ai-session-panel {
+        padding: 32px 20px;
+        border-radius: 22px;
+    }
+
+    .nexa-voice-options {
+        grid-template-columns: 1fr;
+    }
+
+    .nexa-ai-orb {
+        width: 130px;
+        height: 130px;
+    }
+
+}
