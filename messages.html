@@ -1412,6 +1412,58 @@
 
 <script src="messages.js"></script>
 
-</body>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const logo = document.getElementById("nexaAILogo");
+    const chooser = document.getElementById("nexaVoiceChooser");
+    const closeButton = document.getElementById("nexaVoiceChooserClose");
+
+    console.log("NEXA AI:", {
+        logo: logo,
+        chooser: chooser,
+        closeButton: closeButton
+    });
+
+    if (!logo) {
+        console.error("NEXA logo not found.");
+        return;
+    }
+
+    if (!chooser) {
+        console.error("NEXA voice chooser not found.");
+        return;
+    }
+
+    logo.addEventListener("click", function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        console.log("NEXA logo clicked.");
+
+        chooser.style.display = "flex";
+        chooser.setAttribute("aria-hidden", "false");
+
+        requestAnimationFrame(function () {
+            chooser.classList.add("active");
+        });
+    });
+
+    if (closeButton) {
+
+        closeButton.addEventListener("click", function () {
+
+            chooser.classList.remove("active");
+            chooser.style.display = "none";
+            chooser.setAttribute("aria-hidden", "true");
+
+        });
+
+    }
+
+});
+</script>
+
+</body>
 </html>
