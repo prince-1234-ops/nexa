@@ -1,3 +1,26 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const logo = document.getElementById("nexaAILogo");
+    const chooser = document.getElementById("nexaVoiceChooser");
+    const closeButton = document.getElementById("nexaVoiceChooserClose");
+
+    if (!logo || !chooser) {
+        console.error("NEXA AI voice elements were not found.");
+        return;
+    }
+
+    logo.addEventListener("click", () => {
+        chooser.classList.add("active");
+        chooser.setAttribute("aria-hidden", "false");
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener("click", () => {
+            chooser.classList.remove("active");
+            chooser.setAttribute("aria-hidden", "true");
+        });
+    }
+});
+
 /* =========================================================
    NEXA AI LIVE VOICE
    Gemini Live API
