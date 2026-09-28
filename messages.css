@@ -8941,3 +8941,45 @@ body.has-nexa-wallpaper .chat-section {
 .nexa-ai-overlay.active {
     display: flex;
 }
+
+/* =====================================================
+   NEXA AI LOGO
+===================================================== */
+
+.nexa-logo {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* =====================================================
+   NEXA AI VOICE CHOOSER
+===================================================== */
+
+.nexa-ai-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.nexa-ai-overlay.active {
+    display: flex;
+}
