@@ -1403,56 +1403,61 @@
     ========================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script src="supabase.js"></script>
-
 <script src="nexa-theme.js"></script>
-
 <script src="nexa-ai-voice.js"></script>
-
 <script src="messages.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    /* =========================================
+       NEXA AI ELEMENTS
+    ========================================= */
+
     const logo = document.getElementById("nexaAILogo");
+
     const chooser = document.getElementById("nexaVoiceChooser");
-    const closeButton = document.getElementById("nexaVoiceChooserClose");
+    const chooserClose = document.getElementById("nexaVoiceChooserClose");
 
-    console.log("NEXA AI:", {
-        logo: logo,
-        chooser: chooser,
-        closeButton: closeButton
-    });
+    const voiceOptions = document.querySelectorAll(".nexa-voice-option");
 
-    if (!logo) {
-        console.error("NEXA logo not found.");
-        return;
-    }
+    const session = document.getElementById("nexaVoiceSession");
+    const sessionClose = document.getElementById("nexaVoiceSessionClose");
 
-    if (!chooser) {
-        console.error("NEXA voice chooser not found.");
-        return;
-    }
+    const voiceStatus = document.getElementById("nexaVoiceStatus");
+    const voiceTranscript = document.getElementById("nexaVoiceTranscript");
 
-    logo.addEventListener("click", function (event) {
+    const voiceEndButton = document.getElementById("nexaVoiceEndButton");
 
-        event.preventDefault();
-        event.stopPropagation();
 
-        console.log("NEXA logo clicked.");
+    /* =========================================
+       OPEN CHOOSER
+    ========================================= */
 
-        chooser.style.display = "flex";
-        chooser.setAttribute("aria-hidden", "false");
+    if (logo && chooser) {
 
-        requestAnimationFrame(function () {
+        logo.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            chooser.style.display = "flex";
             chooser.classList.add("active");
+            chooser.setAttribute("aria-hidden", "false");
+
         });
-    });
 
-    if (closeButton) {
+    }
 
-        closeButton.addEventListener("click", function () {
+
+    /* =========================================
+       CLOSE CHOOSER
+    ========================================= */
+
+    if (chooserClose) {
+
+        chooserClose.addEventListener("click", function () {
 
             chooser.classList.remove("active");
             chooser.style.display = "none";
@@ -1462,8 +1467,112 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+
+    /* =========================================
+       FEMALE / MALE VOICE SELECTION
+    ========================================= */
+
+    voiceOptions.forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const selectedVoice = button.dataset.nexaVoice;
+
+            console.log("NEXA voice selected:", selectedVoice);
+
+
+            /* Close chooser */
+
+            if (chooser) {
+
+                chooser.classList.remove("active");
+                chooser.style.display = "none";
+                chooser.setAttribute("aria-hidden", "true");
+
+            }
+
+
+            /* Open voice session */
+
+            if (session) {
+
+                session.style.display = "flex";
+                session.classList.add("active");
+                session.setAttribute("aria-hidden", "false");
+
+            }
+
+
+            /* Update session text */
+
+            if (voiceStatus) {
+
+                voiceStatus.textContent =
+                    selectedVoice === "female"
+                        ? "NEXA Female Voice"
+                        : "NEXA Male Voice";
+
+            }
+
+
+            if (voiceTranscript) {
+
+                voiceTranscript.textContent =
+                    "Your " +
+                    selectedVoice +
+                    " NEXA voice is ready. Speak naturally.";
+
+            }
+
+
+            /*
+             * Save selected voice so the AI script
+             * can use it later.
+             */
+
+            localStorage.setItem("nexaSelectedVoice", selectedVoice);
+
+        });
+
+    });
+
+
+    /* =========================================
+       CLOSE VOICE SESSION
+    ========================================= */
+
+    if (sessionClose) {
+
+        sessionClose.addEventListener("click", function () {
+
+            session.classList.remove("active");
+            session.style.display = "none";
+            session.setAttribute("aria-hidden", "true");
+
+        });
+
+    }
+
+
+    /* =========================================
+       END CONVERSATION
+    ========================================= */
+
+    if (voiceEndButton) {
+
+        voiceEndButton.addEventListener("click", function () {
+
+            if (session) {
+
+                session.classList.remove("active");
+                session.style.display = "none";
+                session.setAttribute("aria-hidden", "true");
+
+            }
+
+        });
+
+    }
+
 });
 </script>
-
-</body>
-</html>
