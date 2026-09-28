@@ -8921,3 +8921,23 @@ body.has-nexa-wallpaper .chat-section {
     }
 
 }
+
+.nexa-logo {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nexa-ai-overlay {
+    display: none;
+}
+
+.nexa-ai-overlay.active {
+    display: flex;
+}
