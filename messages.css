@@ -8983,3 +8983,105 @@ body.has-nexa-wallpaper .chat-section {
 .nexa-ai-overlay.active {
     display: flex;
 }
+
+.nexa-ai-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.nexa-ai-overlay.active {
+    display: flex;
+}
+
+.nexa-ai-panel,
+.nexa-ai-session-panel {
+    position: relative;
+    width: min(460px, 92vw);
+    padding: 35px;
+    border-radius: 24px;
+    background: #050505;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.7);
+}
+
+.nexa-voice-options {
+    display: grid;
+    gap: 14px;
+    margin-top: 25px;
+}
+
+.nexa-voice-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 17px;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.25s ease;
+}
+
+.nexa-voice-option:hover {
+    transform: translateY(-2px);
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.nexa-voice-option-icon {
+    width: 45px;
+    height: 45px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    font-size: 22px;
+    color: #d4af37;
+}
+
+.nexa-ai-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.nexa-ai-orb {
+    width: 110px;
+    height: 110px;
+    margin: 10px auto 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    box-shadow:
+        0 0 25px rgba(212, 175, 55, 0.35),
+        inset 0 0 25px rgba(212, 175, 55, 0.12);
+}
+
+.nexa-ai-orb span {
+    font-family: serif;
+    font-size: 42px;
+    color: #d4af37;
+}
+
+.nexa-ai-session-panel {
+    text-align: center;
+}
