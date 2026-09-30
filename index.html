@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>NEXA — Login</title>
+    <title>NEXA — Welcome</title>
 
     <link rel="icon" href="images/hub.jpg">
 
@@ -21,229 +21,1067 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --black: #050505;
+            --black-2: #0a0a0a;
+            --black-3: #101010;
+
+            --gold: #d4af37;
+            --gold-light: #f1cf70;
+            --gold-dark: #a77d18;
+
+            --white: #ffffff;
+            --text: #e7e7e7;
+            --muted: #858585;
+
+            --success: #55c88a;
+            --danger: #df6868;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+
+            font-family: "Inter", sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(212, 175, 55, 0.10),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(212, 175, 55, 0.08),
+                    transparent 30%
+                ),
+                #050505;
+
+            color: var(--white);
+
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           PAGE
+        ========================================= */
+
+        .page {
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+
+            position: relative;
+        }
+
+        /* =========================================
+           DECORATION
+        ========================================= */
+
+        .glow {
+            position: absolute;
+
+            width: 420px;
+            height: 420px;
+
+            border-radius: 50%;
+
+            background: rgba(212, 175, 55, 0.045);
+
+            filter: blur(90px);
+
+            pointer-events: none;
+        }
+
+        .glow.one {
+            top: -180px;
+            left: -160px;
+        }
+
+        .glow.two {
+            right: -160px;
+            bottom: -200px;
+        }
+
+        /* =========================================
+           AUTH CONTAINER
+        ========================================= */
+
+        .auth-container {
+            width: min(1080px, 100%);
+            min-height: 680px;
+
+            position: relative;
+
+            display: flex;
+
+            background: #0b0b0b;
+
+            border: 1px solid rgba(212, 175, 55, 0.18);
+
+            border-radius: 28px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 30px 90px rgba(0, 0, 0, 0.75),
+                0 0 60px rgba(212, 175, 55, 0.035);
+
+            z-index: 2;
+        }
+
+        /* =========================================
+           FORM SIDES
+        ========================================= */
+
+        .form-side {
+            width: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 50px;
+
+            background: #090909;
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+        .form-content {
+            width: 100%;
+            max-width: 390px;
+        }
+
+        /* =========================================
+           BRAND PANEL
+        ========================================= */
+
+        .brand-panel {
+            width: 50%;
+
+            position: absolute;
+
+            top: 0;
+            right: 0;
+
+            height: 100%;
+
+            z-index: 5;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 60px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(212, 175, 55, 0.11),
+                    transparent 42%
+                ),
+                linear-gradient(
+                    160deg,
+                    #111111,
+                    #080808
+                );
+
+            border-left: 1px solid rgba(212, 175, 55, 0.12);
+
+            transition:
+                transform 0.75s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .auth-container.register-mode .brand-panel {
+            transform: translateX(-100%);
+        }
+
+        /* =========================================
+           LOGO
+        ========================================= */
+
+        .logo-mark {
+            width: 75px;
+            height: 75px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid var(--gold);
+
+            color: var(--gold-light);
+
+            font-family: "Cinzel", serif;
+
+            font-size: 40px;
+
+            font-weight: 800;
+
+            box-shadow:
+                inset 0 0 30px rgba(212, 175, 55, 0.06),
+                0 0 25px rgba(212, 175, 55, 0.07);
+
+            margin-bottom: 22px;
+        }
+
+        .brand-panel h1 {
+            font-family: "Cinzel", serif;
+
+            font-size: 48px;
+
+            letter-spacing: 8px;
+
+            color: var(--gold-light);
+        }
+
+        .brand-panel .tagline {
+            margin-top: 7px;
+
+            color: #777;
+
+            font-size: 10px;
+
+            letter-spacing: 3px;
+        }
+
+        .brand-panel .welcome {
+            margin-top: 38px;
+
+            font-family: "Cormorant Garamond", serif;
+
+            font-size: 29px;
+
+            line-height: 1.2;
+
+            color: #e6e6e6;
+        }
+
+        .brand-panel .gold-text {
+            color: var(--gold-light);
+        }
+
+        .brand-panel .description {
+            margin-top: 16px;
+
+            max-width: 330px;
+
+            color: #838383;
+
+            font-size: 13px;
+
+            line-height: 1.7;
+        }
+
+        .online {
+            position: absolute;
+
+            bottom: 35px;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            color: #606060;
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+        .online-dot {
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: var(--gold);
+
+            box-shadow: 0 0 12px var(--gold);
+        }
+
+        /* =========================================
+           FORM HEADER
+        ========================================= */
+
+        .eyebrow {
+            color: var(--gold);
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            letter-spacing: 3px;
+
+            margin-bottom: 10px;
+        }
+
+        .form-content h2 {
+            font-family: "Cinzel", serif;
+
+            font-size: 34px;
+
+            line-height: 1.2;
+
+            color: var(--white);
+        }
+
+        .subtitle {
+            margin-top: 9px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        /* =========================================
+           FORM
+        ========================================= */
+
+        form {
+            margin-top: 30px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #cacaca;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+
+            top: 50%;
+            left: 16px;
+
+            transform: translateY(-50%);
+
+            color: #666;
+
+            font-size: 14px;
+
+            pointer-events: none;
+
+            transition: 0.2s ease;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            height: 54px;
+
+            padding: 0 48px;
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            outline: none;
+
+            border-radius: 12px;
+
+            background: #0d0d0d;
+
+            color: #fff;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 13px;
+
+            transition: 0.2s ease;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #555;
+        }
+
+        .input-wrapper input:focus {
+            border-color: rgba(212, 175, 55, 0.65);
+
+            box-shadow:
+                0 0 0 3px rgba(212, 175, 55, 0.07);
+
+            background: #101010;
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: var(--gold);
+        }
+
+        /* =========================================
+           PASSWORD BUTTON
+        ========================================= */
+
+        .password-button {
+            position: absolute;
+
+            top: 0;
+            right: 0;
+
+            width: 52px;
+            height: 54px;
+
+            border: none;
+
+            background: transparent;
+
+            color: #666;
+
+            cursor: pointer;
+        }
+
+        .password-button:hover {
+            color: var(--gold);
+        }
+
+        /* =========================================
+           FORGOT
+        ========================================= */
+
+        .password-row {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+        }
+
+        .password-row label {
+            margin-bottom: 0;
+        }
+
+        .forgot {
+            border: none;
+
+            background: transparent;
+
+            color: var(--gold);
+
+            font-size: 10px;
+
+            cursor: pointer;
+        }
+
+        .forgot:hover {
+            color: var(--gold-light);
+        }
+
+        /* =========================================
+           MESSAGE
+        ========================================= */
+
+        .message {
+            display: none;
+
+            padding: 11px 13px;
+
+            border-radius: 10px;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+            margin-bottom: 16px;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.error {
+            color: #ffadad;
+
+            background: rgba(223, 104, 104, 0.08);
+
+            border: 1px solid rgba(223, 104, 104, 0.18);
+        }
+
+        .message.success {
+            color: #a9f0c9;
+
+            background: rgba(85, 200, 138, 0.08);
+
+            border: 1px solid rgba(85, 200, 138, 0.18);
+        }
+
+        /* =========================================
+           MAIN BUTTON
+        ========================================= */
+
+        .main-button {
+            width: 100%;
+            height: 55px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 11px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #b88d22,
+                    var(--gold),
+                    var(--gold-light)
+                );
+
+            color: #070707;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+        .main-button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 14px 28px rgba(212, 175, 55, 0.17);
+        }
+
+        .main-button:active {
+            transform: translateY(0);
+        }
+
+        .main-button:disabled {
+            opacity: 0.65;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+        /* =========================================
+           SPINNER
+        ========================================= */
+
+        .spinner {
+            display: none;
+
+            width: 16px;
+            height: 16px;
+
+            border: 2px solid rgba(0, 0, 0, 0.25);
+
+            border-top-color: #000;
+
+            border-radius: 50%;
+
+            animation: spin 0.7s linear infinite;
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .button-label,
+        .loading .button-arrow {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================================
+           SWITCH
+        ========================================= */
+
+        .switch {
+            margin-top: 24px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            gap: 5px;
+
+            color: #777;
+
+            font-size: 11px;
+        }
+
+        .switch button {
+            border: none;
+
+            background: transparent;
+
+            color: var(--gold);
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .switch button:hover {
+            color: var(--gold-light);
+        }
+
+        /* =========================================
+           SECURE
+        ========================================= */
+
+        .secure {
+            margin-top: 23px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            gap: 7px;
+
+            color: #4e4e4e;
+
+            font-size: 9px;
+        }
+
+        .secure i {
+            color: #656565;
+        }
+
+        /* =========================================
+           REGISTER FORM HIDDEN/SHOWN
+        ========================================= */
+
+        .register-fields {
+            display: none;
+        }
+
+        .auth-container.register-mode .login-fields {
+            display: none;
+        }
+
+        .auth-container.register-mode .register-fields {
+            display: block;
+        }
+
+        /* =========================================
+           PANEL HEADINGS
+        ========================================= */
+
+        .register-heading {
+            display: none;
+        }
+
+        .auth-container.register-mode .login-heading {
+            display: none;
+        }
+
+        .auth-container.register-mode .register-heading {
+            display: block;
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 850px) {
+            .page {
+                padding: 15px;
+            }
+
+            .auth-container {
+                min-height: 650px;
+
+                border-radius: 22px;
+            }
+
+            .brand-panel {
+                display: none;
+            }
+
+            .form-side {
+                width: 100%;
+
+                padding: 35px 25px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .page {
+                padding: 0;
+            }
+
+            .auth-container {
+                min-height: 100vh;
+
+                border-radius: 0;
+
+                border: none;
+            }
+
+            .form-side {
+                padding: 30px 20px;
+            }
+
+            .form-content h2 {
+                font-size: 29px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <main class="auth-page">
+    <main class="page">
 
-        <div class="background-glow glow-one"></div>
-        <div class="background-glow glow-two"></div>
+        <div class="glow one"></div>
+        <div class="glow two"></div>
 
-        <section class="auth-container">
+        <section class="auth-container" id="authContainer">
 
-            <!-- LEFT SIDE -->
-            <div class="brand-panel">
+            <!-- =====================================
+                 LOGIN
+            ====================================== -->
 
-                <div class="brand-logo">
-                    <div class="logo-symbol">N</div>
+            <div class="form-side">
 
-                    <div class="logo-word">
-                        <span>NEXA</span>
-                        <small>CONNECT • SHARE • LIVE</small>
+                <div class="form-content">
+
+                    <!-- LOGIN HEADING -->
+
+                    <div class="login-heading">
+                        <p class="eyebrow">WELCOME BACK</p>
+
+                        <h2>Sign in to NEXA</h2>
+
+                        <p class="subtitle">
+                            Enter your details and continue your NEXA experience.
+                        </p>
                     </div>
-                </div>
 
-                <div class="brand-message">
-                    <p class="eyebrow">WELCOME TO NEXA</p>
+                    <!-- REGISTER HEADING -->
 
-                    <h1>
-                        Your world.
-                        <span>Your people.</span>
-                    </h1>
+                    <div class="register-heading">
+                        <p class="eyebrow">JOIN NEXA</p>
 
-                    <p class="description">
-                        Connect with friends, share your moments,
-                        discover new people and experience NEXA.
-                    </p>
-                </div>
+                        <h2>Create your account</h2>
 
-                <div class="brand-footer">
-                    <span></span>
-                    <p>NEXA is online</p>
-                    <span></span>
+                        <p class="subtitle">
+                            Create your account and start connecting with people.
+                        </p>
+                    </div>
+
+
+                    <form id="authForm">
+
+                        <!-- LOGIN FIELDS -->
+
+                        <div class="login-fields">
+
+                            <div class="field">
+                                <label for="loginEmail">
+                                    Email address
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-regular fa-envelope input-icon"></i>
+
+                                    <input
+                                        type="email"
+                                        id="loginEmail"
+                                        placeholder="you@example.com"
+                                        autocomplete="email"
+                                    >
+
+                                </div>
+                            </div>
+
+
+                            <div class="field">
+
+                                <div class="password-row">
+
+                                    <label for="loginPassword">
+                                        Password
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        class="forgot"
+                                        id="forgotPassword"
+                                    >
+                                        Forgot password?
+                                    </button>
+
+                                </div>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-solid fa-lock input-icon"></i>
+
+                                    <input
+                                        type="password"
+                                        id="loginPassword"
+                                        placeholder="Enter your password"
+                                        autocomplete="current-password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-button"
+                                        id="loginPasswordToggle"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- REGISTER FIELDS -->
+
+                        <div class="register-fields">
+
+                            <div class="field">
+
+                                <label for="fullName">
+                                    Full name
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-regular fa-user input-icon"></i>
+
+                                    <input
+                                        type="text"
+                                        id="fullName"
+                                        placeholder="Enter your full name"
+                                        autocomplete="name"
+                                    >
+
+                                </div>
+                            </div>
+
+
+                            <div class="field">
+
+                                <label for="signupEmail">
+                                    Email address
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-regular fa-envelope input-icon"></i>
+
+                                    <input
+                                        type="email"
+                                        id="signupEmail"
+                                        placeholder="you@example.com"
+                                        autocomplete="email"
+                                    >
+
+                                </div>
+                            </div>
+
+
+                            <div class="field">
+
+                                <label for="signupPassword">
+                                    Password
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-solid fa-lock input-icon"></i>
+
+                                    <input
+                                        type="password"
+                                        id="signupPassword"
+                                        placeholder="Create a password"
+                                        autocomplete="new-password"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-button"
+                                        id="signupPasswordToggle"
+                                        aria-label="Show password"
+                                    >
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+
+                                </div>
+                            </div>
+
+
+                            <div class="field">
+
+                                <label for="confirmPassword">
+                                    Confirm password
+                                </label>
+
+                                <div class="input-wrapper">
+
+                                    <i class="fa-solid fa-shield-halved input-icon"></i>
+
+                                    <input
+                                        type="password"
+                                        id="confirmPassword"
+                                        placeholder="Repeat your password"
+                                        autocomplete="new-password"
+                                    >
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- MESSAGE -->
+
+                        <div
+                            class="message"
+                            id="message"
+                        ></div>
+
+
+                        <!-- SUBMIT -->
+
+                        <button
+                            type="submit"
+                            class="main-button"
+                            id="submitButton"
+                        >
+
+                            <span
+                                class="button-label"
+                                id="buttonLabel"
+                            >
+                                Sign in to NEXA
+                            </span>
+
+                            <i
+                                class="fa-solid fa-arrow-right button-arrow"
+                                id="buttonArrow"
+                            ></i>
+
+                            <span class="spinner"></span>
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- SWITCH -->
+
+                    <div class="switch">
+
+                        <span id="switchText">
+                            Don't have an account?
+                        </span>
+
+                        <button
+                            type="button"
+                            id="switchButton"
+                        >
+                            Create account
+                        </button>
+
+                    </div>
+
+
+                    <div class="secure">
+                        <i class="fa-solid fa-lock"></i>
+
+                        <span>
+                            Secure authentication powered by Supabase
+                        </span>
+                    </div>
+
                 </div>
 
             </div>
 
 
-            <!-- RIGHT SIDE -->
-            <div class="form-panel">
+            <!-- =====================================
+                 BRAND SIDE
+            ====================================== -->
 
-                <div class="mobile-brand">
-                    <div class="mobile-logo">N</div>
-                    <h2>NEXA</h2>
+            <div class="brand-panel">
+
+                <div class="logo-mark">
+                    N
                 </div>
 
-                <div class="form-header">
-                    <p class="form-eyebrow" id="formEyebrow">
-                        WELCOME BACK
-                    </p>
+                <h1>NEXA</h1>
 
-                    <h2 id="formTitle">
-                        Sign in
-                    </h2>
+                <p class="tagline">
+                    CONNECT • SHARE • LIVE
+                </p>
 
-                    <p id="formSubtitle">
-                        Enter your details to continue to NEXA.
-                    </p>
-                </div>
+                <p class="welcome">
+                    <span class="gold-text">Your world.</span><br>
+                    Your people.
+                </p>
 
+                <p class="description">
+                    Stay connected, share your moments,
+                    discover people and experience everything
+                    NEXA has to offer.
+                </p>
 
-                <!-- AUTH FORM -->
-                <form id="authForm" novalidate>
-
-                    <!-- NAME - REGISTER ONLY -->
-                    <div class="input-group register-only hidden">
-                        <label for="fullName">
-                            Full name
-                        </label>
-
-                        <div class="input-wrapper">
-                            <i class="fa-regular fa-user"></i>
-
-                            <input
-                                type="text"
-                                id="fullName"
-                                name="fullName"
-                                placeholder="Your full name"
-                                autocomplete="name"
-                            >
-                        </div>
-                    </div>
-
-
-                    <!-- EMAIL -->
-                    <div class="input-group">
-                        <label for="email">
-                            Email address
-                        </label>
-
-                        <div class="input-wrapper">
-                            <i class="fa-regular fa-envelope"></i>
-
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                placeholder="you@example.com"
-                                autocomplete="email"
-                                required
-                            >
-                        </div>
-                    </div>
-
-
-                    <!-- PASSWORD -->
-                    <div class="input-group">
-                        <div class="label-row">
-                            <label for="password">
-                                Password
-                            </label>
-
-                            <button
-                                type="button"
-                                class="forgot-button"
-                                id="forgotButton"
-                            >
-                                Forgot password?
-                            </button>
-                        </div>
-
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-lock"></i>
-
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="Enter your password"
-                                autocomplete="current-password"
-                                required
-                            >
-
-                            <button
-                                type="button"
-                                class="password-toggle"
-                                id="passwordToggle"
-                                aria-label="Show password"
-                            >
-                                <i class="fa-regular fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-
-                    <!-- CONFIRM PASSWORD - REGISTER ONLY -->
-                    <div class="input-group register-only hidden">
-                        <label for="confirmPassword">
-                            Confirm password
-                        </label>
-
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-shield-halved"></i>
-
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                placeholder="Confirm your password"
-                                autocomplete="new-password"
-                            >
-                        </div>
-                    </div>
-
-
-                    <!-- MESSAGE -->
-                    <div
-                        id="authMessage"
-                        class="auth-message"
-                        role="alert"
-                    ></div>
-
-
-                    <!-- SUBMIT -->
-                    <button
-                        type="submit"
-                        class="submit-button"
-                        id="submitButton"
-                    >
-                        <span id="buttonText">
-                            Sign in to NEXA
-                        </span>
-
-                        <i
-                            class="fa-solid fa-arrow-right"
-                            id="buttonIcon"
-                        ></i>
-
-                        <span
-                            class="loading-spinner"
-                            id="loadingSpinner"
-                        ></span>
-                    </button>
-
-                </form>
-
-
-                <!-- SWITCH -->
-                <div class="switch-auth">
-                    <span id="switchText">
-                        Don't have an account?
-                    </span>
-
-                    <button
-                        type="button"
-                        id="switchButton"
-                    >
-                        Create account
-                    </button>
-                </div>
-
-
-                <div class="secure-note">
-                    <i class="fa-solid fa-lock"></i>
-                    <span>Your account is secured by Supabase Auth</span>
+                <div class="online">
+                    <span class="online-dot"></span>
+                    NEXA is online
                 </div>
 
             </div>
@@ -252,10 +1090,802 @@
 
     </main>
 
+
+    <!-- SUPABASE -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js></script>
-    <script src="login.js"></script>
-    
+
+
+    <script>
+        /* =========================================
+           NEXA SUPABASE CONFIG
+        ========================================= */
+
+        const SUPABASE_URL =
+            "https://pakdneudwsxtanrkirmu.supabase.co";
+
+        /*
+         * IMPORTANT:
+         * Put your PUBLIC/PUBLISHABLE Supabase key here.
+         *
+         * Example:
+         * sb_publishable_xxxxxxxxx
+         *
+         * Do NOT put your sb_secret key here.
+         * Do NOT put your service_role key here.
+         */
+
+        const SUPABASE_KEY =
+            "YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+
+        /* =========================================
+           CREATE SUPABASE CLIENT
+        ========================================= */
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+
+
+        /* =========================================
+           ELEMENTS
+        ========================================= */
+
+        const authContainer =
+            document.getElementById("authContainer");
+
+        const authForm =
+            document.getElementById("authForm");
+
+        const switchButton =
+            document.getElementById("switchButton");
+
+        const switchText =
+            document.getElementById("switchText");
+
+        const buttonLabel =
+            document.getElementById("buttonLabel");
+
+        const buttonArrow =
+            document.getElementById("buttonArrow");
+
+        const submitButton =
+            document.getElementById("submitButton");
+
+        const message =
+            document.getElementById("message");
+
+        const fullName =
+            document.getElementById("fullName");
+
+        const signupEmail =
+            document.getElementById("signupEmail");
+
+        const signupPassword =
+            document.getElementById("signupPassword");
+
+        const confirmPassword =
+            document.getElementById("confirmPassword");
+
+        const loginEmail =
+            document.getElementById("loginEmail");
+
+        const loginPassword =
+            document.getElementById("loginPassword");
+
+        const loginPasswordToggle =
+            document.getElementById("loginPasswordToggle");
+
+        const signupPasswordToggle =
+            document.getElementById("signupPasswordToggle");
+
+        const forgotPassword =
+            document.getElementById("forgotPassword");
+
+
+        /* =========================================
+           STATE
+        ========================================= */
+
+        let registerMode = false;
+
+
+        /* =========================================
+           SHOW MESSAGE
+        ========================================= */
+
+        function showMessage(text, type) {
+
+            message.textContent = text;
+
+            message.className =
+                "message show " + type;
+        }
+
+
+        /* =========================================
+           CLEAR MESSAGE
+        ========================================= */
+
+        function clearMessage() {
+
+            message.textContent = "";
+
+            message.className = "message";
+        }
+
+
+        /* =========================================
+           SLIDE LOGIN / REGISTER
+        ========================================= */
+
+        function switchMode() {
+
+            clearMessage();
+
+            registerMode = !registerMode;
+
+            if (registerMode) {
+
+                authContainer.classList.add("register-mode");
+
+                switchText.textContent =
+                    "Already have an account?";
+
+                switchButton.textContent =
+                    "Sign in";
+
+                buttonLabel.textContent =
+                    "Create NEXA Account";
+
+                buttonArrow.className =
+                    "fa-solid fa-user-plus button-arrow";
+
+            } else {
+
+                authContainer.classList.remove("register-mode");
+
+                switchText.textContent =
+                    "Don't have an account?";
+
+                switchButton.textContent =
+                    "Create account";
+
+                buttonLabel.textContent =
+                    "Sign in to NEXA";
+
+                buttonArrow.className =
+                    "fa-solid fa-arrow-right button-arrow";
+            }
+
+            authForm.reset();
+        }
+
+
+        switchButton.addEventListener(
+            "click",
+            switchMode
+        );
+
+
+        /* =========================================
+           PASSWORD VISIBILITY
+        ========================================= */
+
+        function togglePassword(input, button) {
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                button.innerHTML =
+                    '<i class="fa-regular fa-eye-slash"></i>';
+
+            } else {
+
+                input.type = "password";
+
+                button.innerHTML =
+                    '<i class="fa-regular fa-eye"></i>';
+            }
+        }
+
+
+        loginPasswordToggle.addEventListener(
+            "click",
+            () => {
+                togglePassword(
+                    loginPassword,
+                    loginPasswordToggle
+                );
+            }
+        );
+
+
+        signupPasswordToggle.addEventListener(
+            "click",
+            () => {
+                togglePassword(
+                    signupPassword,
+                    signupPasswordToggle
+                );
+            }
+        );
+
+
+        /* =========================================
+           LOADING
+        ========================================= */
+
+        function setLoading(loading) {
+
+            submitButton.disabled =
+                loading;
+
+            if (loading) {
+                submitButton.classList.add("loading");
+            } else {
+                submitButton.classList.remove("loading");
+            }
+        }
+
+
+        /* =========================================
+           VALIDATE REGISTRATION
+        ========================================= */
+
+        function validateRegistration() {
+
+            const name =
+                fullName.value.trim();
+
+            const email =
+                signupEmail.value.trim();
+
+            const password =
+                signupPassword.value;
+
+            const confirm =
+                confirmPassword.value;
+
+
+            if (!name) {
+
+                showMessage(
+                    "Please enter your full name.",
+                    "error"
+                );
+
+                fullName.focus();
+
+                return false;
+            }
+
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email address.",
+                    "error"
+                );
+
+                signupEmail.focus();
+
+                return false;
+            }
+
+
+            if (!email.includes("@")) {
+
+                showMessage(
+                    "Please enter a valid email address.",
+                    "error"
+                );
+
+                signupEmail.focus();
+
+                return false;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please create a password.",
+                    "error"
+                );
+
+                signupPassword.focus();
+
+                return false;
+            }
+
+
+            if (password.length < 6) {
+
+                showMessage(
+                    "Password must contain at least 6 characters.",
+                    "error"
+                );
+
+                signupPassword.focus();
+
+                return false;
+            }
+
+
+            if (password !== confirm) {
+
+                showMessage(
+                    "Your passwords do not match.",
+                    "error"
+                );
+
+                confirmPassword.focus();
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /* =========================================
+           VALIDATE LOGIN
+        ========================================= */
+
+        function validateLogin() {
+
+            const email =
+                loginEmail.value.trim();
+
+            const password =
+                loginPassword.value;
+
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email.",
+                    "error"
+                );
+
+                loginEmail.focus();
+
+                return false;
+            }
+
+
+            if (!email.includes("@")) {
+
+                showMessage(
+                    "Please enter a valid email.",
+                    "error"
+                );
+
+                loginEmail.focus();
+
+                return false;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please enter your password.",
+                    "error"
+                );
+
+                loginPassword.focus();
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /* =========================================
+           SUBMIT
+        ========================================= */
+
+        authForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+                clearMessage();
+
+
+                /* =====================================
+                   CREATE ACCOUNT
+                ===================================== */
+
+                if (registerMode) {
+
+                    if (!validateRegistration()) {
+                        return;
+                    }
+
+
+                    setLoading(true);
+
+
+                    const name =
+                        fullName.value.trim();
+
+                    const email =
+                        signupEmail.value.trim().toLowerCase();
+
+                    const password =
+                        signupPassword.value;
+
+
+                    try {
+
+                        const {
+                            data,
+                            error
+                        } = await supabaseClient.auth.signUp({
+
+                            email: email,
+
+                            password: password,
+
+                            options: {
+
+                                data: {
+                                    full_name: name
+                                },
+
+                                /*
+                                 * Sends the user back to this
+                                 * login page after email confirmation.
+                                 */
+                                emailRedirectTo:
+                                    window.location.href
+                            }
+                        });
+
+
+                        if (error) {
+                            throw error;
+                        }
+
+
+                        /*
+                         * Email confirmation ON:
+                         * user is created but session may be null.
+                         */
+
+                        if (!data.session) {
+
+                            showMessage(
+                                "Account created successfully. Check your email to confirm your account, then sign in.",
+                                "success"
+                            );
+
+                            authForm.reset();
+
+                            setLoading(false);
+
+                            return;
+                        }
+
+
+                        /*
+                         * Auto confirmation / session available
+                         */
+
+                        showMessage(
+                            "Account created successfully. Welcome to NEXA!",
+                            "success"
+                        );
+
+
+                        setTimeout(() => {
+
+                            window.location.href =
+                                "home.html";
+
+                        }, 900);
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "NEXA Signup Error:",
+                            error
+                        );
+
+
+                        showMessage(
+                            error.message ||
+                            "Unable to create your account.",
+                            "error"
+                        );
+
+
+                    } finally {
+
+                        setLoading(false);
+                    }
+
+
+                    return;
+                }
+
+
+                /* =====================================
+                   LOGIN
+                ===================================== */
+
+                if (!validateLogin()) {
+                    return;
+                }
+
+
+                setLoading(true);
+
+
+                const email =
+                    loginEmail.value.trim().toLowerCase();
+
+                const password =
+                    loginPassword.value;
+
+
+                try {
+
+                    const {
+                        data,
+                        error
+                    } =
+                        await supabaseClient.auth
+                            .signInWithPassword({
+                                email: email,
+                                password: password
+                            });
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    if (!data.session) {
+
+                        throw new Error(
+                            "No login session was created."
+                        );
+                    }
+
+
+                    showMessage(
+                        "Welcome back to NEXA.",
+                        "success"
+                    );
+
+
+                    setTimeout(() => {
+
+                        window.location.href =
+                            "home.html";
+
+                    }, 700);
+
+
+                } catch (error) {
+
+                    console.error(
+                        "NEXA Login Error:",
+                        error
+                    );
+
+
+                    let errorText =
+                        error.message ||
+                        "Unable to sign in.";
+
+
+                    if (
+                        errorText
+                            .toLowerCase()
+                            .includes("invalid login")
+                    ) {
+
+                        errorText =
+                            "Incorrect email or password.";
+                    }
+
+
+                    if (
+                        errorText
+                            .toLowerCase()
+                            .includes("email not confirmed")
+                    ) {
+
+                        errorText =
+                            "Please confirm your email before signing in.";
+                    }
+
+
+                    showMessage(
+                        errorText,
+                        "error"
+                    );
+
+
+                } finally {
+
+                    setLoading(false);
+                }
+
+            }
+        );
+
+
+        /* =========================================
+           FORGOT PASSWORD
+        ========================================= */
+
+        forgotPassword.addEventListener(
+            "click",
+            async () => {
+
+                const email =
+                    loginEmail.value.trim().toLowerCase();
+
+
+                if (!email) {
+
+                    showMessage(
+                        "Enter your email first.",
+                        "error"
+                    );
+
+                    loginEmail.focus();
+
+                    return;
+                }
+
+
+                if (!email.includes("@")) {
+
+                    showMessage(
+                        "Enter a valid email address.",
+                        "error"
+                    );
+
+                    loginEmail.focus();
+
+                    return;
+                }
+
+
+                forgotPassword.disabled = true;
+
+
+                try {
+
+                    const {
+                        error
+                    } =
+                        await supabaseClient.auth
+                            .resetPasswordForEmail(
+                                email,
+                                {
+                                    redirectTo:
+                                        window.location.href
+                                }
+                            );
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    showMessage(
+                        "Password reset instructions were sent to your email.",
+                        "success"
+                    );
+
+
+                } catch (error) {
+
+                    showMessage(
+                        error.message ||
+                        "Could not send the password reset email.",
+                        "error"
+                    );
+
+
+                } finally {
+
+                    forgotPassword.disabled = false;
+                }
+
+            }
+        );
+
+
+        /* =========================================
+           KEEP USER LOGGED IN
+        ========================================= */
+
+        async function checkSession() {
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth
+                        .getSession();
+
+
+                if (error) {
+
+                    console.error(
+                        "Session error:",
+                        error
+                    );
+
+                    return;
+                }
+
+
+                if (data.session) {
+
+                    window.location.href =
+                        "home.html";
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Supabase session check failed:",
+                    error
+                );
+            }
+        }
+
+
+        checkSession();
+
+
+        /* =========================================
+           AUTH STATE
+        ========================================= */
+
+        supabaseClient.auth.onAuthStateChange(
+            (event, session) => {
+
+                console.log(
+                    "NEXA Auth:",
+                    event
+                );
+
+                if (
+                    event === "SIGNED_IN" &&
+                    session
+                ) {
+
+                    window.location.href =
+                        "home.html";
+                }
+            }
+        );
+    </script>
 
 </body>
 </html>
