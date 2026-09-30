@@ -1,1886 +1,219 @@
-/* ============================================================
-   NEXA AUTH
-   ROYAL BLACK + GOLD
-============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap");
-
-/* ============================================================
-   ROOT
-============================================================ */
+/* =========================================================
+   NEXA GLOW — soft, muted, no bright colors.
+   Loads AFTER style.css and nexa-theme.css so it overrides them.
+   ========================================================= */
 
 :root {
-  --gold: #d4af37;
-
-  --gold-light: #f0d77b;
-
-  --gold-bright: #ffe9a0;
-
-  --gold-dark: #8a6c16;
-
-  --black: #020202;
-
-  --black-soft: #060606;
-
-  --panel: #0b0b0b;
-
-  --panel-light: #101010;
-
-  --text: #f4ecd8;
-
-  --text-soft: #c7bfad;
-
-  --text-muted: #777062;
-
-  --text-dark: #514c42;
-
-  --border: rgba(212, 175, 55, 0.15);
-
-  --border-strong: rgba(212, 175, 55, 0.28);
-
-  --serif: "Cormorant Garamond", Georgia, serif;
-
-  --display: "Playfair Display", Georgia, serif;
-
-  --sans: "DM Sans", Arial, sans-serif;
-}
-
-/* ============================================================
-   RESET
-============================================================ */
-
-* {
-  box-sizing: border-box;
-
-  margin: 0;
-
-  padding: 0;
-}
-
-html {
-  min-height: 100%;
+    --g-bg: #050507;
+    --g-panel: rgba(14, 14, 20, 0.72);
+    --g-line: rgba(140, 130, 190, 0.16);
+    --g-text: #d7d5e0;
+    --g-dim: #8b889b;
+    --g-violet: #6e5f9e;   /* dusty violet */
+    --g-teal: #457a85;     /* deep muted teal */
+    --g-gold: #a8926a;     /* antique gold */
+    --g-glow-v: rgba(110, 95, 158, 0.35);
+    --g-glow-t: rgba(69, 122, 133, 0.28);
+    --g-glow-g: rgba(168, 146, 106, 0.22);
 }
 
 body {
-  min-height: 100vh;
-
-  color: var(--text);
-
-  font-family: var(--sans);
-
-  background: #020202;
-
-  overflow-x: hidden;
+    background: var(--g-bg);
+    color: var(--g-text);
 }
 
-button,
-input {
-  font-family: inherit;
-}
-
-button {
-  border: 0;
-}
-
-button:focus-visible,
-input:focus-visible {
-  outline: 2px solid rgba(240, 215, 123, 0.75);
-
-  outline-offset: 3px;
-}
-
-/* ============================================================
-   BACKGROUND
-============================================================ */
-
-.auth-background {
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 0;
-
-  overflow: hidden;
-
-  background:
-    radial-gradient(
-      circle at 50% -10%,
-      rgba(212, 175, 55, 0.08),
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at 7% 75%,
-      rgba(212, 175, 55, 0.035),
-      transparent 26%
-    ),
-    radial-gradient(
-      circle at 94% 42%,
-      rgba(212, 175, 55, 0.03),
-      transparent 24%
-    ),
-    #020202;
-}
-
-.auth-background::before {
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.012),
-    transparent 30%,
-    rgba(255, 255, 255, 0.008)
-  );
-
-  pointer-events: none;
-}
-
-/* ============================================================
-   GRID
-============================================================ */
-
-.royal-grid {
-  position: absolute;
-
-  inset: 0;
-
-  opacity: 0.22;
-
-  background-image:
-    linear-gradient(rgba(212, 175, 55, 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212, 175, 55, 0.012) 1px, transparent 1px);
-
-  background-size: 52px 52px;
-
-  mask-image: linear-gradient(to bottom, black, transparent 90%);
-}
-
-/* ============================================================
-   NOISE
-============================================================ */
-
-.auth-noise {
-  position: absolute;
-
-  inset: 0;
-
-  opacity: 0.028;
-
-  pointer-events: none;
-
-  background-image: radial-gradient(
-    rgba(255, 255, 255, 0.8) 0.5px,
-    transparent 0.5px
-  );
-
-  background-size: 5px 5px;
-}
-
-/* ============================================================
-   GLOW
-============================================================ */
+/* ---------- background glow orbs (slow drift) ---------- */
+.auth-background { background: radial-gradient(ellipse at 50% 0%, #0d0d14 0%, var(--g-bg) 70%); }
 
 .royal-glow {
-  position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.5;
+    animation: nexaDrift 18s ease-in-out infinite alternate;
+}
+.royal-glow-one   { background: var(--g-glow-v); }
+.royal-glow-two   { background: var(--g-glow-t); animation-duration: 24s; animation-delay: -6s; }
+.royal-glow-three { background: var(--g-glow-g); animation-duration: 30s; animation-delay: -12s; }
 
-  border-radius: 50%;
-
-  filter: blur(80px);
-
-  pointer-events: none;
+@keyframes nexaDrift {
+    from { transform: translate3d(-4%, -3%, 0) scale(1); }
+    to   { transform: translate3d(5%, 4%, 0) scale(1.15); }
 }
 
-.royal-glow-one {
-  width: 380px;
+.royal-grid { opacity: 0.35; }
 
-  height: 380px;
-
-  left: -130px;
-
-  top: 15%;
-
-  background: rgba(212, 175, 55, 0.065);
-}
-
-.royal-glow-two {
-  width: 360px;
-
-  height: 360px;
-
-  right: -140px;
-
-  top: 17%;
-
-  background: rgba(212, 175, 55, 0.055);
-}
-
-.royal-glow-three {
-  width: 300px;
-
-  height: 300px;
-
-  left: 44%;
-
-  bottom: -180px;
-
-  background: rgba(212, 175, 55, 0.045);
-}
-
-/* ============================================================
-   MAIN
-============================================================ */
-
-.auth-page {
-  position: relative;
-
-  z-index: 2;
-
-  min-height: 100vh;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 50px 20px;
-}
-
-/* ============================================================
-   CONTAINER
-============================================================ */
-
-.auth-container {
-  width: min(100%, 470px);
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-}
-
-/* ============================================================
-   BRAND
-============================================================ */
-
-.brand {
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  text-align: center;
-
-  margin-bottom: 25px;
-}
-
+/* ---------- brand ---------- */
 .brand-mark {
-  width: 68px;
+    border: 1px solid var(--g-line);
+    background: linear-gradient(145deg, #15151d, #0a0a0f);
+    box-shadow: 0 0 28px var(--g-glow-v), inset 0 0 18px rgba(255, 255, 255, 0.02);
+    animation: nexaPulse 5s ease-in-out infinite;
+}
+.brand-mark span { color: #cfc9e6; text-shadow: 0 0 14px var(--g-glow-v); }
+.brand-copy h1 { color: #e2dff0; text-shadow: 0 0 22px var(--g-glow-v); letter-spacing: 0.32em; }
+.brand-copy span, .brand p { color: var(--g-dim); }
 
-  height: 68px;
-
-  display: grid;
-
-  place-items: center;
-
-  border-radius: 20px;
-
-  background: linear-gradient(145deg, #fff2af, #d4af37 50%, #806114);
-
-  box-shadow:
-    0 15px 45px rgba(212, 175, 55, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+@keyframes nexaPulse {
+    0%, 100% { box-shadow: 0 0 22px var(--g-glow-v), inset 0 0 14px rgba(255,255,255,0.02); }
+    50%      { box-shadow: 0 0 40px var(--g-glow-v), 0 0 70px var(--g-glow-t), inset 0 0 18px rgba(255,255,255,0.03); }
 }
 
-.brand-mark span {
-  color: #100c03;
-
-  font-family: var(--display);
-
-  font-size: 39px;
-
-  font-weight: 700;
-}
-
-.brand-copy {
-  margin-top: 12px;
-}
-
-.brand-copy h1 {
-  font-family: var(--display);
-
-  color: var(--gold-light);
-
-  font-size: 34px;
-
-  line-height: 1;
-
-  letter-spacing: 0.18em;
-
-  font-weight: 700;
-}
-
-.brand-copy span {
-  display: block;
-
-  margin-top: 6px;
-
-  color: #5f594d;
-
-  font-size: 7px;
-
-  font-weight: 700;
-
-  letter-spacing: 0.28em;
-}
-
-.brand > p {
-  margin-top: 12px;
-
-  color: #777063;
-
-  font-family: var(--serif);
-
-  font-size: 15px;
-
-  font-style: italic;
-}
-
-/* ============================================================
-   AUTH BOX
-============================================================ */
-
+/* ---------- panel ---------- */
 .auth-box {
-  position: relative;
-
-  width: 100%;
-
-  padding: 27px 29px 25px;
-
-  border-radius: 23px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.048),
-      rgba(255, 255, 255, 0.018)
-    ),
-    rgba(7, 7, 7, 0.96);
-
-  border: 1px solid rgba(212, 175, 55, 0.17);
-
-  box-shadow:
-    0 35px 90px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
-
-  backdrop-filter: blur(24px);
+    position: relative;
+    background: var(--g-panel);
+    border: 1px solid var(--g-line);
+    border-radius: 22px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.02),
+                0 24px 70px rgba(0,0,0,0.65),
+                0 0 60px rgba(110, 95, 158, 0.12);
 }
 
 .auth-top-line {
-  position: absolute;
-
-  left: 70px;
-
-  right: 70px;
-
-  top: 0;
-
-  height: 1px;
-
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-
-  opacity: 0.55;
-}
-
-/* ============================================================
-   PANEL HEADER
-============================================================ */
-
-.auth-box-header {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding-bottom: 16px;
-
-  margin-bottom: 20px;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
-}
-
-.status-indicator {
-  display: flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  color: #676154;
-
-  font-size: 7px;
-
-  font-weight: 800;
-
-  letter-spacing: 0.2em;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--g-violet), var(--g-teal), var(--g-gold), transparent);
+    box-shadow: 0 0 14px var(--g-glow-v);
+    opacity: 0.85;
 }
 
 .status-dot {
-  width: 6px;
-
-  height: 6px;
-
-  border-radius: 50%;
-
-  background: #78d49b;
-
-  box-shadow: 0 0 10px rgba(120, 212, 155, 0.55);
+    background: var(--g-teal);
+    box-shadow: 0 0 10px var(--g-teal), 0 0 22px var(--g-glow-t);
+    animation: nexaBlink 2.8s ease-in-out infinite;
 }
+@keyframes nexaBlink { 50% { opacity: 0.45; } }
 
-.royal-symbol {
-  color: var(--gold);
+.royal-symbol { color: var(--g-gold); text-shadow: 0 0 12px var(--g-glow-g); }
 
-  font-size: 13px;
-}
+.eyebrow { color: var(--g-gold); letter-spacing: 0.3em; }
+.auth-heading h2 { color: #e6e3f2; }
+.auth-subtitle { color: var(--g-dim); }
 
-/* ============================================================
-   MESSAGE
-============================================================ */
-
-.auth-message {
-  width: 100%;
-
-  margin-bottom: 8px;
-}
-
-.auth-message:not(:empty) {
-  padding: 10px 12px;
-
-  border-radius: 9px;
-
-  color: #d6ceb9;
-
-  background: rgba(212, 175, 55, 0.055);
-
-  border: 1px solid rgba(212, 175, 55, 0.14);
-
-  font-size: 10px;
-}
-
-/* ============================================================
-   HEADINGS
-============================================================ */
-
-.auth-heading {
-  margin-bottom: 25px;
-}
-
-.eyebrow {
-  color: var(--gold);
-
-  font-size: 8px;
-
-  font-weight: 800;
-
-  letter-spacing: 0.24em;
-}
-
-.auth-heading h2 {
-  margin-top: 8px;
-
-  color: #eee5ca;
-
-  font-family: var(--display);
-
-  font-size: 34px;
-
-  line-height: 1.05;
-
-  font-weight: 600;
-
-  letter-spacing: -0.025em;
-}
-
-.auth-subtitle {
-  margin-top: 7px;
-
-  color: #777063;
-
-  font-family: var(--serif);
-
-  font-size: 15px;
-}
-
-/* ============================================================
-   FORM
-============================================================ */
-
-#loginForm,
-#registerForm {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 17px;
-}
-
-.input-group {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 7px;
-}
-
-.input-group label {
-  color: #9b9383;
-
-  font-size: 9px;
-
-  font-weight: 700;
-}
+/* ---------- inputs ---------- */
+.input-group label { color: var(--g-dim); }
 
 .input-wrapper {
-  position: relative;
-
-  height: 49px;
-
-  display: flex;
-
-  align-items: center;
-
-  border-radius: 12px;
-
-  background: rgba(255, 255, 255, 0.025);
-
-  border: 1px solid rgba(255, 255, 255, 0.075);
-
-  transition: all 0.22s ease;
+    background: rgba(8, 8, 12, 0.7);
+    border: 1px solid var(--g-line);
+    border-radius: 14px;
+    transition: border-color .3s, box-shadow .3s, background .3s;
 }
-
 .input-wrapper:focus-within {
-  border-color: rgba(212, 175, 55, 0.35);
-
-  background: rgba(212, 175, 55, 0.025);
-
-  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.025);
+    border-color: rgba(140, 125, 200, 0.55);
+    background: rgba(12, 12, 18, 0.85);
+    box-shadow: 0 0 0 3px rgba(110, 95, 158, 0.14), 0 0 26px var(--g-glow-v);
 }
+.input-wrapper input { color: var(--g-text); background: transparent; }
+.input-wrapper input::placeholder { color: #5f5c6d; }
+.input-icon { color: var(--g-violet); }
 
-.input-icon {
-  width: 40px;
-
-  display: grid;
-
-  place-items: center;
-
-  flex-shrink: 0;
-
-  color: #827967;
-
-  font-family: var(--serif);
-
-  font-size: 17px;
-}
-
-.input-wrapper input {
-  width: 100%;
-
-  height: 100%;
-
-  padding: 0 13px 0 0;
-
-  outline: 0;
-
-  border: 0;
-
-  background: transparent;
-
-  color: var(--text);
-
-  font-size: 11px;
-}
-
-.input-wrapper input::placeholder {
-  color: #565148;
-}
-
-/* ============================================================
-   AUTH BUTTON
-============================================================ */
-
+/* ---------- buttons ---------- */
 .auth-button {
-  width: 100%;
-
-  height: 49px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding: 0 16px 0 19px;
-
-  margin-top: 3px;
-
-  border-radius: 12px;
-
-  color: #110d03;
-
-  background: linear-gradient(135deg, #f5df91, #d2ab32 53%, #a87e14);
-
-  box-shadow: 0 12px 30px rgba(212, 175, 55, 0.15);
-
-  cursor: pointer;
-
-  font-size: 10px;
-
-  font-weight: 800;
-
-  transition: all 0.22s ease;
+    position: relative;
+    overflow: hidden;
+    color: #ece9f7;
+    background: linear-gradient(135deg, #4b4270, #34506a);
+    border: 1px solid rgba(150, 135, 210, 0.3);
+    border-radius: 14px;
+    box-shadow: 0 0 24px var(--g-glow-v), 0 10px 30px rgba(0,0,0,0.5);
+    transition: transform .25s, box-shadow .3s, filter .3s;
 }
-
+.auth-button::after {            /* slow light sweep */
+    content: "";
+    position: absolute; top: 0; left: -60%;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+    transform: skewX(-20deg);
+    animation: nexaSweep 5s ease-in-out infinite;
+}
+@keyframes nexaSweep { 0%, 60% { left: -60%; } 100% { left: 130%; } }
 .auth-button:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 17px 38px rgba(212, 175, 55, 0.24);
+    transform: translateY(-1px);
+    box-shadow: 0 0 38px var(--g-glow-v), 0 0 60px var(--g-glow-t), 0 12px 34px rgba(0,0,0,0.55);
+    filter: brightness(1.08);
 }
-
-.auth-button:active {
-  transform: translateY(0);
-}
-
-.button-arrow {
-  width: 27px;
-
-  height: 27px;
-
-  display: grid;
-
-  place-items: center;
-
-  border-radius: 8px;
-
-  background: rgba(0, 0, 0, 0.09);
-
-  font-size: 15px;
-}
-
-/* ============================================================
-   DIVIDER
-============================================================ */
-
-.divider {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin: 20px 0 15px;
-}
-
-.divider span {
-  height: 1px;
-
-  flex: 1;
-
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.divider em {
-  color: #5d574c;
-
-  font-style: normal;
-
-  font-size: 7px;
-
-  font-weight: 800;
-
-  letter-spacing: 0.18em;
-}
-
-/* ============================================================
-   SWITCH BUTTON
-============================================================ */
+.auth-button:active { transform: translateY(0); }
+.auth-button:disabled { opacity: .55; cursor: not-allowed; }
 
 .create-button {
-  width: 100%;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--g-line);
+    border-radius: 14px;
+    color: var(--g-dim);
+    transition: border-color .3s, box-shadow .3s;
+}
+.create-button strong { color: #cfc9e6; }
+.create-button:hover { border-color: rgba(140,125,200,.45); box-shadow: 0 0 24px var(--g-glow-v); }
 
-  min-height: 48px;
+.divider span { background: var(--g-line); }
+.divider em { color: #5f5c6d; }
 
-  display: flex;
+.decoration-line { background: linear-gradient(90deg, transparent, var(--g-line), transparent); }
+.decoration-diamond { color: var(--g-gold); text-shadow: 0 0 10px var(--g-glow-g); }
+.auth-footer { color: #5f5c6d; }
 
-  align-items: center;
+/* ---------- message banner (muted, not bright) ---------- */
+.auth-message { border-radius: 12px; transition: all .3s; }
+.auth-message.show, .auth-message:not(:empty) {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    border: 1px solid var(--g-line);
+    background: rgba(255,255,255,0.03);
+    color: var(--g-text);
+}
+.auth-message.error   { border-color: rgba(170, 90, 100, .45); color: #d1a3aa; box-shadow: 0 0 18px rgba(170, 90, 100, .15); }
+.auth-message.success { border-color: rgba(80, 140, 130, .45); color: #a5cbc4; box-shadow: 0 0 18px var(--g-glow-t); }
 
-  justify-content: space-between;
-
-  padding: 0 14px;
-
-  border-radius: 11px;
-
-  color: #777064;
-
-  background: rgba(255, 255, 255, 0.018);
-
-  border: 1px solid rgba(255, 255, 255, 0.055);
-
-  cursor: pointer;
-
-  font-size: 9px;
-
-  transition: all 0.2s ease;
+/* ---------- verification section ---------- */
+.method-switch {
+    display: flex; gap: 6px; padding: 4px; margin: 0 0 20px;
+    border: 1px solid var(--g-line); border-radius: 14px;
+    background: rgba(8,8,12,.6);
+}
+.method-btn {
+    flex: 1; padding: 10px; border: 0; border-radius: 10px; cursor: pointer;
+    background: transparent; color: var(--g-dim); font: inherit; letter-spacing: .08em;
+    transition: all .3s;
+}
+.method-btn.active {
+    color: #e2dff0;
+    background: rgba(110,95,158,.22);
+    box-shadow: 0 0 18px var(--g-glow-v);
 }
 
-.create-button:hover {
-  color: var(--gold-light);
-
-  background: rgba(212, 175, 55, 0.04);
-
-  border-color: rgba(212, 175, 55, 0.15);
+.code-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 22px; }
+.code-box {
+    width: 100%; max-width: 52px; height: 58px; text-align: center;
+    font-size: 1.4rem; font-weight: 600; color: #e6e3f2;
+    background: rgba(8,8,12,.75);
+    border: 1px solid var(--g-line); border-radius: 14px; outline: none;
+    caret-color: var(--g-gold);
+    transition: border-color .25s, box-shadow .25s, transform .25s;
 }
-
-.create-button strong {
-  color: #c0af79;
-
-  font-weight: 700;
+.code-box:focus {
+    border-color: rgba(140,125,200,.6);
+    box-shadow: 0 0 0 3px rgba(110,95,158,.14), 0 0 24px var(--g-glow-v);
+    transform: translateY(-2px);
 }
+.code-box.filled { border-color: rgba(168,146,106,.45); box-shadow: 0 0 16px var(--g-glow-g); }
+.code-row.shake { animation: nexaShake .4s; }
+@keyframes nexaShake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-/* ============================================================
-   DECORATION
-============================================================ */
-
-.auth-decoration {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin-top: 18px;
+.verify-links { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 18px; }
+.link-button {
+    background: none; border: 0; cursor: pointer; font: inherit; font-size: .85rem;
+    color: var(--g-dim); transition: color .3s, text-shadow .3s;
 }
+.link-button:hover { color: #cfc9e6; text-shadow: 0 0 12px var(--g-glow-v); }
+.link-button:disabled { opacity: .5; cursor: default; }
 
-.decoration-line {
-  width: 55px;
-
-  height: 1px;
-
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.25));
+@media (max-width: 420px) {
+    .code-box { height: 50px; font-size: 1.2rem; }
 }
-
-.decoration-line:last-child {
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.25), transparent);
-}
-
-.decoration-diamond {
-  color: #8c711e;
-
-  font-size: 7px;
-}
-
-/* ============================================================
-   FOOTER
-============================================================ */
-
-.auth-footer {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 9px;
-
-  margin-top: 17px;
-
-  color: #4b463d;
-
-  font-size: 7px;
-
-  letter-spacing: 0.08em;
-}
-
-.footer-dot {
-  width: 3px;
-
-  height: 3px;
-
-  border-radius: 50%;
-
-  background: #6d5717;
-}
-
-/* ============================================================
-   REGISTER MODE SPACING
-============================================================ */
-
-#registerSection .auth-heading {
-  margin-bottom: 19px;
-}
-
-#registerForm {
-  gap: 13px;
-}
-
-#registerSection .input-wrapper {
-  height: 45px;
-}
-
-/* ============================================================
-   MOBILE
-============================================================ */
-
-@media (max-width: 600px) {
-  .auth-page {
-    align-items: flex-start;
-
-    padding: 28px 13px 40px;
-  }
-
-  .auth-container {
-    width: 100%;
-  }
-
-  .brand {
-    margin-bottom: 20px;
-  }
-
-  .brand-mark {
-    width: 56px;
-
-    height: 56px;
-
-    border-radius: 17px;
-  }
-
-  .brand-mark span {
-    font-size: 32px;
-  }
-
-  .brand-copy h1 {
-    font-size: 29px;
-  }
-
-  .brand > p {
-    margin-top: 8px;
-
-    font-size: 13px;
-  }
-
-  .auth-box {
-    padding: 22px 18px 20px;
-
-    border-radius: 20px;
-  }
-
-  .auth-top-line {
-    left: 45px;
-
-    right: 45px;
-  }
-
-  .auth-heading h2 {
-    font-size: 30px;
-  }
-
-  .auth-subtitle {
-    font-size: 14px;
-  }
-
-  .input-wrapper {
-    height: 47px;
-  }
-
-  .auth-button {
-    height: 48px;
-  }
-
-  .auth-decoration {
-    margin-top: 15px;
-  }
-
-  .auth-footer {
-    font-size: 6px;
-  }
-}
-
-/* ============================================================
-   SMALL PHONES
-============================================================ */
-
-@media (max-width: 380px) {
-  .auth-page {
-    padding: 21px 10px 30px;
-  }
-
-  .brand-mark {
-    width: 52px;
-
-    height: 52px;
-  }
-
-  .brand-copy h1 {
-    font-size: 26px;
-  }
-
-  .auth-box {
-    padding: 20px 15px 18px;
-  }
-
-  .auth-heading h2 {
-    font-size: 28px;
-  }
-
-  .input-group label {
-    font-size: 8px;
-  }
-
-  .input-wrapper {
-    height: 45px;
-  }
-
-  .create-button {
-    font-size: 8px;
-  }
-}
-
-/* ============================================================
-   ACCESSIBILITY
-============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-
-    animation-iteration-count: 1 !important;
-
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ============================================================
-   SCROLLBAR
-============================================================ */
-
-::-webkit-scrollbar {
-  width: 7px;
-}
-
-::-webkit-scrollbar-track {
-  background: #030303;
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 20px;
-
-  background: linear-gradient(180deg, #806315, #3f310d);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #b08e2b, #634d12);
-}
-/* =========================================================
-   NEXA MESSAGES — GLOBAL THEME BRIDGE
-   This connects messages.css to the global NEXA theme.
-========================================================= */
-
-/* ---------------------------------------------------------
-   MESSAGE-SPECIFIC VARIABLES
---------------------------------------------------------- */
-
-html[data-nexa-theme] {
-    --nexa-bg:
-        var(--nexa-theme-bg);
-
-    --nexa-bg-soft:
-        var(--nexa-theme-bg-2);
-
-    --nexa-bg-deep:
-        var(--nexa-theme-bg);
-
-    --nexa-panel:
-        var(--nexa-theme-surface);
-
-    --nexa-panel-soft:
-        var(--nexa-theme-surface);
-
-    --nexa-panel-light:
-        var(--nexa-theme-surface-solid);
-
-    --nexa-border:
-        var(--nexa-theme-border);
-
-    --nexa-border-soft:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 10%,
-            transparent
-        );
-
-    --nexa-border-bright:
-        var(--nexa-theme-border-strong);
-
-    --nexa-white:
-        var(--nexa-theme-text);
-
-    --nexa-text:
-        var(--nexa-theme-text);
-
-    --nexa-text-soft:
-        var(--nexa-theme-muted);
-
-    --nexa-text-muted:
-        var(--nexa-theme-muted);
-
-    --nexa-blue:
-        var(--nexa-theme-primary);
-
-    --nexa-blue-2:
-        var(--nexa-theme-accent);
-
-    --nexa-blue-dark:
-        var(--nexa-theme-secondary);
-
-    --nexa-gold:
-        var(--nexa-theme-primary);
-
-    --nexa-gold-soft:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 65%,
-            transparent
-        );
-
-    --nexa-gold-pale:
-        var(--nexa-theme-accent);
-}
-
-
-/* ---------------------------------------------------------
-   MAIN MESSAGES BACKGROUND
---------------------------------------------------------- */
-
-html[data-nexa-theme] .messages-background {
-    background:
-        radial-gradient(
-            circle at 10% 15%,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 12%,
-                transparent
-            ),
-            transparent 25%
-        ),
-        radial-gradient(
-            circle at 88% 12%,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-secondary) 10%,
-                transparent
-            ),
-            transparent 25%
-        ),
-        radial-gradient(
-            circle at 65% 90%,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 7%,
-                transparent
-            ),
-            transparent 30%
-        ),
-        linear-gradient(
-            145deg,
-            var(--nexa-theme-bg),
-            var(--nexa-theme-bg-2),
-            var(--nexa-theme-bg)
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   BACKGROUND GRID
---------------------------------------------------------- */
-
-html[data-nexa-theme] .background-grid {
-    background-image:
-        linear-gradient(
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 5%,
-                transparent
-            ) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 5%,
-                transparent
-            ) 1px,
-            transparent 1px
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   BACKGROUND ORBS
---------------------------------------------------------- */
-
-html[data-nexa-theme] .background-orb-one {
-    background:
-        radial-gradient(
-            circle,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 18%,
-                transparent
-            ),
-            transparent 70%
-        ) !important;
-}
-
-html[data-nexa-theme] .background-orb-two {
-    background:
-        radial-gradient(
-            circle,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-secondary) 15%,
-                transparent
-            ),
-            transparent 70%
-        ) !important;
-}
-
-html[data-nexa-theme] .background-orb-three {
-    background:
-        radial-gradient(
-            circle,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 10%,
-                transparent
-            ),
-            transparent 70%
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   HEADER
---------------------------------------------------------- */
-
-html[data-nexa-theme] .site-header {
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-bg) 94%,
-            transparent
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .site-header::after {
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            var(--nexa-theme-primary),
-            transparent
-        ) !important;
-
-    opacity: .45;
-}
-
-
-/* ---------------------------------------------------------
-   LOGO
---------------------------------------------------------- */
-
-html[data-nexa-theme] .logo-symbol {
-    color:
-        var(--nexa-theme-primary) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 10%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .logo-text {
-    background:
-        linear-gradient(
-            90deg,
-            var(--nexa-theme-text),
-            var(--nexa-theme-primary),
-            var(--nexa-theme-secondary)
-        ) !important;
-
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    color: transparent !important;
-}
-
-
-/* ---------------------------------------------------------
-   MAIN NAV
---------------------------------------------------------- */
-
-html[data-nexa-theme] .main-nav-link {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .main-nav-link:hover {
-    color:
-        var(--nexa-theme-text) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 5%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .main-nav-link.active {
-    color:
-        var(--nexa-theme-accent) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 9%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .nav-notification-dot {
-    background:
-        var(--nexa-theme-primary) !important;
-
-    box-shadow:
-        0 0 12px
-        var(--nexa-theme-glow) !important;
-}
-
-
-/* ---------------------------------------------------------
-   CONVERSATIONS PANEL
---------------------------------------------------------- */
-
-html[data-nexa-theme] .conversations-panel {
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-bg-2) 96%,
-                transparent
-            ),
-            var(--nexa-theme-bg)
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .conversations-top {
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 4%,
-                transparent
-            ),
-            transparent
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   CONVERSATION BUTTONS
---------------------------------------------------------- */
-
-html[data-nexa-theme] .conversationButton {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .conversationButton:hover {
-    border-color:
-        var(--nexa-theme-border) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 5%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .conversationButton strong {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .conversationButton span {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .conversationButton::before {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 13%,
-                transparent
-            ),
-            color-mix(
-                in srgb,
-                var(--nexa-theme-secondary) 12%,
-                transparent
-            )
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   SEARCH
---------------------------------------------------------- */
-
-html[data-nexa-theme] .conversation-search input {
-    color:
-        var(--nexa-theme-text) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-text) 3%,
-            transparent
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .conversation-search input::placeholder {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .conversation-search input:focus {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    box-shadow:
-        0 0 0 4px
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   FILTERS
---------------------------------------------------------- */
-
-html[data-nexa-theme] .conversation-filter {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .conversation-filter:hover,
-html[data-nexa-theme] .conversation-filter.active {
-    color:
-        var(--nexa-theme-accent) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-}
-
-
-/* ---------------------------------------------------------
-   CHAT SECTION
---------------------------------------------------------- */
-
-html[data-nexa-theme] .chat-section {
-    background:
-        radial-gradient(
-            circle at 78% 0%,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 8%,
-                transparent
-            ),
-            transparent 28%
-        ),
-        linear-gradient(
-            180deg,
-            var(--nexa-theme-bg-2),
-            var(--nexa-theme-bg)
-        ) !important;
-}
-
-html[data-nexa-theme] .chat-header {
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-bg) 92%,
-            transparent
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .chat-user-name-row h2 {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .chat-avatar {
-    color:
-        var(--nexa-theme-accent) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 16%,
-                transparent
-            ),
-            color-mix(
-                in srgb,
-                var(--nexa-theme-secondary) 20%,
-                transparent
-            )
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   CHAT CONTROLS
---------------------------------------------------------- */
-
-html[data-nexa-theme] .chat-control,
-html[data-nexa-theme] .chat-close-button,
-html[data-nexa-theme] .mobile-back-button {
-    color:
-        var(--nexa-theme-muted) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 3%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .chat-control:hover,
-html[data-nexa-theme] .chat-close-button:hover,
-html[data-nexa-theme] .mobile-back-button:hover {
-    color:
-        var(--nexa-theme-primary) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   MESSAGE COMPOSER
---------------------------------------------------------- */
-
-html[data-nexa-theme] .message-composer-area {
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-bg) 95%,
-            transparent
-        ) !important;
-
-    border-top-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .composer-box {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 6%,
-                transparent
-            ),
-            color-mix(
-                in srgb,
-                var(--nexa-theme-text) 2%,
-                transparent
-            )
-        ) !important;
-}
-
-html[data-nexa-theme] .composer-box:focus-within {
-    border-color:
-        var(--nexa-theme-primary) !important;
-
-    box-shadow:
-        0 0 0 3px
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .composer-inner-button,
-html[data-nexa-theme] .voice-composer-button {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .composer-inner-button:hover,
-html[data-nexa-theme] .voice-composer-button:hover {
-    color:
-        var(--nexa-theme-primary) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .message-input-wrapper input {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .message-input-wrapper input::placeholder {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .send-button {
-    color:
-        #fff !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--nexa-theme-secondary),
-            var(--nexa-theme-primary)
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   GROUP CREATION
---------------------------------------------------------- */
-
-html[data-nexa-theme] .create-group-box {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            150deg,
-            var(--nexa-theme-bg-2),
-            var(--nexa-theme-bg)
-        ) !important;
-}
-
-html[data-nexa-theme] .create-group-modal {
-    background:
-        radial-gradient(
-            circle at 50% 20%,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 9%,
-                transparent
-            ),
-            transparent 35%
-        ),
-        rgba(0, 0, 0, .78) !important;
-}
-
-html[data-nexa-theme] .create-group-header h2,
-html[data-nexa-theme] .create-group-friends-heading strong,
-html[data-nexa-theme] .group-friend-info strong {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .create-group-header p,
-html[data-nexa-theme] .group-friend-info small,
-html[data-nexa-theme] .group-friends-loading,
-html[data-nexa-theme] .group-friends-empty {
-    color:
-        var(--nexa-theme-muted) !important;
-}
-
-html[data-nexa-theme] .create-group-field input,
-html[data-nexa-theme] .create-group-field textarea {
-    color:
-        var(--nexa-theme-text) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-text) 3%,
-            transparent
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-}
-
-html[data-nexa-theme] .create-group-field input:focus,
-html[data-nexa-theme] .create-group-field textarea:focus {
-    border-color:
-        var(--nexa-theme-primary) !important;
-}
-
-html[data-nexa-theme] .create-group-submit {
-    color: #fff !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--nexa-theme-secondary),
-            var(--nexa-theme-primary)
-        ) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-}
-
-
-/* ---------------------------------------------------------
-   EMOJI PICKER
---------------------------------------------------------- */
-
-html[data-nexa-theme] .emoji-picker {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            var(--nexa-theme-bg-2),
-            var(--nexa-theme-bg)
-        ) !important;
-}
-
-html[data-nexa-theme] .emoji-picker-header strong,
-html[data-nexa-theme] .emoji-category-button.active {
-    color:
-        var(--nexa-theme-primary) !important;
-}
-
-html[data-nexa-theme] #emojiSearch {
-    color:
-        var(--nexa-theme-text) !important;
-
-    border-color:
-        var(--nexa-theme-border) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-text) 3%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .emoji-category-button:hover,
-html[data-nexa-theme] .emoji-category-button.active,
-html[data-nexa-theme] .emoji-option:hover {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 8%,
-            transparent
-        ) !important;
-}
-
-
-/* ---------------------------------------------------------
-   STATUS / READ TICKS
---------------------------------------------------------- */
-
-html[data-nexa-theme] .nexa-message-ticks,
-html[data-nexa-theme] .nexa-message-ticks.is-read {
-    color:
-        var(--nexa-theme-primary) !important;
-}
-
-html[data-nexa-theme] .chat-online-status,
-html[data-nexa-theme] .online-status-indicator {
-    color:
-        #67b88c !important;
-}
-
-
-/* ---------------------------------------------------------
-   CALL SCREEN
---------------------------------------------------------- */
-
-html[data-nexa-theme] .nexa-active-call-screen {
-    background:
-        radial-gradient(
-            circle at center,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 9%,
-                transparent
-            ),
-            transparent 32%
-        ),
-        var(--nexa-theme-bg) !important;
-}
-
-html[data-nexa-theme] .nexa-call-ring {
-    border-color:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 28%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .nexa-call-avatar {
-    color:
-        var(--nexa-theme-accent) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            color-mix(
-                in srgb,
-                var(--nexa-theme-primary) 18%,
-                transparent
-            ),
-            color-mix(
-                in srgb,
-                var(--nexa-theme-secondary) 25%,
-                transparent
-            )
-        ) !important;
-}
-
-html[data-nexa-theme] .nexa-call-name {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-
-/* ---------------------------------------------------------
-   COMING SOON POPUP
---------------------------------------------------------- */
-
-html[data-nexa-theme] .nexa-coming-soon-card {
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            var(--nexa-theme-bg-2),
-            var(--nexa-theme-bg)
-        ) !important;
-}
-
-html[data-nexa-theme] .nexa-coming-soon-icon {
-    color:
-        var(--nexa-theme-primary) !important;
-
-    border-color:
-        var(--nexa-theme-border-strong) !important;
-
-    background:
-        color-mix(
-            in srgb,
-            var(--nexa-theme-primary) 12%,
-            transparent
-        ) !important;
-}
-
-html[data-nexa-theme] .nexa-coming-soon-label,
-html[data-nexa-theme] .nexa-coming-soon-close:hover {
-    color:
-        var(--nexa-theme-primary) !important;
-}
-
-html[data-nexa-theme] .nexa-coming-soon-content h3 {
-    color:
-        var(--nexa-theme-text) !important;
-}
-
-html[data-nexa-theme] .nexa-coming-soon-content p {
-    color:
-        var(--nexa-theme-muted) !important;
+    *, *::before, *::after { animation: none !important; transition: none !important; }
 }
