@@ -222,7 +222,17 @@ background:linear-gradient(135deg,#b88d22,var(--gold),var(--gold-light));color:#
 const SUPABASE_URL = "https://pakdneudwsxtanrkirmu.supabase.co";
 // Use your PUBLIC/PUBLISHABLE key only. Never the secret or service_role key.
 const SUPABASE_KEY = "sb_publishable_nE5wMk921mJIsfLVTeWT4A_5bIDgnRP";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+);
 
 const $ = (id) => document.getElementById(id);
 const authContainer = $("authContainer"), authForm = $("authForm");
