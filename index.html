@@ -246,6 +246,14 @@ const forgotPassword = $("forgotPassword");
 
 let registerMode = false;
 
+/* ---------- SINGLE, SAFE REDIRECT (fixes the flicker loop) ---------- */
+let redirecting = false;
+function goHome() {
+  if (redirecting) return;          // only ever redirect once
+  redirecting = true;
+  window.location.replace("home.html"); // replace = no back-button loop
+}
+
 function showMessage(text, type) { message.textContent = text; message.className = "message show " + type; }
 function clearMessage() { message.textContent = ""; message.className = "message"; }
 function setLoading(on) { submitButton.disabled = on; submitButton.classList.toggle("loading", on); }
@@ -306,6 +314,7 @@ function validateLogin() {
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   clearMessage();
+  if (redirecting) return;
 
   if (registerMode) {
     if (!validateRegistration()) return;
@@ -324,12 +333,12 @@ authForm.addEventListener("submit", async (event) => {
         return;
       }
       showMessage("Account created successfully. Welcome to NEXA!", "success");
-      setTimeout(() => { window.location.href = "home.html"; }, 900);
+      goHome();
     } catch (error) {
       console.error("NEXA Signup Error:", error);
       showMessage(error.message || "Unable to create your account.", "error");
     } finally {
-      setLoading(false);
+      if (!redirecting) setLoading(false);
     }
     return;
   }
@@ -344,7 +353,7 @@ authForm.addEventListener("submit", async (event) => {
     if (error) throw error;
     if (!data.session) throw new Error("No login session was created.");
     showMessage("Welcome back to NEXA.", "success");
-    setTimeout(() => { window.location.href = "home.html"; }, 700);
+    goHome();
   } catch (error) {
     console.error("NEXA Login Error:", error);
     let text = error.message || "Unable to sign in.";
@@ -352,7 +361,7 @@ authForm.addEventListener("submit", async (event) => {
     if (text.toLowerCase().includes("email not confirmed")) text = "Please confirm your email before signing in.";
     showMessage(text, "error");
   } finally {
-    setLoading(false);
+    if (!redirecting) setLoading(false);
   }
 });
 
@@ -373,20 +382,17 @@ forgotPassword.addEventListener("click", async () => {
   }
 });
 
-async function checkSession() {
+/* Already logged in? Go straight in. Runs ONCE on page load.
+   (The old onAuthStateChange redirect was removed: it caused the loop.) */
+(async () => {
   try {
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) return console.error("Session error:", error);
-    if (data.session) window.location.href = "home.html";
+    if (data.session) goHome();
   } catch (error) {
     console.error("Supabase session check failed:", error);
   }
-}
-checkSession();
-
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" && session) window.location.href = "home.html";
-});
+})();
 </script>
 </body>
 </html>
