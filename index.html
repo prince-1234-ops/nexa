@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -11,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
@@ -22,17 +20,9 @@
   --muted:#858585;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box}
 
-html,
-body{
-  width:100%;
-  min-height:100%;
-}
+html,body{width:100%;min-height:100%}
 
 body{
   min-height:100vh;
@@ -44,6 +34,9 @@ body{
     radial-gradient(circle at 90% 90%,rgba(212,175,55,.08),transparent 30%),
     #050505;
 }
+
+/* Hidden until the session check finishes, so nothing flashes before a redirect */
+body.checking .page{visibility:hidden}
 
 .page{
   min-height:100vh;
@@ -63,16 +56,8 @@ body{
   filter:blur(90px);
   pointer-events:none;
 }
-
-.glow.one{
-  top:-180px;
-  left:-160px;
-}
-
-.glow.two{
-  right:-160px;
-  bottom:-200px;
-}
+.glow.one{top:-180px;left:-160px}
+.glow.two{right:-160px;bottom:-200px}
 
 .auth-container{
   width:min(1080px,100%);
@@ -84,9 +69,7 @@ body{
   border-radius:28px;
   overflow:hidden;
   z-index:2;
-  box-shadow:
-    0 30px 90px rgba(0,0,0,.75),
-    0 0 60px rgba(212,175,55,.035);
+  box-shadow:0 30px 90px rgba(0,0,0,.75),0 0 60px rgba(212,175,55,.035);
 }
 
 /* FORM SIDE */
@@ -101,15 +84,8 @@ body{
   z-index:2;
   transition:transform .75s cubic-bezier(.77,0,.175,1);
 }
-
-.form-content{
-  width:100%;
-  max-width:390px;
-}
-
-.auth-container.register-mode .form-side{
-  transform:translateX(100%);
-}
+.form-content{width:100%;max-width:390px}
+.auth-container.register-mode .form-side{transform:translateX(100%)}
 
 /* BRAND PANEL */
 .brand-panel{
@@ -131,7 +107,6 @@ body{
   border-left:1px solid rgba(212,175,55,.12);
   transition:transform .75s cubic-bezier(.77,0,.175,1);
 }
-
 .auth-container.register-mode .brand-panel{
   transform:translateX(-100%);
   border-left:none;
@@ -150,9 +125,7 @@ body{
   font-size:40px;
   font-weight:800;
   margin-bottom:22px;
-  box-shadow:
-    inset 0 0 30px rgba(212,175,55,.06),
-    0 0 25px rgba(212,175,55,.07);
+  box-shadow:inset 0 0 30px rgba(212,175,55,.06),0 0 25px rgba(212,175,55,.07);
 }
 
 .brand-panel h1{
@@ -162,12 +135,7 @@ body{
   color:var(--gold-light);
 }
 
-.tagline{
-  margin-top:7px;
-  color:#777;
-  font-size:10px;
-  letter-spacing:3px;
-}
+.tagline{margin-top:7px;color:#777;font-size:10px;letter-spacing:3px}
 
 .welcome{
   margin-top:38px;
@@ -176,10 +144,7 @@ body{
   line-height:1.2;
   color:#e6e6e6;
 }
-
-.gold-text{
-  color:var(--gold-light);
-}
+.gold-text{color:var(--gold-light)}
 
 .description{
   margin-top:16px;
@@ -200,11 +165,8 @@ body{
   letter-spacing:2px;
   text-transform:uppercase;
 }
-
 .online-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
+  width:6px;height:6px;border-radius:50%;
   background:var(--gold);
   box-shadow:0 0 12px var(--gold);
 }
@@ -217,56 +179,21 @@ body{
   letter-spacing:3px;
   margin-bottom:10px;
 }
+.form-content h2{font-family:"Cinzel",serif;font-size:34px;line-height:1.2}
+.subtitle{margin-top:9px;color:var(--muted);font-size:13px;line-height:1.6}
 
-.form-content h2{
-  font-family:"Cinzel",serif;
-  font-size:34px;
-  line-height:1.2;
-}
-
-.subtitle{
-  margin-top:9px;
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.6;
-}
-
-.register-heading,
-.register-fields{
-  display:none;
-}
-
+.register-heading,.register-fields{display:none}
 .auth-container.register-mode .login-heading,
-.auth-container.register-mode .login-fields{
-  display:none;
-}
-
+.auth-container.register-mode .login-fields{display:none}
 .auth-container.register-mode .register-heading,
-.auth-container.register-mode .register-fields{
-  display:block;
-}
+.auth-container.register-mode .register-fields{display:block}
 
 /* FORM */
-form{
-  margin-top:30px;
-}
+form{margin-top:30px}
+.field{margin-bottom:18px}
+.field label{display:block;margin-bottom:8px;color:#cacaca;font-size:12px;font-weight:600}
 
-.field{
-  margin-bottom:18px;
-}
-
-.field label{
-  display:block;
-  margin-bottom:8px;
-  color:#cacaca;
-  font-size:12px;
-  font-weight:600;
-}
-
-.input-wrapper{
-  position:relative;
-}
-
+.input-wrapper{position:relative}
 .input-icon{
   position:absolute;
   top:50%;
@@ -277,7 +204,6 @@ form{
   pointer-events:none;
   transition:.2s;
 }
-
 .input-wrapper input{
   width:100%;
   height:54px;
@@ -291,36 +217,24 @@ form{
   font-size:13px;
   transition:.2s;
 }
-
-.input-wrapper input::placeholder{
-  color:#555;
-}
-
+.input-wrapper input::placeholder{color:#555}
 .input-wrapper input:focus{
   border-color:rgba(212,175,55,.65);
   box-shadow:0 0 0 3px rgba(212,175,55,.07);
   background:#101010;
 }
-
-.input-wrapper:focus-within .input-icon{
-  color:var(--gold);
-}
+.input-wrapper:focus-within .input-icon{color:var(--gold)}
 
 .password-button{
   position:absolute;
-  top:0;
-  right:0;
-  width:52px;
-  height:54px;
+  top:0;right:0;
+  width:52px;height:54px;
   border:none;
   background:transparent;
   color:#666;
   cursor:pointer;
 }
-
-.password-button:hover{
-  color:var(--gold);
-}
+.password-button:hover{color:var(--gold)}
 
 .password-row{
   display:flex;
@@ -328,10 +242,7 @@ form{
   justify-content:space-between;
   margin-bottom:8px;
 }
-
-.password-row label{
-  margin-bottom:0;
-}
+.password-row label{margin-bottom:0}
 
 .forgot{
   border:none;
@@ -340,10 +251,7 @@ form{
   font-size:10px;
   cursor:pointer;
 }
-
-.forgot:hover{
-  color:var(--gold-light);
-}
+.forgot:hover{color:var(--gold-light)}
 
 .message{
   display:none;
@@ -353,22 +261,9 @@ form{
   line-height:1.5;
   margin-bottom:16px;
 }
-
-.message.show{
-  display:block;
-}
-
-.message.error{
-  color:#ffadad;
-  background:rgba(223,104,104,.08);
-  border:1px solid rgba(223,104,104,.18);
-}
-
-.message.success{
-  color:#a9f0c9;
-  background:rgba(85,200,138,.08);
-  border:1px solid rgba(85,200,138,.18);
-}
+.message.show{display:block}
+.message.error{color:#ffadad;background:rgba(223,104,104,.08);border:1px solid rgba(223,104,104,.18)}
+.message.success{color:#a9f0c9;background:rgba(85,200,138,.08);border:1px solid rgba(85,200,138,.18)}
 
 .main-button{
   width:100%;
@@ -379,58 +274,29 @@ form{
   gap:11px;
   border:none;
   border-radius:12px;
-  background:linear-gradient(
-    135deg,
-    #b88d22,
-    var(--gold),
-    var(--gold-light)
-  );
+  background:linear-gradient(135deg,#b88d22,var(--gold),var(--gold-light));
   color:#070707;
   font-size:13px;
   font-weight:800;
   cursor:pointer;
   transition:.2s;
 }
-
-.main-button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 14px 28px rgba(212,175,55,.17);
-}
-
-.main-button:active{
-  transform:none;
-}
-
-.main-button:disabled{
-  opacity:.65;
-  cursor:not-allowed;
-  transform:none;
-}
+.main-button:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(212,175,55,.17)}
+.main-button:active{transform:none}
+.main-button:disabled{opacity:.65;cursor:not-allowed;transform:none}
 
 .spinner{
   display:none;
-  width:16px;
-  height:16px;
+  width:16px;height:16px;
   border:2px solid rgba(0,0,0,.25);
   border-top-color:#000;
   border-radius:50%;
   animation:spin .7s linear infinite;
 }
-
-.loading .spinner{
-  display:block;
-}
-
+.loading .spinner{display:block}
 .loading .button-label,
-.loading .button-arrow{
-  display:none;
-}
-
-@keyframes spin{
-  to{
-    transform:rotate(360deg);
-  }
-}
+.loading .button-arrow{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 .switch{
   margin-top:24px;
@@ -441,7 +307,6 @@ form{
   color:#777;
   font-size:11px;
 }
-
 .switch button{
   border:none;
   background:transparent;
@@ -450,10 +315,7 @@ form{
   font-weight:700;
   cursor:pointer;
 }
-
-.switch button:hover{
-  color:var(--gold-light);
-}
+.switch button:hover{color:var(--gold-light)}
 
 .secure{
   margin-top:23px;
@@ -464,26 +326,13 @@ form{
   color:#4e4e4e;
   font-size:9px;
 }
-
-.secure i{
-  color:#656565;
-}
+.secure i{color:#656565}
 
 /* MOBILE */
 @media (max-width:850px){
-  .page{
-    padding:15px;
-  }
-
-  .auth-container{
-    min-height:650px;
-    border-radius:22px;
-  }
-
-  .brand-panel{
-    display:none;
-  }
-
+  .page{padding:15px}
+  .auth-container{min-height:650px;border-radius:22px}
+  .brand-panel{display:none}
   .form-side,
   .auth-container.register-mode .form-side{
     width:100%;
@@ -491,38 +340,19 @@ form{
     transform:none;
   }
 }
-
 @media (max-width:500px){
-  .page{
-    padding:0;
-  }
-
-  .auth-container{
-    min-height:100vh;
-    border-radius:0;
-    border:none;
-  }
-
-  .form-side{
-    padding:30px 20px;
-  }
-
-  .form-content h2{
-    font-size:29px;
-  }
+  .page{padding:0}
+  .auth-container{min-height:100vh;border-radius:0;border:none}
+  .form-side{padding:30px 20px}
+  .form-content h2{font-size:29px}
 }
-
 @media (prefers-reduced-motion:reduce){
-  .form-side,
-  .brand-panel{
-    transition:none;
-  }
+  .form-side,.brand-panel{transition:none}
 }
 </style>
-
 </head>
 
-<body>
+<body class="checking">
 
 <main class="page">
 
@@ -531,62 +361,301 @@ form{
 
   <section class="auth-container" id="authContainer">
 
-```
-<div class="form-side">
-  <div class="form-content">
+    <!-- FORM SIDE -->
+    <div class="form-side">
+      <div class="form-content">
 
-    <div class="login-heading">
-      <p class="eyebrow">WELCOME BACK</p>
-      <h2>Sign in to NEXA</h2>
-      <p class="subtitle">
-        Enter your details and continue your NEXA experience.
-      </p>
-    </div>
-
-    <div class="register-heading">
-      <p class="eyebrow">JOIN NEXA</p>
-      <h2>Create your account</h2>
-      <p class="subtitle">
-        Create your account and start connecting with people.
-      </p>
-    </div>
-
-    <form id="authForm" novalidate>
-
-      <div class="login-fields">
-
-        <div class="field">
-          <label for="loginEmail">Email address</label>
-
-          <div class="input-wrapper">
-            <i class="fa-regular fa-envelope input-icon"></i>
-
-            <input
-              type="email"
-              id="loginEmail"
-              placeholder="you@example.com"
-              autocomplete="email"
-            >
-          </div>
+        <div class="login-heading">
+          <p class="eyebrow">WELCOME BACK</p>
+          <h2>Sign in to NEXA</h2>
+          <p class="subtitle">Enter your details and continue your NEXA experience.</p>
         </div>
 
-        <div class="field">
+        <div class="register-heading">
+          <p class="eyebrow">JOIN NEXA</p>
+          <h2>Create your account</h2>
+          <p class="subtitle">Create your account and start connecting with people.</p>
+        </div>
 
-          <div class="password-row">
-            <label for="loginPassword">Password</label>
+        <form id="authForm" novalidate>
 
-            <button
-              type="button"
-              class="forgot"
-              id="forgotPassword"
-            >
-              Forgot password?
-            </button>
+          <div class="message" id="formMessage" role="alert"></div>
+
+          <!-- LOGIN FIELDS -->
+          <div class="login-fields">
+
+            <div class="field">
+              <label for="loginEmail">Email address</label>
+              <div class="input-wrapper">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="password-row">
+                <label for="loginPassword">Password</label>
+                <button type="button" class="forgot" id="forgotPassword">Forgot password?</button>
+              </div>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                <button type="button" class="password-button" data-toggle="loginPassword" aria-label="Show password">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <div class="input-wrapper">
-            <i class="fa-solid fa-lock input-icon"></i>
+          <!-- REGISTER FIELDS -->
+          <div class="register-fields">
 
-            <input
-              type="password"
-```
+            <div class="field">
+              <label for="registerName">Full name</label>
+              <div class="input-wrapper">
+                <i class="fa-regular fa-user input-icon"></i>
+                <input type="text" id="registerName" placeholder="Your name" autocomplete="name">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="registerEmail">Email address</label>
+              <div class="input-wrapper">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="email" id="registerEmail" placeholder="you@example.com" autocomplete="email">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="registerPassword">Password</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password">
+                <button type="button" class="password-button" data-toggle="registerPassword" aria-label="Show password">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="registerConfirm">Confirm password</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="registerConfirm" placeholder="Repeat your password" autocomplete="new-password">
+              </div>
+            </div>
+
+          </div>
+
+          <button type="submit" class="main-button" id="submitButton">
+            <span class="button-label" id="buttonLabel">Sign in</span>
+            <i class="fa-solid fa-arrow-right button-arrow"></i>
+            <span class="spinner"></span>
+          </button>
+
+        </form>
+
+        <div class="switch">
+          <span id="switchText">New to NEXA?</span>
+          <button type="button" id="switchButton">Create an account</button>
+        </div>
+
+        <div class="secure">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Secured with encrypted authentication</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BRAND PANEL -->
+    <aside class="brand-panel">
+      <div class="logo-mark">N</div>
+      <h1>NEXA</h1>
+      <p class="tagline">CONNECT. DISCOVER. BELONG.</p>
+
+      <p class="welcome">A place where <span class="gold-text">people</span> meet.</p>
+      <p class="description">
+        Share moments, find communities, and build real connections on a social network made for you.
+      </p>
+
+      <div class="online">
+        <span class="online-dot"></span>
+        <span>Online</span>
+      </div>
+    </aside>
+
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     CONFIG — put your own Supabase project values here
+     (or load your supabase.js BEFORE this script and it will be
+     reused if it sets window.sb)
+     ============================================================ */
+  var SUPABASE_URL = "YOUR_SUPABASE_URL";
+  var SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  var HOME_PAGE = "home.html";
+
+  /* ONE shared client, session persisted in localStorage */
+  var sb = window.sb;
+  if (!sb) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+    window.sb = sb;
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var container = $("authContainer");
+  var form = $("authForm");
+  var msg = $("formMessage");
+  var submitBtn = $("submitButton");
+  var isRegister = false;
+  var redirecting = false;
+
+  function goHome() {
+    if (redirecting) return;
+    redirecting = true;
+    window.location.replace(HOME_PAGE);   // replace = no back-button loop
+  }
+
+  /* ---------- Session check: runs ONCE, then reveals the page ---------- */
+  (async function init() {
+    try {
+      var res = await sb.auth.getSession();
+      if (res.data && res.data.session) {
+        goHome();
+        return;                            // keep page hidden while redirecting
+      }
+    } catch (e) {
+      console.error("Session check failed:", e);
+    }
+    document.body.classList.remove("checking");
+  })();
+
+  /* ---------- UI helpers ---------- */
+  function showMessage(text, type) {
+    msg.textContent = text;
+    msg.className = "message show " + (type || "error");
+  }
+  function clearMessage() {
+    msg.className = "message";
+    msg.textContent = "";
+  }
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.classList.toggle("loading", on);
+  }
+  function validEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  function setMode(register) {
+    isRegister = register;
+    container.classList.toggle("register-mode", register);
+    $("buttonLabel").textContent = register ? "Create account" : "Sign in";
+    $("switchText").textContent = register ? "Already have an account?" : "New to NEXA?";
+    $("switchButton").textContent = register ? "Sign in" : "Create an account";
+    clearMessage();
+  }
+  $("switchButton").addEventListener("click", function () { setMode(!isRegister); });
+
+  /* ---------- Show / hide password ---------- */
+  document.querySelectorAll(".password-button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var input = $(btn.getAttribute("data-toggle"));
+      var icon = btn.querySelector("i");
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      icon.className = show ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+    });
+  });
+
+  /* ---------- Forgot password ---------- */
+  $("forgotPassword").addEventListener("click", async function () {
+    clearMessage();
+    var email = $("loginEmail").value.trim();
+    if (!validEmail(email)) {
+      showMessage("Enter your email above first, then press “Forgot password?”.");
+      return;
+    }
+    try {
+      var r = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+      if (r.error) throw r.error;
+      showMessage("Password reset link sent. Check your email.", "success");
+    } catch (e) {
+      showMessage(e.message || "Could not send the reset email.");
+    }
+  });
+
+  /* ---------- Submit ---------- */
+  form.addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    clearMessage();
+
+    try {
+      if (isRegister) {
+        var name = $("registerName").value.trim();
+        var email = $("registerEmail").value.trim();
+        var pass = $("registerPassword").value;
+        var confirm = $("registerConfirm").value;
+
+        if (name.length < 2) return showMessage("Please enter your name.");
+        if (!validEmail(email)) return showMessage("Enter a valid email address.");
+        if (pass.length < 6) return showMessage("Password must be at least 6 characters.");
+        if (pass !== confirm) return showMessage("Passwords do not match.");
+
+        setLoading(true);
+        var up = await sb.auth.signUp({
+          email: email,
+          password: pass,
+          options: { data: { full_name: name } }
+        });
+        if (up.error) throw up.error;
+
+        if (up.data && up.data.session) {
+          goHome();                         // email confirmation is off: logged in
+        } else {
+          showMessage("Account created. Check your email to confirm, then sign in.", "success");
+          setMode(false);
+          $("loginEmail").value = email;
+          showMessage("Account created. Check your email to confirm, then sign in.", "success");
+        }
+      } else {
+        var lemail = $("loginEmail").value.trim();
+        var lpass = $("loginPassword").value;
+
+        if (!validEmail(lemail)) return showMessage("Enter a valid email address.");
+        if (!lpass) return showMessage("Enter your password.");
+
+        setLoading(true);
+        var inn = await sb.auth.signInWithPassword({ email: lemail, password: lpass });
+        if (inn.error) throw inn.error;
+        goHome();
+      }
+    } catch (e) {
+      var text = (e && e.message) || "Something went wrong. Try again.";
+      if (/invalid login/i.test(text)) text = "Wrong email or password.";
+      showMessage(text);
+    } finally {
+      if (!redirecting) setLoading(false);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
