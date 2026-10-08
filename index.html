@@ -2,660 +2,1764 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXA — Welcome</title>
-
-<link rel="icon" href="images/hub.jpg">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXA · Sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+@property --a{syntax:"<angle>";initial-value:0deg;inherits:false}
 :root{
-  --gold:#d4af37;
-  --gold-light:#f1cf70;
-  --white:#fff;
-  --muted:#858585;
+  --bg:#040302; --panel:#0a0805; --g1:#8a6a1c; --g2:#d4af37; --g3:#f6e3a1;
+  --text:#f1e8d0; --mute:#a09478; --line:rgba(212,175,55,.28);
+  --metal:linear-gradient(120deg,#8a6a1c,#d4af37 28%,#f6e3a1 50%,#d4af37 72%,#8a6a1c);
+  --serif:"Cormorant Garamond",Georgia,serif; --sans:"Manrope",system-ui,sans-serif;
 }
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:radial-gradient(ellipse at 50% 120%,#1c1405,var(--bg) 60%);color:var(--text);font-family:var(--sans);min-height:100vh;display:grid;place-items:center;padding:24px;overflow-x:hidden}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 
-*{margin:0;padding:0;box-sizing:border-box}
+/* ===== the box ===== */
+.box{position:relative;z-index:1;width:min(960px,100%);min-height:690px;display:grid;grid-template-columns:1fr 1fr;border-radius:22px;overflow:hidden;background:var(--panel);box-shadow:0 0 70px rgba(212,175,55,.22),0 40px 100px rgba(0,0,0,.8)}
+.box::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;z-index:5;pointer-events:none;
+  background:conic-gradient(from var(--a),rgba(212,175,55,.18) 0 55%,var(--g2) 78%,#fff3c4 86%,var(--g2) 94%,rgba(212,175,55,.18));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 7s linear infinite}
+@keyframes spin{to{--a:360deg}}
+.panel{position:relative;display:flex;flex-direction:column;padding:clamp(26px,3.6vw,46px);transition:transform .95s cubic-bezier(.76,0,.2,1)}
+.box.swapped .art{transform:translateX(100%)}
+.box.swapped .form{transform:translateX(-100%)}
+.mid{position:absolute;left:50%;top:0;bottom:0;width:1px;z-index:4;pointer-events:none;background:linear-gradient(transparent,rgba(212,175,55,.7) 30%,rgba(246,227,161,.9) 50%,rgba(212,175,55,.7) 70%,transparent);box-shadow:0 0 18px rgba(212,175,55,.8)}
 
-html,body{width:100%;min-height:100%}
+/* ===== left: light show ===== */
+.art{overflow:hidden;justify-content:space-between;background:radial-gradient(ellipse at 50% 110%,#3a2a08,#0b0804 62%)}
+.beams{position:absolute;inset:0;pointer-events:none}
+.beams i{position:absolute;bottom:-60%;width:var(--w);height:120%;left:var(--x);border-radius:50%;background:linear-gradient(to top,rgba(246,227,161,.0),rgba(212,175,55,.55),rgba(212,175,55,0));filter:blur(14px);opacity:0;animation:flow var(--d) ease-in-out var(--t) infinite}
+@keyframes flow{0%{transform:translateY(25%) scaleY(.7);opacity:0}30%{opacity:.9}100%{transform:translateY(-35%) scaleY(1.15);opacity:0}}
+.glow{position:absolute;left:-30%;right:-30%;bottom:-25%;height:70%;background:radial-gradient(ellipse at 50% 100%,rgba(246,227,161,.55),rgba(212,175,55,.3) 35%,transparent 68%);filter:blur(26px);animation:breathe 6s ease-in-out infinite}
+@keyframes breathe{50%{transform:translateY(-6%);opacity:.7}}
+.brand{position:relative;z-index:2;font:700 1.7rem var(--serif);letter-spacing:.32em;background:var(--metal);-webkit-background-clip:text;background-clip:text;color:transparent}
+.say{position:relative;z-index:2}
+.say h1{font:600 clamp(2.1rem,3.9vw,3.3rem)/1.08 var(--serif);color:var(--g3);text-shadow:0 0 30px rgba(212,175,55,.6);min-height:3.3em}
+.say h1::after{content:"";display:inline-block;width:.055em;height:.85em;margin-left:.1em;vertical-align:-.07em;background:var(--g2);box-shadow:0 0 14px var(--g2);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.say p{margin-top:14px;max-width:30ch;line-height:1.6;opacity:.82}
+.tag{position:relative;z-index:2;color:var(--mute);font-size:.85rem}
 
-body{
-  min-height:100vh;
-  font-family:"Inter",sans-serif;
-  color:var(--white);
-  overflow-x:hidden;
-  background:
-    radial-gradient(circle at 10% 10%,rgba(212,175,55,.10),transparent 30%),
-    radial-gradient(circle at 90% 90%,rgba(212,175,55,.08),transparent 30%),
-    #050505;
-}
+/* ===== right: forms ===== */
+.form{justify-content:center;background:linear-gradient(160deg,#0d0a06,#070503)}
+.view{display:none}
+.view.on{display:block;animation:in .6s .45s both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h2{font:600 2.1rem var(--serif);background:var(--metal);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.sub{color:var(--mute);margin:6px 0 10px;font-size:.93rem;line-height:1.5}
+.field{position:relative;margin-top:13px}
+.field input{width:100%;padding:23px 14px 8px;background:rgba(0,0,0,.55);color:var(--text);border:1px solid var(--line);border-radius:10px;font:500 .98rem var(--sans);outline:none;transition:border-color .25s,box-shadow .25s,background .25s}
+.field label{position:absolute;left:15px;top:16px;color:var(--mute);font-size:.93rem;pointer-events:none;transition:.2s}
+.field input:focus+label,.field input:not(:placeholder-shown)+label{top:7px;font-size:.68rem;letter-spacing:.04em;color:var(--g2)}
+.field input:focus{border-color:var(--g2);background:#000;box-shadow:0 0 0 3px rgba(212,175,55,.16),0 0 24px rgba(212,175,55,.28)}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--g2);font:600 .75rem var(--sans);cursor:pointer;padding:6px}
+.meter{display:flex;gap:5px;margin-top:8px}
+.meter i{flex:1;height:3px;border-radius:3px;background:rgba(212,175,55,.15);transition:.3s}
+.meter i.on{background:var(--metal);box-shadow:0 0 8px rgba(212,175,55,.7)}
+.pick{margin-top:14px;color:var(--mute);font-size:.8rem}
+.chips{display:flex;gap:10px;margin-top:6px}
+.chips label{flex:1;position:relative;padding:11px;text-align:center;border:1px solid var(--line);border-radius:10px;cursor:pointer;color:var(--text);font-size:.92rem;transition:.25s}
+.chips input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chips label:has(input:checked){border-color:var(--g2);background:rgba(212,175,55,.13);box-shadow:0 0 18px rgba(212,175,55,.35)}
+.chips label:has(input:focus-visible){outline:2px solid var(--g2);outline-offset:2px}
+.btn{position:relative;overflow:hidden;width:100%;margin-top:20px;padding:15px;border:0;border-radius:10px;font:700 1rem var(--sans);color:#1a1100;cursor:pointer;background:var(--metal);background-size:220% 100%;box-shadow:0 0 26px rgba(212,175,55,.4),inset 0 1px 0 rgba(255,255,255,.45);transition:background-position .7s,box-shadow .25s,transform .1s}
+.btn::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg)}
+.btn:hover{background-position:100% 0;box-shadow:0 0 40px rgba(212,175,55,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn:hover::after{left:130%;transition:left .8s}
+.btn:active{transform:translateY(1px)}
+.btn.load{pointer-events:none;color:transparent}
+.btn.load::before{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border:2.5px solid rgba(26,17,0,.3);border-top-color:#1a1100;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.link{background:none;border:0;color:var(--g2);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:4px;transition:color .2s,text-shadow .2s}
+.link:hover{color:var(--g3);text-shadow:0 0 12px rgba(212,175,55,.8)}
+.link:disabled{color:var(--mute);text-decoration:none;text-shadow:none;cursor:default}
+.more{margin-top:16px;display:grid;gap:9px;text-align:center;color:var(--mute);font-size:.88rem}
+.otp{display:flex;gap:9px;margin-top:18px}
+.otp input{flex:1;min-width:0;height:58px;text-align:center;font:600 1.5rem var(--serif);color:var(--g3);background:rgba(0,0,0,.6);border:1px solid var(--line);border-radius:10px;outline:none;transition:.2s}
+.otp input:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(212,175,55,.16),0 0 22px rgba(212,175,55,.4)}
+.otp input:not(:placeholder-shown){border-color:var(--g2)}
+.msg{margin-top:12px;min-height:1.4em;font-size:.88rem;text-align:center;line-height:1.4}
+.msg.err{color:#f0b7a2}.msg.ok{color:var(--g3)}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
 
-/* Hidden until the session check finishes, so nothing flashes before a redirect */
-body.checking .page{visibility:hidden}
-
-.page{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:30px;
-  position:relative;
-}
-
-.glow{
-  position:absolute;
-  width:420px;
-  height:420px;
-  border-radius:50%;
-  background:rgba(212,175,55,.045);
-  filter:blur(90px);
-  pointer-events:none;
-}
-.glow.one{top:-180px;left:-160px}
-.glow.two{right:-160px;bottom:-200px}
-
-.auth-container{
-  width:min(1080px,100%);
-  min-height:680px;
-  position:relative;
-  display:flex;
-  background:#0b0b0b;
-  border:1px solid rgba(212,175,55,.18);
-  border-radius:28px;
-  overflow:hidden;
-  z-index:2;
-  box-shadow:0 30px 90px rgba(0,0,0,.75),0 0 60px rgba(212,175,55,.035);
-}
-
-/* FORM SIDE */
-.form-side{
-  width:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:50px;
-  background:#090909;
-  position:relative;
-  z-index:2;
-  transition:transform .75s cubic-bezier(.77,0,.175,1);
-}
-.form-content{width:100%;max-width:390px}
-.auth-container.register-mode .form-side{transform:translateX(100%)}
-
-/* BRAND PANEL */
-.brand-panel{
-  width:50%;
-  position:absolute;
-  top:0;
-  right:0;
-  height:100%;
-  z-index:5;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:60px;
-  background:
-    linear-gradient(145deg,rgba(212,175,55,.11),transparent 42%),
-    linear-gradient(160deg,#111,#080808);
-  border-left:1px solid rgba(212,175,55,.12);
-  transition:transform .75s cubic-bezier(.77,0,.175,1);
-}
-.auth-container.register-mode .brand-panel{
-  transform:translateX(-100%);
-  border-left:none;
-  border-right:1px solid rgba(212,175,55,.12);
-}
-
-.logo-mark{
-  width:75px;
-  height:75px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid var(--gold);
-  color:var(--gold-light);
-  font-family:"Cinzel",serif;
-  font-size:40px;
-  font-weight:800;
-  margin-bottom:22px;
-  box-shadow:inset 0 0 30px rgba(212,175,55,.06),0 0 25px rgba(212,175,55,.07);
-}
-
-.brand-panel h1{
-  font-family:"Cinzel",serif;
-  font-size:48px;
-  letter-spacing:8px;
-  color:var(--gold-light);
-}
-
-.tagline{margin-top:7px;color:#777;font-size:10px;letter-spacing:3px}
-
-.welcome{
-  margin-top:38px;
-  font-family:"Cormorant Garamond",serif;
-  font-size:29px;
-  line-height:1.2;
-  color:#e6e6e6;
-}
-.gold-text{color:var(--gold-light)}
-
-.description{
-  margin-top:16px;
-  max-width:330px;
-  color:#838383;
-  font-size:13px;
-  line-height:1.7;
-}
-
-.online{
-  position:absolute;
-  bottom:35px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#606060;
-  font-size:10px;
-  letter-spacing:2px;
-  text-transform:uppercase;
-}
-.online-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--gold);
-  box-shadow:0 0 12px var(--gold);
-}
-
-/* HEADINGS */
-.eyebrow{
-  color:var(--gold);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:3px;
-  margin-bottom:10px;
-}
-.form-content h2{font-family:"Cinzel",serif;font-size:34px;line-height:1.2}
-.subtitle{margin-top:9px;color:var(--muted);font-size:13px;line-height:1.6}
-
-.register-heading,.register-fields{display:none}
-.auth-container.register-mode .login-heading,
-.auth-container.register-mode .login-fields{display:none}
-.auth-container.register-mode .register-heading,
-.auth-container.register-mode .register-fields{display:block}
-
-/* FORM */
-form{margin-top:30px}
-.field{margin-bottom:18px}
-.field label{display:block;margin-bottom:8px;color:#cacaca;font-size:12px;font-weight:600}
-
-.input-wrapper{position:relative}
-.input-icon{
-  position:absolute;
-  top:50%;
-  left:16px;
-  transform:translateY(-50%);
-  color:#666;
-  font-size:14px;
-  pointer-events:none;
-  transition:.2s;
-}
-.input-wrapper input{
-  width:100%;
-  height:54px;
-  padding:0 48px;
-  border:1px solid rgba(255,255,255,.08);
-  outline:none;
-  border-radius:12px;
-  background:#0d0d0d;
-  color:#fff;
-  font-family:"Inter",sans-serif;
-  font-size:13px;
-  transition:.2s;
-}
-.input-wrapper input::placeholder{color:#555}
-.input-wrapper input:focus{
-  border-color:rgba(212,175,55,.65);
-  box-shadow:0 0 0 3px rgba(212,175,55,.07);
-  background:#101010;
-}
-.input-wrapper:focus-within .input-icon{color:var(--gold)}
-
-.password-button{
-  position:absolute;
-  top:0;right:0;
-  width:52px;height:54px;
-  border:none;
-  background:transparent;
-  color:#666;
-  cursor:pointer;
-}
-.password-button:hover{color:var(--gold)}
-
-.password-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-.password-row label{margin-bottom:0}
-
-.forgot{
-  border:none;
-  background:transparent;
-  color:var(--gold);
-  font-size:10px;
-  cursor:pointer;
-}
-.forgot:hover{color:var(--gold-light)}
-
-.message{
-  display:none;
-  padding:11px 13px;
-  border-radius:10px;
-  font-size:11px;
-  line-height:1.5;
-  margin-bottom:16px;
-}
-.message.show{display:block}
-.message.error{color:#ffadad;background:rgba(223,104,104,.08);border:1px solid rgba(223,104,104,.18)}
-.message.success{color:#a9f0c9;background:rgba(85,200,138,.08);border:1px solid rgba(85,200,138,.18)}
-
-.main-button{
-  width:100%;
-  height:55px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:11px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(135deg,#b88d22,var(--gold),var(--gold-light));
-  color:#070707;
-  font-size:13px;
-  font-weight:800;
-  cursor:pointer;
-  transition:.2s;
-}
-.main-button:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(212,175,55,.17)}
-.main-button:active{transform:none}
-.main-button:disabled{opacity:.65;cursor:not-allowed;transform:none}
-
-.spinner{
-  display:none;
-  width:16px;height:16px;
-  border:2px solid rgba(0,0,0,.25);
-  border-top-color:#000;
-  border-radius:50%;
-  animation:spin .7s linear infinite;
-}
-.loading .spinner{display:block}
-.loading .button-label,
-.loading .button-arrow{display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.switch{
-  margin-top:24px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:5px;
-  color:#777;
-  font-size:11px;
-}
-.switch button{
-  border:none;
-  background:transparent;
-  color:var(--gold);
-  font-size:11px;
-  font-weight:700;
-  cursor:pointer;
-}
-.switch button:hover{color:var(--gold-light)}
-
-.secure{
-  margin-top:23px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:7px;
-  color:#4e4e4e;
-  font-size:9px;
-}
-.secure i{color:#656565}
-
-/* MOBILE */
-@media (max-width:850px){
-  .page{padding:15px}
-  .auth-container{min-height:650px;border-radius:22px}
-  .brand-panel{display:none}
-  .form-side,
-  .auth-container.register-mode .form-side{
-    width:100%;
-    padding:35px 25px;
-    transform:none;
-  }
-}
-@media (max-width:500px){
-  .page{padding:0}
-  .auth-container{min-height:100vh;border-radius:0;border:none}
-  .form-side{padding:30px 20px}
-  .form-content h2{font-size:29px}
+@media (max-width:780px){
+  .box{grid-template-columns:1fr;min-height:0}
+  .panel{transform:none !important}
+  .art{min-height:250px;gap:24px}
+  .say h1{min-height:2.3em}
+  .tag,.mid{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  .form-side,.brand-panel{transition:none}
+  *{animation:none !important}
+  .panel{transition:none}
 }
 </style>
 </head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
 
-<body class="checking">
+<div class="box" id="box">
+  <div class="mid" aria-hidden="true"></div>
 
-<main class="page">
-
-  <div class="glow one"></div>
-  <div class="glow two"></div>
-
-  <section class="auth-container" id="authContainer">
-
-    <!-- FORM SIDE -->
-    <div class="form-side">
-      <div class="form-content">
-
-        <div class="login-heading">
-          <p class="eyebrow">WELCOME BACK</p>
-          <h2>Sign in to NEXA</h2>
-          <p class="subtitle">Enter your details and continue your NEXA experience.</p>
-        </div>
-
-        <div class="register-heading">
-          <p class="eyebrow">JOIN NEXA</p>
-          <h2>Create your account</h2>
-          <p class="subtitle">Create your account and start connecting with people.</p>
-        </div>
-
-        <form id="authForm" novalidate>
-
-          <div class="message" id="formMessage" role="alert"></div>
-
-          <!-- LOGIN FIELDS -->
-          <div class="login-fields">
-
-            <div class="field">
-              <label for="loginEmail">Email address</label>
-              <div class="input-wrapper">
-                <i class="fa-regular fa-envelope input-icon"></i>
-                <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="password-row">
-                <label for="loginPassword">Password</label>
-                <button type="button" class="forgot" id="forgotPassword">Forgot password?</button>
-              </div>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
-                <button type="button" class="password-button" data-toggle="loginPassword" aria-label="Show password">
-                  <i class="fa-regular fa-eye"></i>
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- REGISTER FIELDS -->
-          <div class="register-fields">
-
-            <div class="field">
-              <label for="registerName">Full name</label>
-              <div class="input-wrapper">
-                <i class="fa-regular fa-user input-icon"></i>
-                <input type="text" id="registerName" placeholder="Your name" autocomplete="name">
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="registerEmail">Email address</label>
-              <div class="input-wrapper">
-                <i class="fa-regular fa-envelope input-icon"></i>
-                <input type="email" id="registerEmail" placeholder="you@example.com" autocomplete="email">
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="registerPassword">Password</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input type="password" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password">
-                <button type="button" class="password-button" data-toggle="registerPassword" aria-label="Show password">
-                  <i class="fa-regular fa-eye"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="registerConfirm">Confirm password</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input type="password" id="registerConfirm" placeholder="Repeat your password" autocomplete="new-password">
-              </div>
-            </div>
-
-          </div>
-
-          <button type="submit" class="main-button" id="submitButton">
-            <span class="button-label" id="buttonLabel">Sign in</span>
-            <i class="fa-solid fa-arrow-right button-arrow"></i>
-            <span class="spinner"></span>
-          </button>
-
-        </form>
-
-        <div class="switch">
-          <span id="switchText">New to NEXA?</span>
-          <button type="button" id="switchButton">Create an account</button>
-        </div>
-
-        <div class="secure">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Secured with encrypted authentication</span>
-        </div>
-
-      </div>
+  <section class="panel art" aria-label="Welcome">
+    <div class="beams" aria-hidden="true">
+      <i style="--x:6%;--w:70px;--d:7s;--t:0s"></i><i style="--x:20%;--w:40px;--d:9s;--t:-3s"></i>
+      <i style="--x:34%;--w:90px;--d:8s;--t:-5s"></i><i style="--x:50%;--w:36px;--d:6.5s;--t:-1s"></i>
+      <i style="--x:63%;--w:80px;--d:9.5s;--t:-6s"></i><i style="--x:78%;--w:46px;--d:7.5s;--t:-2s"></i>
+      <i style="--x:90%;--w:70px;--d:8.5s;--t:-4s"></i>
     </div>
-
-    <!-- BRAND PANEL -->
-    <aside class="brand-panel">
-      <div class="logo-mark">N</div>
-      <h1>NEXA</h1>
-      <p class="tagline">CONNECT. DISCOVER. BELONG.</p>
-
-      <p class="welcome">A place where <span class="gold-text">people</span> meet.</p>
-      <p class="description">
-        Share moments, find communities, and build real connections on a social network made for you.
-      </p>
-
-      <div class="online">
-        <span class="online-dot"></span>
-        <span>Online</span>
-      </div>
-    </aside>
-
+    <div class="glow" aria-hidden="true"></div>
+    <div class="brand">NEXA</div>
+    <div class="say">
+      <h1 id="typed" aria-live="polite"></h1>
+      <p id="saySub">Sign in to pick up where you left off.</p>
+    </div>
+    <div class="tag">Connect. Discover. Belong.</div>
   </section>
-</main>
+
+  <main class="panel form">
+
+    <section class="view on" id="v-login">
+      <h2>Sign in</h2>
+      <p class="sub">Use your email and password.</p>
+      <div class="field"><input id="l-email" type="email" autocomplete="email" placeholder=" "><label for="l-email">Email</label></div>
+      <div class="field"><input id="l-pass" type="password" autocomplete="current-password" placeholder=" "><label for="l-pass">Password</label><button class="eye" type="button" data-for="l-pass">Show</button></div>
+      <button class="btn" id="l-btn" type="button">Sign in</button>
+      <div class="more">
+        <span>Something wrong? <button class="link" id="l-code" type="button">Send me a code</button></span>
+        <span>New here? <button class="link" id="l-up" type="button">Create an account</button></span>
+      </div>
+    </section>
+
+    <section class="view" id="v-signup">
+      <h2>Create account</h2>
+      <p class="sub">We will send a code to confirm it is you.</p>
+      <div class="field"><input id="s-name" type="text" autocomplete="name" placeholder=" "><label for="s-name">Full name</label></div>
+      <div class="field"><input id="s-email" type="email" autocomplete="email" placeholder=" "><label for="s-email">Email</label></div>
+      <div class="field"><input id="s-phone" type="tel" autocomplete="tel" placeholder=" "><label for="s-phone">Phone, with country code (+...)</label></div>
+      <div class="field"><input id="s-pass" type="password" autocomplete="new-password" placeholder=" "><label for="s-pass">Password</label><button class="eye" type="button" data-for="s-pass">Show</button></div>
+      <div class="meter" id="meter" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="pick">Send my code to</div>
+      <div class="chips"><label><input type="radio" name="chan" value="email" checked>Email</label><label><input type="radio" name="chan" value="phone">Phone</label></div>
+      <button class="btn" id="s-btn" type="button">Send code</button>
+      <div class="more"><span>Already have an account? <button class="link" id="s-in" type="button">Sign in</button></span></div>
+    </section>
+
+    <section class="view" id="v-ask">
+      <h2>Get a code</h2>
+      <p class="sub">Enter the email or phone number on your account.</p>
+      <div class="field"><input id="a-to" type="text" autocomplete="username" placeholder=" "><label for="a-to">Email or phone (+...)</label></div>
+      <button class="btn" id="a-btn" type="button">Send code</button>
+      <div class="more"><button class="link" id="a-back" type="button">Back to sign in</button></div>
+    </section>
+
+    <section class="view" id="v-verify">
+      <h2>Enter your code</h2>
+      <p class="sub" id="v-sub">We sent a code.</p>
+      <div class="otp" id="otp">
+        <input inputmode="numeric" maxlength="1" placeholder=" " autocomplete="one-time-code" aria-label="Digit 1"><input inputmode="numeric" maxlength="1" placeholder=" " aria-label="Digit 2"><input inputmode="numeric" maxlength="1" placeholder=" " aria-label="Digit 3"><input inputmode="numeric" maxlength="1" placeholder=" " aria-label="Digit 4"><input inputmode="numeric" maxlength="1" placeholder=" " aria-label="Digit 5"><input inputmode="numeric" maxlength="1" placeholder=" " aria-label="Digit 6">
+      </div>
+      <button class="btn" id="v-btn" type="button">Verify and continue</button>
+      <div class="more"><button class="link" id="v-re" type="button">Send a new code</button><button class="link" id="v-back" type="button">Go back</button></div>
+    </section>
+
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-(function () {
-  "use strict";
+/* =========================================================
+   NEXA AUTH — SUPABASE CONNECTION
+   ========================================================= */
 
-  /* ============================================================
-     CONFIG — put your own Supabase project values here
-     (or load your supabase.js BEFORE this script and it will be
-     reused if it sets window.sb)
-     ============================================================ */
-  var SUPABASE_URL = "YOUR_SUPABASE_URL";
-  var SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-  var HOME_PAGE = "home.html";
+const SUPABASE_URL = "https://pakdneudwsxtanrkirmu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_nE5wMk921mJIsfLVTeWT4A_5bIDgnRP";
 
-  /* ONE shared client, session persisted in localStorage */
-  var sb = window.sb;
-  if (!sb) {
-    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-    window.sb = sb;
-  }
+const HOME_PAGE = "./home.html";
 
-  var $ = function (id) { return document.getElementById(id); };
-  var container = $("authContainer");
-  var form = $("authForm");
-  var msg = $("formMessage");
-  var submitBtn = $("submitButton");
-  var isRegister = false;
-  var redirecting = false;
-
-  function goHome() {
-    if (redirecting) return;
-    redirecting = true;
-    window.location.replace(HOME_PAGE);   // replace = no back-button loop
-  }
-
-  /* ---------- Session check: runs ONCE, then reveals the page ---------- */
-  (async function init() {
-    try {
-      var res = await sb.auth.getSession();
-      if (res.data && res.data.session) {
-        goHome();
-        return;                            // keep page hidden while redirecting
-      }
-    } catch (e) {
-      console.error("Session check failed:", e);
+const sb = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
     }
-    document.body.classList.remove("checking");
-  })();
+  }
+);
 
-  /* ---------- UI helpers ---------- */
-  function showMessage(text, type) {
-    msg.textContent = text;
-    msg.className = "message show " + (type || "error");
+const $ = id => document.getElementById(id);
+
+let redirecting = false;
+
+function goHome() {
+  if (redirecting) return;
+
+  redirecting = true;
+
+  /*
+    Small session flag prevents this page from repeatedly
+    trying to redirect while the browser is changing pages.
+  */
+  sessionStorage.setItem("nexa_auth_redirect", "1");
+
+  window.location.replace(HOME_PAGE);
+}
+
+
+/* =========================================================
+   TYPING TEXT
+   ========================================================= */
+
+const COPY = {
+  login: {
+    sub: "Sign in to pick up where you left off.",
+    lines: [
+      "Welcome back.",
+      "Good to see you again.",
+      "Let's get you in."
+    ]
+  },
+
+  signup: {
+    sub: "Tell us a little about you.",
+    lines: [
+      "Join us.",
+      "One minute to your account.",
+      "Let's begin."
+    ]
+  },
+
+  ask: {
+    sub: "A code proves it is you.",
+    lines: [
+      "No problem.",
+      "We will send you a code."
+    ]
+  },
+
+  verify: {
+    sub: "Type the code we sent you.",
+    lines: [
+      "Check your messages.",
+      "Almost there."
+    ]
   }
-  function clearMessage() {
-    msg.className = "message";
-    msg.textContent = "";
-  }
-  function setLoading(on) {
-    submitBtn.disabled = on;
-    submitBtn.classList.toggle("loading", on);
-  }
-  function validEmail(v) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+};
+
+let typingRun = 0;
+
+function typeLines(lines) {
+
+  const el = $("typed");
+  const currentRun = ++typingRun;
+
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    el.textContent = lines[0];
+    return;
   }
 
-  function setMode(register) {
-    isRegister = register;
-    container.classList.toggle("register-mode", register);
-    $("buttonLabel").textContent = register ? "Create account" : "Sign in";
-    $("switchText").textContent = register ? "Already have an account?" : "New to NEXA?";
-    $("switchButton").textContent = register ? "Sign in" : "Create an account";
-    clearMessage();
-  }
-  $("switchButton").addEventListener("click", function () { setMode(!isRegister); });
+  let lineIndex = 0;
+  let charIndex = 0;
+  let deleting = false;
 
-  /* ---------- Show / hide password ---------- */
-  document.querySelectorAll(".password-button").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var input = $(btn.getAttribute("data-toggle"));
-      var icon = btn.querySelector("i");
-      var show = input.type === "password";
-      input.type = show ? "text" : "password";
-      icon.className = show ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
-    });
-  });
+  el.textContent = "";
 
-  /* ---------- Forgot password ---------- */
-  $("forgotPassword").addEventListener("click", async function () {
-    clearMessage();
-    var email = $("loginEmail").value.trim();
-    if (!validEmail(email)) {
-      showMessage("Enter your email above first, then press “Forgot password?”.");
+  function tick() {
+
+    if (currentRun !== typingRun) return;
+
+    const currentLine = lines[lineIndex];
+
+    el.textContent = currentLine.slice(0, charIndex);
+
+    if (!deleting && charIndex === currentLine.length) {
+      deleting = true;
+      setTimeout(tick, 1900);
       return;
     }
-    try {
-      var r = await sb.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
+
+    if (deleting && charIndex === 0) {
+      deleting = false;
+      lineIndex = (lineIndex + 1) % lines.length;
+      setTimeout(tick, 350);
+      return;
+    }
+
+    charIndex += deleting ? -1 : 1;
+
+    setTimeout(
+      tick,
+      deleting ? 28 : 75
+    );
+  }
+
+  tick();
+}
+
+
+/* =========================================================
+   VIEW SWITCHING
+   ========================================================= */
+
+let view = "login";
+
+function go(name) {
+
+  view = name;
+
+  document.querySelectorAll(".view").forEach(section => {
+    section.classList.toggle(
+      "on",
+      section.id === "v-" + name
+    );
+  });
+
+  if (name === "signup") {
+    $("box").classList.add("swapped");
+  }
+
+  if (name === "login" || name === "ask" || name === "verify") {
+    $("box").classList.remove("swapped");
+  }
+
+  $("saySub").textContent = COPY[name].sub;
+
+  typeLines(COPY[name].lines);
+
+  say("");
+}
+
+
+/* =========================================================
+   STATUS MESSAGE
+   ========================================================= */
+
+function say(text = "", kind = "") {
+
+  const message = $("msg");
+
+  message.textContent = text;
+  message.className = "msg " + kind;
+
+  if (kind === "err") {
+    message.classList.remove("shake");
+
+    /*
+      Restart shake animation.
+    */
+    void message.offsetWidth;
+
+    message.classList.add("shake");
+  }
+}
+
+
+/* =========================================================
+   LOADING BUTTONS
+   ========================================================= */
+
+function load(button, state) {
+  button.classList.toggle("load", state);
+  button.disabled = state;
+}
+
+
+/* =========================================================
+   VALIDATION
+   ========================================================= */
+
+const isEmail = value =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+function tidyPhone(value) {
+  return value.replace(/[\s\-()]/g, "");
+}
+
+function isPhone(value) {
+  return /^\+\d{7,15}$/.test(tidyPhone(value));
+}
+
+
+/* =========================================================
+   PASSWORD VISIBILITY
+   ========================================================= */
+
+document.querySelectorAll(".eye").forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    const input = $(button.dataset.for);
+
+    const shouldShow =
+      input.type === "password";
+
+    input.type = shouldShow ? "text" : "password";
+    button.textContent = shouldShow ? "Hide" : "Show";
+  });
+
+});
+
+
+/* =========================================================
+   PASSWORD STRENGTH
+   ========================================================= */
+
+$("s-pass").addEventListener("input", event => {
+
+  const password = event.target.value;
+
+  let score = 0;
+
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+
+  if (
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password)
+  ) {
+    score++;
+  }
+
+  if (
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  ) {
+    score++;
+  }
+
+  [
+    ...$("meter").children
+  ].forEach((segment, index) => {
+    segment.classList.toggle(
+      "on",
+      index < score
+    );
+  });
+
+});
+
+
+/* =========================================================
+   SUPABASE CHECK
+   ========================================================= */
+
+function ready() {
+
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_PUBLISHABLE_KEY
+  ) {
+    say(
+      "Supabase is not configured.",
+      "err"
+    );
+
+    return false;
+  }
+
+  return true;
+}
+
+
+/* =========================================================
+   PASSWORD LOGIN
+   ========================================================= */
+
+async function login() {
+
+  if (redirecting) return;
+
+  const email =
+    $("l-email").value.trim();
+
+  const password =
+    $("l-pass").value;
+
+  if (!isEmail(email)) {
+    say(
+      "Enter a valid email address.",
+      "err"
+    );
+    return;
+  }
+
+  if (!password) {
+    say(
+      "Enter your password.",
+      "err"
+    );
+    return;
+  }
+
+  if (!ready()) return;
+
+  load($("l-btn"), true);
+
+  say("Checking your account…");
+
+  try {
+
+    const { data, error } =
+      await sb.auth.signInWithPassword({
+        email,
+        password
       });
-      if (r.error) throw r.error;
-      showMessage("Password reset link sent. Check your email.", "success");
-    } catch (e) {
-      showMessage(e.message || "Could not send the reset email.");
-    }
-  });
 
-  /* ---------- Submit ---------- */
-  form.addEventListener("submit", async function (ev) {
-    ev.preventDefault();
-    clearMessage();
+    if (error) {
+      console.error("NEXA login error:", error);
 
-    try {
-      if (isRegister) {
-        var name = $("registerName").value.trim();
-        var email = $("registerEmail").value.trim();
-        var pass = $("registerPassword").value;
-        var confirm = $("registerConfirm").value;
+      load($("l-btn"), false);
 
-        if (name.length < 2) return showMessage("Please enter your name.");
-        if (!validEmail(email)) return showMessage("Enter a valid email address.");
-        if (pass.length < 6) return showMessage("Password must be at least 6 characters.");
-        if (pass !== confirm) return showMessage("Passwords do not match.");
+      /*
+        Give clear messages without exposing
+        unnecessary backend details.
+      */
+      const msg =
+        error.message?.toLowerCase() || "";
 
-        setLoading(true);
-        var up = await sb.auth.signUp({
-          email: email,
-          password: pass,
-          options: { data: { full_name: name } }
-        });
-        if (up.error) throw up.error;
+      if (msg.includes("email not confirmed")) {
 
-        if (up.data && up.data.session) {
-          goHome();                         // email confirmation is off: logged in
-        } else {
-          showMessage("Account created. Check your email to confirm, then sign in.", "success");
-          setMode(false);
-          $("loginEmail").value = email;
-          showMessage("Account created. Check your email to confirm, then sign in.", "success");
-        }
+        say(
+          "Please confirm your email before signing in.",
+          "err"
+        );
+
+      } else if (
+        msg.includes("invalid login credentials")
+      ) {
+
+        say(
+          "Incorrect email or password. Try again or use a code.",
+          "err"
+        );
+
       } else {
-        var lemail = $("loginEmail").value.trim();
-        var lpass = $("loginPassword").value;
 
-        if (!validEmail(lemail)) return showMessage("Enter a valid email address.");
-        if (!lpass) return showMessage("Enter your password.");
-
-        setLoading(true);
-        var inn = await sb.auth.signInWithPassword({ email: lemail, password: lpass });
-        if (inn.error) throw inn.error;
-        goHome();
+        say(
+          "We couldn't sign you in. Please try again.",
+          "err"
+        );
       }
-    } catch (e) {
-      var text = (e && e.message) || "Something went wrong. Try again.";
-      if (/invalid login/i.test(text)) text = "Wrong email or password.";
-      showMessage(text);
-    } finally {
-      if (!redirecting) setLoading(false);
+
+      return;
     }
-  });
+
+    /*
+      Supabase successfully returned a session.
+    */
+    if (!data || !data.session) {
+
+      load($("l-btn"), false);
+
+      say(
+        "Login completed, but no active session was returned.",
+        "err"
+      );
+
+      return;
+    }
+
+    say(
+      "Signed in successfully. Opening NEXA…",
+      "ok"
+    );
+
+    /*
+      Give Supabase a moment to finish storing
+      the persistent session before navigation.
+    */
+    setTimeout(() => {
+      goHome();
+    }, 250);
+
+  } catch (error) {
+
+    console.error("Unexpected login error:", error);
+
+    load($("l-btn"), false);
+
+    say(
+      "Something went wrong while signing in.",
+      "err"
+    );
+  }
+}
+
+
+/* =========================================================
+   PENDING AUTH FLOW
+   ========================================================= */
+
+let pending = null;
+
+/*
+  Possible structure:
+
+  {
+    flow: "signup" | "login",
+    channel: "email" | "phone",
+    email,
+    phone,
+    password,
+    name
+  }
+*/
+
+
+/* =========================================================
+   SEND OTP
+   ========================================================= */
+
+async function sendCode() {
+
+  if (!pending) {
+    return new Error(
+      "No authentication request is active."
+    );
+  }
+
+  const p = pending;
+
+  try {
+
+    let result;
+
+    /* ---------------- SIGN UP ---------------- */
+
+    if (p.flow === "signup") {
+
+      /*
+        EMAIL SIGNUP
+      */
+      if (p.channel === "email") {
+
+        result = await sb.auth.signUp({
+          email: p.email,
+          password: p.password,
+
+          options: {
+            data: {
+              full_name: p.name,
+              phone: p.phone
+            }
+          }
+        });
+
+        if (
+          !result.error &&
+          result.data &&
+          result.data.session
+        ) {
+
+          return "redirect";
+        }
+
+      }
+
+      /*
+        PHONE SIGNUP
+      */
+      else {
+
+        result =
+          await sb.auth.signInWithOtp({
+            phone: p.phone,
+
+            options: {
+              shouldCreateUser: true,
+
+              data: {
+                full_name: p.name,
+                email: p.email
+              }
+            }
+          });
+      }
+
+    }
+
+    /* ---------------- LOGIN CODE ---------------- */
+
+    else {
+
+      if (p.channel === "email") {
+
+        result =
+          await sb.auth.signInWithOtp({
+            email: p.email,
+
+            options: {
+              shouldCreateUser: false
+            }
+          });
+
+      } else {
+
+        result =
+          await sb.auth.signInWithOtp({
+            phone: p.phone,
+
+            options: {
+              shouldCreateUser: false
+            }
+          });
+
+      }
+    }
+
+    return result?.error || null;
+
+  } catch (error) {
+
+    console.error(
+      "NEXA OTP error:",
+      error
+    );
+
+    return error;
+  }
+}
+
+
+/* =========================================================
+   AFTER OTP SEND
+   ========================================================= */
+
+function afterSend(button, error) {
+
+  load(button, false);
+
+  if (error === "redirect") {
+    goHome();
+    return;
+  }
+
+  if (error) {
+    console.error(error);
+
+    say(
+      error.message ||
+      "We could not send your code.",
+      "err"
+    );
+
+    return;
+  }
+
+  showVerify();
+}
+
+
+/* =========================================================
+   CREATE ACCOUNT
+   ========================================================= */
+
+async function startSignup() {
+
+  if (redirecting) return;
+
+  const name =
+    $("s-name").value.trim();
+
+  const email =
+    $("s-email").value.trim();
+
+  const phone =
+    tidyPhone(
+      $("s-phone").value.trim()
+    );
+
+  const password =
+    $("s-pass").value;
+
+  const channel =
+    document.querySelector(
+      'input[name="chan"]:checked'
+    )?.value;
+
+  if (!name) {
+    say("Enter your full name.", "err");
+    return;
+  }
+
+  if (!isEmail(email)) {
+    say(
+      "Enter a valid email address.",
+      "err"
+    );
+    return;
+  }
+
+  if (!isPhone(phone)) {
+    say(
+      "Enter your phone number with the country code, for example +2507XXXXXXXX.",
+      "err"
+    );
+    return;
+  }
+
+  if (password.length < 6) {
+    say(
+      "Your password needs at least 6 characters.",
+      "err"
+    );
+    return;
+  }
+
+  if (!channel) {
+    say(
+      "Choose where to receive your code.",
+      "err"
+    );
+    return;
+  }
+
+  if (!ready()) return;
+
+  pending = {
+    flow: "signup",
+    channel,
+    email,
+    phone,
+    password,
+    name
+  };
+
+  load($("s-btn"), true);
+
+  say("Creating your account…");
+
+  const error =
+    await sendCode();
+
+  afterSend(
+    $("s-btn"),
+    error
+  );
+}
+
+
+/* =========================================================
+   REQUEST LOGIN CODE
+   ========================================================= */
+
+async function startAsk() {
+
+  if (redirecting) return;
+
+  const target =
+    $("a-to").value.trim();
+
+  if (isEmail(target)) {
+
+    pending = {
+      flow: "login",
+      channel: "email",
+      email: target
+    };
+
+  } else if (isPhone(target)) {
+
+    pending = {
+      flow: "login",
+      channel: "phone",
+      phone: tidyPhone(target)
+    };
+
+  } else {
+
+    say(
+      "Enter a valid email address or phone number with the country code.",
+      "err"
+    );
+
+    return;
+  }
+
+  if (!ready()) return;
+
+  load($("a-btn"), true);
+
+  say("Sending your code…");
+
+  const error =
+    await sendCode();
+
+  afterSend(
+    $("a-btn"),
+    error
+  );
+}
+
+
+/* =========================================================
+   OTP BOXES
+   ========================================================= */
+
+const boxes = [
+  ...document.querySelectorAll(
+    "#otp input"
+  )
+];
+
+function getCode() {
+  return boxes
+    .map(box => box.value)
+    .join("");
+}
+
+boxes.forEach((box, index) => {
+
+  box.addEventListener(
+    "input",
+    () => {
+
+      box.value =
+        box.value
+          .replace(/\D/g, "")
+          .slice(-1);
+
+      if (
+        box.value &&
+        index < boxes.length - 1
+      ) {
+        boxes[index + 1].focus();
+      }
+
+      if (getCode().length === 6) {
+        verify();
+      }
+    }
+  );
+
+
+  box.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Backspace" &&
+        !box.value &&
+        index > 0
+      ) {
+        boxes[index - 1].focus();
+      }
+    }
+  );
+
+
+  box.addEventListener(
+    "paste",
+    event => {
+
+      event.preventDefault();
+
+      const digits =
+        (
+          event.clipboardData
+            .getData("text") || ""
+        )
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+      boxes.forEach(
+        (input, i) => {
+          input.value =
+            digits[i] || "";
+        }
+      );
+
+      const focusIndex =
+        Math.min(
+          digits.length,
+          boxes.length - 1
+        );
+
+      boxes[focusIndex].focus();
+
+      if (digits.length === 6) {
+        verify();
+      }
+    }
+  );
+
+});
+
+
+/* =========================================================
+   SHOW VERIFICATION PAGE
+   ========================================================= */
+
+let cooldown;
+
+function showVerify() {
+
+  if (!pending) return;
+
+  const destination =
+    pending.channel === "email"
+      ? pending.email
+      : pending.phone;
+
+  $("v-sub").textContent =
+    "We sent a 6-digit code to " +
+    destination +
+    ". It can take a minute to arrive.";
+
+  boxes.forEach(
+    box => box.value = ""
+  );
+
+  go("verify");
+
+  say(
+    "Code sent successfully.",
+    "ok"
+  );
+
+  setTimeout(() => {
+    boxes[0].focus();
+  }, 600);
+
+
+  clearInterval(cooldown);
+
+  let seconds = 30;
+
+  const resendButton =
+    $("v-re");
+
+  resendButton.disabled = true;
+
+  resendButton.textContent =
+    `Send a new code in ${seconds}s`;
+
+  cooldown =
+    setInterval(() => {
+
+      seconds--;
+
+      if (seconds <= 0) {
+
+        clearInterval(cooldown);
+
+        resendButton.disabled =
+          false;
+
+        resendButton.textContent =
+          "Send a new code";
+
+      } else {
+
+        resendButton.textContent =
+          `Send a new code in ${seconds}s`;
+      }
+
+    }, 1000);
+}
+
+
+/* =========================================================
+   VERIFY OTP
+   ========================================================= */
+
+let verifying = false;
+
+async function verify() {
+
+  if (redirecting) return;
+
+  const token =
+    getCode();
+
+  if (token.length !== 6) {
+
+    say(
+      "Enter all 6 digits.",
+      "err"
+    );
+
+    return;
+  }
+
+  if (verifying) return;
+
+  if (!pending) {
+
+    say(
+      "Your verification session has expired. Start again.",
+      "err"
+    );
+
+    return;
+  }
+
+  verifying = true;
+
+  const p = pending;
+
+  load(
+    $("v-btn"),
+    true
+  );
+
+  say("Verifying your code…");
+
+  try {
+
+    let result;
+
+    /* EMAIL OTP */
+
+    if (p.channel === "email") {
+
+      result =
+        await sb.auth.verifyOtp({
+          email: p.email,
+          token,
+
+          type:
+            p.flow === "signup"
+              ? "signup"
+              : "email"
+        });
+
+    }
+
+    /* PHONE OTP */
+
+    else {
+
+      result =
+        await sb.auth.verifyOtp({
+          phone: p.phone,
+          token,
+          type: "sms"
+        });
+
+    }
+
+    if (result.error) {
+
+      console.error(
+        "OTP verification error:",
+        result.error
+      );
+
+      verifying = false;
+
+      load(
+        $("v-btn"),
+        false
+      );
+
+      boxes.forEach(
+        box => box.value = ""
+      );
+
+      boxes[0].focus();
+
+      say(
+        "That code is incorrect or has expired. Try again or send a new one.",
+        "err"
+      );
+
+      return;
+    }
+
+
+    /*
+      PHONE SIGNUP:
+      After verifying the phone, attach
+      the email/password/name to the account.
+    */
+    if (
+      p.flow === "signup" &&
+      p.channel === "phone"
+    ) {
+
+      const update =
+        await sb.auth.updateUser({
+          email: p.email,
+          password: p.password,
+
+          data: {
+            full_name: p.name,
+            phone: p.phone
+          }
+        });
+
+      if (update.error) {
+
+        console.error(
+          "Profile update error:",
+          update.error
+        );
+
+        verifying = false;
+
+        load(
+          $("v-btn"),
+          false
+        );
+
+        say(
+          "Your phone was verified, but we could not finish creating your account.",
+          "err"
+        );
+
+        return;
+      }
+    }
+
+
+    /*
+      Confirm that Supabase has
+      actually created a session.
+    */
+    const {
+      data: sessionData
+    } = await sb.auth.getSession();
+
+    if (
+      !sessionData ||
+      !sessionData.session
+    ) {
+
+      verifying = false;
+
+      load(
+        $("v-btn"),
+        false
+      );
+
+      say(
+        "Verification succeeded, but your session was not created. Please try signing in.",
+        "err"
+      );
+
+      return;
+    }
+
+    say(
+      "Verified successfully. Opening NEXA…",
+      "ok"
+    );
+
+    setTimeout(() => {
+      goHome();
+    }, 250);
+
+  } catch (error) {
+
+    console.error(
+      "Unexpected verification error:",
+      error
+    );
+
+    verifying = false;
+
+    load(
+      $("v-btn"),
+      false
+    );
+
+    say(
+      "Something went wrong while verifying the code.",
+      "err"
+    );
+  }
+}
+
+
+/* =========================================================
+   RESEND CODE
+   ========================================================= */
+
+async function resend() {
+
+  if (!pending || redirecting) {
+    return;
+  }
+
+  $("v-re").disabled = true;
+
+  say("Sending a new code…");
+
+  const error =
+    await sendCode();
+
+  if (
+    error &&
+    error !== "redirect"
+  ) {
+
+    $("v-re").disabled = false;
+
+    say(
+      error.message ||
+      "We could not send a new code.",
+      "err"
+    );
+
+    return;
+  }
+
+  if (error === "redirect") {
+    goHome();
+    return;
+  }
+
+  showVerify();
+
+  say(
+    "A new code has been sent.",
+    "ok"
+  );
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+$("l-btn").onclick = login;
+
+$("l-up").onclick = () => {
+  go("signup");
+};
+
+$("l-code").onclick = () => {
+
+  $("a-to").value =
+    $("l-email").value.trim();
+
+  go("ask");
+};
+
+$("s-btn").onclick =
+  startSignup;
+
+$("s-in").onclick = () => {
+  go("login");
+};
+
+$("a-btn").onclick =
+  startAsk;
+
+$("a-back").onclick = () => {
+  go("login");
+};
+
+$("v-btn").onclick =
+  verify;
+
+$("v-re").onclick =
+  resend;
+
+$("v-back").onclick = () => {
+
+  if (
+    pending &&
+    pending.flow === "signup"
+  ) {
+    go("signup");
+  } else {
+    go("ask");
+  }
+};
+
+
+/* =========================================================
+   ENTER KEY SUPPORT
+   ========================================================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    if (
+      document.activeElement?.tagName === "BUTTON"
+    ) {
+      return;
+    }
+
+    if (view === "login") {
+      login();
+    }
+
+    if (view === "signup") {
+      startSignup();
+    }
+
+    if (view === "ask") {
+      startAsk();
+    }
+
+    if (view === "verify") {
+      verify();
+    }
+
+  }
+);
+
+
+/* =========================================================
+   SESSION CHECK
+   =========================================================
+
+   IMPORTANT:
+   We do NOT constantly redirect.
+
+   Only redirect once when a valid existing session
+   is detected on the login page.
+   ========================================================= */
+
+(async function checkExistingSession() {
+
+  try {
+
+    const {
+      data,
+      error
+    } = await sb.auth.getSession();
+
+    if (error) {
+      console.error(
+        "Session check error:",
+        error
+      );
+      return;
+    }
+
+    if (
+      data &&
+      data.session &&
+      !redirecting
+    ) {
+
+      /*
+        The user is already signed in.
+      */
+      say(
+        "You are already signed in. Opening NEXA…",
+        "ok"
+      );
+
+      setTimeout(() => {
+        goHome();
+      }, 250);
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Unexpected session error:",
+      error
+    );
+  }
+
+})();
+
+
+/* =========================================================
+   AUTH STATE LISTENER
+   =========================================================
+
+   This catches authentication changes made by
+   Supabase and keeps the app synchronized.
+   ========================================================= */
+
+sb.auth.onAuthStateChange(
+  (event, session) => {
+
+    /*
+      Only navigate for an authenticated session.
+
+      Do NOT react to every auth event because that
+      can cause duplicate redirects.
+    */
+    if (
+      session &&
+      (
+        event === "SIGNED_IN" ||
+        event === "INITIAL_SESSION" ||
+        event === "USER_UPDATED"
+      ) &&
+      !redirecting
+    ) {
+
+      /*
+        Don't interrupt the verification/signup UI
+        while it is still processing.
+      */
+      if (
+        view === "login" &&
+        event === "SIGNED_IN"
+      ) {
+
+        setTimeout(() => {
+          goHome();
+        }, 250);
+      }
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START LOGIN SCREEN
+   ========================================================= */
+
+typeLines(
+  COPY.login.lines
+);
+
+
+/* =========================================================
+   RISING GOLD EMBERS
+   ========================================================= */
+
+(function () {
+
+  const canvas =
+    $("fx");
+
+  const ctx =
+    canvas.getContext("2d");
+
+  const reducedMotion =
+    window.matchMedia &&
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  let W;
+  let H;
+
+  let particles = [];
+
+
+  function resize() {
+
+    W = canvas.width =
+      window.innerWidth;
+
+    H = canvas.height =
+      window.innerHeight;
+  }
+
+  window.addEventListener(
+    "resize",
+    resize
+  );
+
+  resize();
+
+
+  function makeParticle(initial = false) {
+
+    return {
+      x: Math.random() * W,
+
+      y:
+        initial
+          ? Math.random() * H
+          : H + 20,
+
+      r:
+        0.8 +
+        Math.random() * 2.6,
+
+      v:
+        0.3 +
+        Math.random() * 1.1,
+
+      s:
+        Math.random() * Math.PI * 2,
+
+      a:
+        0.35 +
+        Math.random() * 0.65,
+
+      big:
+        Math.random() < 0.08
+    };
+  }
+
+
+  const count =
+    Math.min(
+      130,
+      Math.floor(
+        window.innerWidth / 9
+      )
+    );
+
+
+  for (let i = 0; i < count; i++) {
+    particles.push(
+      makeParticle(true)
+    );
+  }
+
+
+  let time = 0;
+
+
+  function frame() {
+
+    time += 0.02;
+
+    ctx.clearRect(
+      0,
+      0,
+      W,
+      H
+    );
+
+    ctx.globalCompositeOperation =
+      "lighter";
+
+
+    for (const particle of particles) {
+
+      if (!reducedMotion) {
+
+        particle.y -=
+          particle.v *
+          (
+            particle.big
+              ? 0.5
+              : 1
+          );
+
+        particle.s += 0.012;
+
+        particle.x +=
+          Math.sin(
+            particle.s
+          ) * 0.4;
+      }
+
+
+      if (particle.y < -30) {
+
+        Object.assign(
+          particle,
+          makeParticle(false)
+        );
+      }
+
+
+      const radius =
+        particle.r *
+        (
+          particle.big
+            ? 14
+            : 6
+        );
+
+      const twinkle =
+        0.65 +
+        0.35 *
+        Math.sin(
+          time * 3 +
+          particle.s * 5
+        );
+
+      const alpha =
+        particle.a *
+        twinkle *
+        Math.min(
+          1,
+          Math.max(
+            0,
+            particle.y /
+            (H * 0.3)
+          )
+        ) *
+        (
+          particle.big
+            ? 0.3
+            : 1
+        );
+
+
+      const gradient =
+        ctx.createRadialGradient(
+          particle.x,
+          particle.y,
+          0,
+          particle.x,
+          particle.y,
+          radius
+        );
+
+      gradient.addColorStop(
+        0,
+        `rgba(255,244,200,${alpha})`
+      );
+
+      gradient.addColorStop(
+        0.3,
+        `rgba(212,175,55,${alpha * 0.55})`
+      );
+
+      gradient.addColorStop(
+        1,
+        "rgba(212,175,55,0)"
+      );
+
+
+      ctx.fillStyle =
+        gradient;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        particle.x,
+        particle.y,
+        radius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+    }
+
+
+    if (!reducedMotion) {
+      requestAnimationFrame(frame);
+    }
+  }
+
+
+  frame();
+
 })();
 </script>
-
 </body>
 </html>
