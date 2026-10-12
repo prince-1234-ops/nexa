@@ -208,7 +208,33 @@ function goHome() {
 async function accountExists() {
   try {
     const { data, error } = await sb.auth.getUser();
-    return !error && !!(data && data.user);
+    const user = data && data.user;
+    if (error || !user) return false;
+
+    const meta = user.user_metadata || {};
+    let profile = null;
+
+    try {
+      const r = await sb.from("profiles")
+        .select("id, name, username, profile_picture")
+        .eq("id", user.id)
+        .maybeSingle();
+      profile = r.data;
+    } catch (e) { /* no profile row yet, that's fine */ }
+
+    const picture = (profile && profile.profile_picture) || "";
+
+    // home.js reads this key, so it must exist before we open home.html
+    localStorage.setItem("nexaCurrentUser", JSON.stringify({
+      id: user.id,
+      email: user.email || "",
+      name: (profile && profile.name) || meta.full_name || user.email || "NEXA User",
+      username: (profile && profile.username) || meta.full_name || user.email || "NEXA User",
+      profile_picture: picture,
+      profilePicture: picture
+    }));
+
+    return true;
   } catch (e) {
     console.error("Account check error:", e);
     return false;
@@ -679,6 +705,7 @@ document.addEventListener("keydown", e => {
       setTimeout(goHome, 250);
     } else {
       await sb.auth.signOut(); // leftover session for an account that no longer exists
+      localStorage.removeItem("nexaCurrentUser");
     }
   } catch (error) {
     console.error("Session check error:", error);
