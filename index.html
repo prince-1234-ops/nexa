@@ -175,31 +175,20 @@ h2{font:600 2.1rem var(--serif);background:var(--metal);-webkit-background-clip:
   </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase library: loaded once -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 /* =========================================================
-   NEXA AUTH — SUPABASE CONNECTION
+   NEXA AUTH · SUPABASE CONNECTION
    ========================================================= */
-
 const SUPABASE_URL = "https://pakdneudwsxtanrkirmu.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_nE5wMk921mJIsfLVTeWT4A_5bIDgnRP";
-
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nE5wMk921mJIsfLVTeWT4A_5bIDgnRP";
 const HOME_PAGE = "./home.html";
 
-const sb = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
-);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
 
 const $ = id => document.getElementById(id);
 
@@ -207,1558 +196,566 @@ let redirecting = false;
 
 function goHome() {
   if (redirecting) return;
-
   redirecting = true;
-
-  /*
-    Small session flag prevents this page from repeatedly
-    trying to redirect while the browser is changing pages.
-  */
-  sessionStorage.setItem("nexa_auth_redirect", "1");
-
   window.location.replace(HOME_PAGE);
 }
 
+/*
+  Asks the Supabase SERVER whether the signed-in account exists.
+  (getSession() only reads local storage, so a deleted account
+  could still look signed in. getUser() checks with the server.)
+*/
+async function accountExists() {
+  try {
+    const { data, error } = await sb.auth.getUser();
+    return !error && !!(data && data.user);
+  } catch (e) {
+    console.error("Account check error:", e);
+    return false;
+  }
+}
 
 /* =========================================================
    TYPING TEXT
    ========================================================= */
-
 const COPY = {
-  login: {
-    sub: "Sign in to pick up where you left off.",
-    lines: [
-      "Welcome back.",
-      "Good to see you again.",
-      "Let's get you in."
-    ]
-  },
-
-  signup: {
-    sub: "Tell us a little about you.",
-    lines: [
-      "Join us.",
-      "One minute to your account.",
-      "Let's begin."
-    ]
-  },
-
-  ask: {
-    sub: "A code proves it is you.",
-    lines: [
-      "No problem.",
-      "We will send you a code."
-    ]
-  },
-
-  verify: {
-    sub: "Type the code we sent you.",
-    lines: [
-      "Check your messages.",
-      "Almost there."
-    ]
-  }
+  login:  { sub: "Sign in to pick up where you left off.", lines: ["Welcome back.", "Good to see you again.", "Let's get you in."] },
+  signup: { sub: "Tell us a little about you.", lines: ["Join us.", "One minute to your account.", "Let's begin."] },
+  ask:    { sub: "A code proves it is you.", lines: ["No problem.", "We will send you a code."] },
+  verify: { sub: "Type the code we sent you.", lines: ["Check your messages.", "Almost there."] }
 };
 
 let typingRun = 0;
 
 function typeLines(lines) {
-
   const el = $("typed");
   const currentRun = ++typingRun;
 
-  if (
-    window.matchMedia &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     el.textContent = lines[0];
     return;
   }
 
-  let lineIndex = 0;
-  let charIndex = 0;
-  let deleting = false;
-
+  let lineIndex = 0, charIndex = 0, deleting = false;
   el.textContent = "";
 
   function tick() {
-
     if (currentRun !== typingRun) return;
+    const line = lines[lineIndex];
+    el.textContent = line.slice(0, charIndex);
 
-    const currentLine = lines[lineIndex];
-
-    el.textContent = currentLine.slice(0, charIndex);
-
-    if (!deleting && charIndex === currentLine.length) {
+    if (!deleting && charIndex === line.length) {
       deleting = true;
       setTimeout(tick, 1900);
       return;
     }
-
     if (deleting && charIndex === 0) {
       deleting = false;
       lineIndex = (lineIndex + 1) % lines.length;
       setTimeout(tick, 350);
       return;
     }
-
     charIndex += deleting ? -1 : 1;
-
-    setTimeout(
-      tick,
-      deleting ? 28 : 75
-    );
+    setTimeout(tick, deleting ? 28 : 75);
   }
-
   tick();
 }
-
 
 /* =========================================================
    VIEW SWITCHING
    ========================================================= */
-
 let view = "login";
 
 function go(name) {
-
   view = name;
-
-  document.querySelectorAll(".view").forEach(section => {
-    section.classList.toggle(
-      "on",
-      section.id === "v-" + name
-    );
-  });
-
-  if (name === "signup") {
-    $("box").classList.add("swapped");
-  }
-
-  if (name === "login" || name === "ask" || name === "verify") {
-    $("box").classList.remove("swapped");
-  }
-
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + name));
+  $("box").classList.toggle("swapped", name === "signup");
   $("saySub").textContent = COPY[name].sub;
-
   typeLines(COPY[name].lines);
-
   say("");
 }
 
-
 /* =========================================================
-   STATUS MESSAGE
+   STATUS MESSAGE + LOADING BUTTONS
    ========================================================= */
-
 function say(text = "", kind = "") {
-
-  const message = $("msg");
-
-  message.textContent = text;
-  message.className = "msg " + kind;
-
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "msg " + kind;
   if (kind === "err") {
-    message.classList.remove("shake");
-
-    /*
-      Restart shake animation.
-    */
-    void message.offsetWidth;
-
-    message.classList.add("shake");
+    m.classList.remove("shake");
+    void m.offsetWidth; // restart the shake animation
+    m.classList.add("shake");
   }
 }
-
-
-/* =========================================================
-   LOADING BUTTONS
-   ========================================================= */
 
 function load(button, state) {
   button.classList.toggle("load", state);
   button.disabled = state;
 }
 
-
 /* =========================================================
    VALIDATION
    ========================================================= */
-
-const isEmail = value =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-function tidyPhone(value) {
-  return value.replace(/[\s\-()]/g, "");
-}
-
-function isPhone(value) {
-  return /^\+\d{7,15}$/.test(tidyPhone(value));
-}
-
+const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const tidyPhone = v => v.replace(/[\s\-()]/g, "");
+const isPhone = v => /^\+\d{7,15}$/.test(tidyPhone(v));
 
 /* =========================================================
-   PASSWORD VISIBILITY
+   PASSWORD SHOW/HIDE + STRENGTH METER
    ========================================================= */
-
 document.querySelectorAll(".eye").forEach(button => {
-
   button.addEventListener("click", () => {
-
     const input = $(button.dataset.for);
-
-    const shouldShow =
-      input.type === "password";
-
-    input.type = shouldShow ? "text" : "password";
-    button.textContent = shouldShow ? "Hide" : "Show";
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    button.textContent = show ? "Hide" : "Show";
   });
-
 });
 
-
-/* =========================================================
-   PASSWORD STRENGTH
-   ========================================================= */
-
-$("s-pass").addEventListener("input", event => {
-
-  const password = event.target.value;
-
+$("s-pass").addEventListener("input", e => {
+  const p = e.target.value;
   let score = 0;
-
-  if (password.length >= 6) score++;
-  if (password.length >= 10) score++;
-
-  if (
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password)
-  ) {
-    score++;
-  }
-
-  if (
-    /\d/.test(password) &&
-    /[^A-Za-z0-9]/.test(password)
-  ) {
-    score++;
-  }
-
-  [
-    ...$("meter").children
-  ].forEach((segment, index) => {
-    segment.classList.toggle(
-      "on",
-      index < score
-    );
-  });
-
+  if (p.length >= 6) score++;
+  if (p.length >= 10) score++;
+  if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
+  if (/\d/.test(p) && /[^A-Za-z0-9]/.test(p)) score++;
+  [...$("meter").children].forEach((seg, i) => seg.classList.toggle("on", i < score));
 });
 
-
 /* =========================================================
-   SUPABASE CHECK
+   PASSWORD LOGIN  →  Supabase  →  account check  →  home.html
    ========================================================= */
-
-function ready() {
-
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_PUBLISHABLE_KEY
-  ) {
-    say(
-      "Supabase is not configured.",
-      "err"
-    );
-
-    return false;
-  }
-
-  return true;
-}
-
-
-/* =========================================================
-   PASSWORD LOGIN
-   ========================================================= */
-
 async function login() {
-
   if (redirecting) return;
 
-  const email =
-    $("l-email").value.trim();
+  const email = $("l-email").value.trim();
+  const password = $("l-pass").value;
 
-  const password =
-    $("l-pass").value;
-
-  if (!isEmail(email)) {
-    say(
-      "Enter a valid email address.",
-      "err"
-    );
-    return;
-  }
-
-  if (!password) {
-    say(
-      "Enter your password.",
-      "err"
-    );
-    return;
-  }
-
-  if (!ready()) return;
+  if (!isEmail(email)) return say("Enter a valid email address.", "err");
+  if (!password) return say("Enter your password.", "err");
 
   load($("l-btn"), true);
-
   say("Checking your account…");
 
   try {
-
-    const { data, error } =
-      await sb.auth.signInWithPassword({
-        email,
-        password
-      });
+    // 1) Send the email + password to Supabase
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
     if (error) {
       console.error("NEXA login error:", error);
-
       load($("l-btn"), false);
+      const m = (error.message || "").toLowerCase();
 
-      /*
-        Give clear messages without exposing
-        unnecessary backend details.
-      */
-      const msg =
-        error.message?.toLowerCase() || "";
-
-      if (msg.includes("email not confirmed")) {
-
-        say(
-          "Please confirm your email before signing in.",
-          "err"
-        );
-
-      } else if (
-        msg.includes("invalid login credentials")
-      ) {
-
-        say(
-          "Incorrect email or password. Try again or use a code.",
-          "err"
-        );
-
+      if (m.includes("email not confirmed")) {
+        say("Please confirm your email before signing in.", "err");
+      } else if (m.includes("invalid login credentials")) {
+        // Supabase uses this one message for "no such account" AND "wrong password"
+        say("No account matches these details. Check them, or use a code.", "err");
       } else {
-
-        say(
-          "We couldn't sign you in. Please try again.",
-          "err"
-        );
+        say("We couldn't sign you in. Please try again.", "err");
       }
-
       return;
     }
 
-    /*
-      Supabase successfully returned a session.
-    */
     if (!data || !data.session) {
-
       load($("l-btn"), false);
-
-      say(
-        "Login completed, but no active session was returned.",
-        "err"
-      );
-
+      say("No active session was returned. Please try again.", "err");
       return;
     }
 
-    say(
-      "Signed in successfully. Opening NEXA…",
-      "ok"
-    );
+    // 2) Ask the server to confirm the account really exists
+    if (!(await accountExists())) {
+      await sb.auth.signOut();
+      load($("l-btn"), false);
+      say("We couldn't find an account for these details.", "err");
+      return;
+    }
 
-    /*
-      Give Supabase a moment to finish storing
-      the persistent session before navigation.
-    */
-    setTimeout(() => {
-      goHome();
-    }, 250);
+    // 3) Account confirmed → open home.html
+    say("Welcome back. Opening NEXA…", "ok");
+    setTimeout(goHome, 250);
 
   } catch (error) {
-
     console.error("Unexpected login error:", error);
-
     load($("l-btn"), false);
-
-    say(
-      "Something went wrong while signing in.",
-      "err"
-    );
+    say("Something went wrong while signing in.", "err");
   }
 }
 
-
 /* =========================================================
-   PENDING AUTH FLOW
+   CODE FLOW (sign up + "send me a code")
    ========================================================= */
-
+/* pending = { flow: "signup" | "login", channel: "email" | "phone", email, phone, password, name } */
 let pending = null;
 
-/*
-  Possible structure:
-
-  {
-    flow: "signup" | "login",
-    channel: "email" | "phone",
-    email,
-    phone,
-    password,
-    name
-  }
-*/
-
-
-/* =========================================================
-   SEND OTP
-   ========================================================= */
-
 async function sendCode() {
-
-  if (!pending) {
-    return new Error(
-      "No authentication request is active."
-    );
-  }
-
+  if (!pending) return new Error("No authentication request is active.");
   const p = pending;
 
   try {
-
     let result;
 
-    /* ---------------- SIGN UP ---------------- */
-
     if (p.flow === "signup") {
-
-      /*
-        EMAIL SIGNUP
-      */
       if (p.channel === "email") {
-
         result = await sb.auth.signUp({
           email: p.email,
           password: p.password,
-
-          options: {
-            data: {
-              full_name: p.name,
-              phone: p.phone
-            }
-          }
+          options: { data: { full_name: p.name, phone: p.phone } }
         });
-
-        if (
-          !result.error &&
-          result.data &&
-          result.data.session
-        ) {
-
-          return "redirect";
-        }
-
-      }
-
-      /*
-        PHONE SIGNUP
-      */
-      else {
-
-        result =
-          await sb.auth.signInWithOtp({
-            phone: p.phone,
-
-            options: {
-              shouldCreateUser: true,
-
-              data: {
-                full_name: p.name,
-                email: p.email
-              }
-            }
-          });
-      }
-
-    }
-
-    /* ---------------- LOGIN CODE ---------------- */
-
-    else {
-
-      if (p.channel === "email") {
-
-        result =
-          await sb.auth.signInWithOtp({
-            email: p.email,
-
-            options: {
-              shouldCreateUser: false
-            }
-          });
-
+        // Email confirmation switched off in Supabase → session returned immediately
+        if (!result.error && result.data && result.data.session) return "redirect";
       } else {
-
-        result =
-          await sb.auth.signInWithOtp({
-            phone: p.phone,
-
-            options: {
-              shouldCreateUser: false
-            }
-          });
-
+        result = await sb.auth.signInWithOtp({
+          phone: p.phone,
+          options: { shouldCreateUser: true, data: { full_name: p.name, email: p.email } }
+        });
       }
+    } else {
+      // Login by code: only for accounts that already exist
+      result = p.channel === "email"
+        ? await sb.auth.signInWithOtp({ email: p.email, options: { shouldCreateUser: false } })
+        : await sb.auth.signInWithOtp({ phone: p.phone, options: { shouldCreateUser: false } });
     }
 
-    return result?.error || null;
+    return (result && result.error) || null;
 
   } catch (error) {
-
-    console.error(
-      "NEXA OTP error:",
-      error
-    );
-
+    console.error("NEXA OTP error:", error);
     return error;
   }
 }
 
-
-/* =========================================================
-   AFTER OTP SEND
-   ========================================================= */
-
-function afterSend(button, error) {
-
+async function afterSend(button, error) {
   load(button, false);
 
   if (error === "redirect") {
-    goHome();
+    if (await accountExists()) goHome();
+    else say("Your account could not be confirmed. Please try again.", "err");
     return;
   }
 
   if (error) {
     console.error(error);
-
-    say(
-      error.message ||
-      "We could not send your code.",
-      "err"
-    );
-
+    say(error.message || "We could not send your code.", "err");
     return;
   }
 
   showVerify();
 }
 
-
-/* =========================================================
-   CREATE ACCOUNT
-   ========================================================= */
-
 async function startSignup() {
-
   if (redirecting) return;
 
-  const name =
-    $("s-name").value.trim();
+  const name = $("s-name").value.trim();
+  const email = $("s-email").value.trim();
+  const phone = tidyPhone($("s-phone").value.trim());
+  const password = $("s-pass").value;
+  const channel = document.querySelector('input[name="chan"]:checked')?.value;
 
-  const email =
-    $("s-email").value.trim();
+  if (!name) return say("Enter your full name.", "err");
+  if (!isEmail(email)) return say("Enter a valid email address.", "err");
+  if (!isPhone(phone)) return say("Enter your phone number with the country code, for example +2507XXXXXXXX.", "err");
+  if (password.length < 6) return say("Your password needs at least 6 characters.", "err");
+  if (!channel) return say("Choose where to receive your code.", "err");
 
-  const phone =
-    tidyPhone(
-      $("s-phone").value.trim()
-    );
-
-  const password =
-    $("s-pass").value;
-
-  const channel =
-    document.querySelector(
-      'input[name="chan"]:checked'
-    )?.value;
-
-  if (!name) {
-    say("Enter your full name.", "err");
-    return;
-  }
-
-  if (!isEmail(email)) {
-    say(
-      "Enter a valid email address.",
-      "err"
-    );
-    return;
-  }
-
-  if (!isPhone(phone)) {
-    say(
-      "Enter your phone number with the country code, for example +2507XXXXXXXX.",
-      "err"
-    );
-    return;
-  }
-
-  if (password.length < 6) {
-    say(
-      "Your password needs at least 6 characters.",
-      "err"
-    );
-    return;
-  }
-
-  if (!channel) {
-    say(
-      "Choose where to receive your code.",
-      "err"
-    );
-    return;
-  }
-
-  if (!ready()) return;
-
-  pending = {
-    flow: "signup",
-    channel,
-    email,
-    phone,
-    password,
-    name
-  };
+  pending = { flow: "signup", channel, email, phone, password, name };
 
   load($("s-btn"), true);
-
   say("Creating your account…");
 
-  const error =
-    await sendCode();
-
-  afterSend(
-    $("s-btn"),
-    error
-  );
+  afterSend($("s-btn"), await sendCode());
 }
-
-
-/* =========================================================
-   REQUEST LOGIN CODE
-   ========================================================= */
 
 async function startAsk() {
-
   if (redirecting) return;
 
-  const target =
-    $("a-to").value.trim();
+  const target = $("a-to").value.trim();
 
   if (isEmail(target)) {
-
-    pending = {
-      flow: "login",
-      channel: "email",
-      email: target
-    };
-
+    pending = { flow: "login", channel: "email", email: target };
   } else if (isPhone(target)) {
-
-    pending = {
-      flow: "login",
-      channel: "phone",
-      phone: tidyPhone(target)
-    };
-
+    pending = { flow: "login", channel: "phone", phone: tidyPhone(target) };
   } else {
-
-    say(
-      "Enter a valid email address or phone number with the country code.",
-      "err"
-    );
-
-    return;
+    return say("Enter a valid email address or phone number with the country code.", "err");
   }
 
-  if (!ready()) return;
-
   load($("a-btn"), true);
-
   say("Sending your code…");
 
-  const error =
-    await sendCode();
-
-  afterSend(
-    $("a-btn"),
-    error
-  );
+  afterSend($("a-btn"), await sendCode());
 }
-
 
 /* =========================================================
    OTP BOXES
    ========================================================= */
-
-const boxes = [
-  ...document.querySelectorAll(
-    "#otp input"
-  )
-];
-
-function getCode() {
-  return boxes
-    .map(box => box.value)
-    .join("");
-}
+const boxes = [...document.querySelectorAll("#otp input")];
+const getCode = () => boxes.map(b => b.value).join("");
 
 boxes.forEach((box, index) => {
+  box.addEventListener("input", () => {
+    box.value = box.value.replace(/\D/g, "").slice(-1);
+    if (box.value && index < boxes.length - 1) boxes[index + 1].focus();
+    if (getCode().length === 6) verify();
+  });
 
-  box.addEventListener(
-    "input",
-    () => {
+  box.addEventListener("keydown", e => {
+    if (e.key === "Backspace" && !box.value && index > 0) boxes[index - 1].focus();
+  });
 
-      box.value =
-        box.value
-          .replace(/\D/g, "")
-          .slice(-1);
-
-      if (
-        box.value &&
-        index < boxes.length - 1
-      ) {
-        boxes[index + 1].focus();
-      }
-
-      if (getCode().length === 6) {
-        verify();
-      }
-    }
-  );
-
-
-  box.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key === "Backspace" &&
-        !box.value &&
-        index > 0
-      ) {
-        boxes[index - 1].focus();
-      }
-    }
-  );
-
-
-  box.addEventListener(
-    "paste",
-    event => {
-
-      event.preventDefault();
-
-      const digits =
-        (
-          event.clipboardData
-            .getData("text") || ""
-        )
-        .replace(/\D/g, "")
-        .slice(0, 6);
-
-      boxes.forEach(
-        (input, i) => {
-          input.value =
-            digits[i] || "";
-        }
-      );
-
-      const focusIndex =
-        Math.min(
-          digits.length,
-          boxes.length - 1
-        );
-
-      boxes[focusIndex].focus();
-
-      if (digits.length === 6) {
-        verify();
-      }
-    }
-  );
-
+  box.addEventListener("paste", e => {
+    e.preventDefault();
+    const digits = ((e.clipboardData && e.clipboardData.getData("text")) || "").replace(/\D/g, "").slice(0, 6);
+    boxes.forEach((input, i) => (input.value = digits[i] || ""));
+    boxes[Math.min(digits.length, boxes.length - 1)].focus();
+    if (digits.length === 6) verify();
+  });
 });
 
-
 /* =========================================================
-   SHOW VERIFICATION PAGE
+   VERIFY PAGE + RESEND COOLDOWN
    ========================================================= */
-
 let cooldown;
 
 function showVerify() {
-
   if (!pending) return;
 
-  const destination =
-    pending.channel === "email"
-      ? pending.email
-      : pending.phone;
+  const destination = pending.channel === "email" ? pending.email : pending.phone;
+  $("v-sub").textContent = "We sent a 6-digit code to " + destination + ". It can take a minute to arrive.";
 
-  $("v-sub").textContent =
-    "We sent a 6-digit code to " +
-    destination +
-    ". It can take a minute to arrive.";
-
-  boxes.forEach(
-    box => box.value = ""
-  );
-
+  boxes.forEach(b => (b.value = ""));
   go("verify");
-
-  say(
-    "Code sent successfully.",
-    "ok"
-  );
-
-  setTimeout(() => {
-    boxes[0].focus();
-  }, 600);
-
+  say("Code sent successfully.", "ok");
+  setTimeout(() => boxes[0].focus(), 600);
 
   clearInterval(cooldown);
-
   let seconds = 30;
-
-  const resendButton =
-    $("v-re");
-
+  const resendButton = $("v-re");
   resendButton.disabled = true;
+  resendButton.textContent = `Send a new code in ${seconds}s`;
 
-  resendButton.textContent =
-    `Send a new code in ${seconds}s`;
-
-  cooldown =
-    setInterval(() => {
-
-      seconds--;
-
-      if (seconds <= 0) {
-
-        clearInterval(cooldown);
-
-        resendButton.disabled =
-          false;
-
-        resendButton.textContent =
-          "Send a new code";
-
-      } else {
-
-        resendButton.textContent =
-          `Send a new code in ${seconds}s`;
-      }
-
-    }, 1000);
+  cooldown = setInterval(() => {
+    seconds--;
+    if (seconds <= 0) {
+      clearInterval(cooldown);
+      resendButton.disabled = false;
+      resendButton.textContent = "Send a new code";
+    } else {
+      resendButton.textContent = `Send a new code in ${seconds}s`;
+    }
+  }, 1000);
 }
 
-
 /* =========================================================
-   VERIFY OTP
+   VERIFY OTP  →  account check  →  home.html
    ========================================================= */
-
 let verifying = false;
 
+function verifyFailed(message) {
+  verifying = false;
+  load($("v-btn"), false);
+  say(message, "err");
+}
+
 async function verify() {
+  if (redirecting || verifying) return;
 
-  if (redirecting) return;
-
-  const token =
-    getCode();
-
-  if (token.length !== 6) {
-
-    say(
-      "Enter all 6 digits.",
-      "err"
-    );
-
-    return;
-  }
-
-  if (verifying) return;
-
-  if (!pending) {
-
-    say(
-      "Your verification session has expired. Start again.",
-      "err"
-    );
-
-    return;
-  }
+  const token = getCode();
+  if (token.length !== 6) return say("Enter all 6 digits.", "err");
+  if (!pending) return say("Your verification session has expired. Start again.", "err");
 
   verifying = true;
-
   const p = pending;
 
-  load(
-    $("v-btn"),
-    true
-  );
-
+  load($("v-btn"), true);
   say("Verifying your code…");
 
   try {
-
-    let result;
-
-    /* EMAIL OTP */
-
-    if (p.channel === "email") {
-
-      result =
-        await sb.auth.verifyOtp({
-          email: p.email,
-          token,
-
-          type:
-            p.flow === "signup"
-              ? "signup"
-              : "email"
-        });
-
-    }
-
-    /* PHONE OTP */
-
-    else {
-
-      result =
-        await sb.auth.verifyOtp({
-          phone: p.phone,
-          token,
-          type: "sms"
-        });
-
-    }
+    const result = p.channel === "email"
+      ? await sb.auth.verifyOtp({ email: p.email, token, type: p.flow === "signup" ? "signup" : "email" })
+      : await sb.auth.verifyOtp({ phone: p.phone, token, type: "sms" });
 
     if (result.error) {
-
-      console.error(
-        "OTP verification error:",
-        result.error
-      );
-
-      verifying = false;
-
-      load(
-        $("v-btn"),
-        false
-      );
-
-      boxes.forEach(
-        box => box.value = ""
-      );
-
+      console.error("OTP verification error:", result.error);
+      boxes.forEach(b => (b.value = ""));
       boxes[0].focus();
-
-      say(
-        "That code is incorrect or has expired. Try again or send a new one.",
-        "err"
-      );
-
-      return;
+      return verifyFailed("That code is incorrect or has expired. Try again or send a new one.");
     }
 
-
-    /*
-      PHONE SIGNUP:
-      After verifying the phone, attach
-      the email/password/name to the account.
-    */
-    if (
-      p.flow === "signup" &&
-      p.channel === "phone"
-    ) {
-
-      const update =
-        await sb.auth.updateUser({
-          email: p.email,
-          password: p.password,
-
-          data: {
-            full_name: p.name,
-            phone: p.phone
-          }
-        });
+    // Phone sign-up: after the phone is verified, attach email/password/name
+    if (p.flow === "signup" && p.channel === "phone") {
+      const update = await sb.auth.updateUser({
+        email: p.email,
+        password: p.password,
+        data: { full_name: p.name, phone: p.phone }
+      });
 
       if (update.error) {
-
-        console.error(
-          "Profile update error:",
-          update.error
-        );
-
-        verifying = false;
-
-        load(
-          $("v-btn"),
-          false
-        );
-
-        say(
-          "Your phone was verified, but we could not finish creating your account.",
-          "err"
-        );
-
-        return;
+        console.error("Profile update error:", update.error);
+        return verifyFailed("Your phone was verified, but we could not finish creating your account.");
       }
     }
 
-
-    /*
-      Confirm that Supabase has
-      actually created a session.
-    */
-    const {
-      data: sessionData
-    } = await sb.auth.getSession();
-
-    if (
-      !sessionData ||
-      !sessionData.session
-    ) {
-
-      verifying = false;
-
-      load(
-        $("v-btn"),
-        false
-      );
-
-      say(
-        "Verification succeeded, but your session was not created. Please try signing in.",
-        "err"
-      );
-
-      return;
+    const { data: sessionData } = await sb.auth.getSession();
+    if (!sessionData || !sessionData.session) {
+      return verifyFailed("Verification succeeded, but your session was not created. Please try signing in.");
     }
 
-    say(
-      "Verified successfully. Opening NEXA…",
-      "ok"
-    );
+    // Ask the server to confirm the account exists before entering
+    if (!(await accountExists())) {
+      await sb.auth.signOut();
+      return verifyFailed("We couldn't find an account for these details.");
+    }
 
-    setTimeout(() => {
-      goHome();
-    }, 250);
+    say("Verified successfully. Opening NEXA…", "ok");
+    setTimeout(goHome, 250);
 
   } catch (error) {
-
-    console.error(
-      "Unexpected verification error:",
-      error
-    );
-
-    verifying = false;
-
-    load(
-      $("v-btn"),
-      false
-    );
-
-    say(
-      "Something went wrong while verifying the code.",
-      "err"
-    );
+    console.error("Unexpected verification error:", error);
+    verifyFailed("Something went wrong while verifying the code.");
   }
 }
 
-
-/* =========================================================
-   RESEND CODE
-   ========================================================= */
-
 async function resend() {
-
-  if (!pending || redirecting) {
-    return;
-  }
+  if (!pending || redirecting) return;
 
   $("v-re").disabled = true;
-
   say("Sending a new code…");
 
-  const error =
-    await sendCode();
+  const error = await sendCode();
 
-  if (
-    error &&
-    error !== "redirect"
-  ) {
-
-    $("v-re").disabled = false;
-
-    say(
-      error.message ||
-      "We could not send a new code.",
-      "err"
-    );
-
+  if (error === "redirect") {
+    if (await accountExists()) goHome();
     return;
   }
 
-  if (error === "redirect") {
-    goHome();
+  if (error) {
+    $("v-re").disabled = false;
+    say(error.message || "We could not send a new code.", "err");
     return;
   }
 
   showVerify();
-
-  say(
-    "A new code has been sent.",
-    "ok"
-  );
+  say("A new code has been sent.", "ok");
 }
 
-
 /* =========================================================
-   BUTTONS
+   BUTTONS + ENTER KEY
    ========================================================= */
-
 $("l-btn").onclick = login;
+$("l-up").onclick = () => go("signup");
+$("l-code").onclick = () => { $("a-to").value = $("l-email").value.trim(); go("ask"); };
+$("s-btn").onclick = startSignup;
+$("s-in").onclick = () => go("login");
+$("a-btn").onclick = startAsk;
+$("a-back").onclick = () => go("login");
+$("v-btn").onclick = verify;
+$("v-re").onclick = resend;
+$("v-back").onclick = () => go(pending && pending.flow === "signup" ? "signup" : "ask");
 
-$("l-up").onclick = () => {
-  go("signup");
-};
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
 
-$("l-code").onclick = () => {
-
-  $("a-to").value =
-    $("l-email").value.trim();
-
-  go("ask");
-};
-
-$("s-btn").onclick =
-  startSignup;
-
-$("s-in").onclick = () => {
-  go("login");
-};
-
-$("a-btn").onclick =
-  startAsk;
-
-$("a-back").onclick = () => {
-  go("login");
-};
-
-$("v-btn").onclick =
-  verify;
-
-$("v-re").onclick =
-  resend;
-
-$("v-back").onclick = () => {
-
-  if (
-    pending &&
-    pending.flow === "signup"
-  ) {
-    go("signup");
-  } else {
-    go("ask");
-  }
-};
-
+  if (view === "login") login();
+  else if (view === "signup") startSignup();
+  else if (view === "ask") startAsk();
+  else if (view === "verify") verify();
+});
 
 /* =========================================================
-   ENTER KEY SUPPORT
+   EXISTING SESSION CHECK (runs once when the page opens)
+   Only redirects if the server confirms the account exists.
+   There is no onAuthStateChange redirect: it caused the
+   login <-> home flicker because two redirects raced.
    ========================================================= */
-
-document.addEventListener(
-  "keydown",
-  event => {
-
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    if (
-      document.activeElement?.tagName === "BUTTON"
-    ) {
-      return;
-    }
-
-    if (view === "login") {
-      login();
-    }
-
-    if (view === "signup") {
-      startSignup();
-    }
-
-    if (view === "ask") {
-      startAsk();
-    }
-
-    if (view === "verify") {
-      verify();
-    }
-
-  }
-);
-
-
-/* =========================================================
-   SESSION CHECK
-   =========================================================
-
-   IMPORTANT:
-   We do NOT constantly redirect.
-
-   Only redirect once when a valid existing session
-   is detected on the login page.
-   ========================================================= */
-
 (async function checkExistingSession() {
-
   try {
+    const { data, error } = await sb.auth.getSession();
+    if (error || !data || !data.session || redirecting) return;
 
-    const {
-      data,
-      error
-    } = await sb.auth.getSession();
-
-    if (error) {
-      console.error(
-        "Session check error:",
-        error
-      );
-      return;
+    if (await accountExists()) {
+      say("You are already signed in. Opening NEXA…", "ok");
+      setTimeout(goHome, 250);
+    } else {
+      await sb.auth.signOut(); // leftover session for an account that no longer exists
     }
-
-    if (
-      data &&
-      data.session &&
-      !redirecting
-    ) {
-
-      /*
-        The user is already signed in.
-      */
-      say(
-        "You are already signed in. Opening NEXA…",
-        "ok"
-      );
-
-      setTimeout(() => {
-        goHome();
-      }, 250);
-    }
-
   } catch (error) {
-
-    console.error(
-      "Unexpected session error:",
-      error
-    );
+    console.error("Session check error:", error);
   }
-
 })();
 
-
 /* =========================================================
-   AUTH STATE LISTENER
-   =========================================================
-
-   This catches authentication changes made by
-   Supabase and keeps the app synchronized.
+   START
    ========================================================= */
-
-sb.auth.onAuthStateChange(
-  (event, session) => {
-
-    /*
-      Only navigate for an authenticated session.
-
-      Do NOT react to every auth event because that
-      can cause duplicate redirects.
-    */
-    if (
-      session &&
-      (
-        event === "SIGNED_IN" ||
-        event === "INITIAL_SESSION" ||
-        event === "USER_UPDATED"
-      ) &&
-      !redirecting
-    ) {
-
-      /*
-        Don't interrupt the verification/signup UI
-        while it is still processing.
-      */
-      if (
-        view === "login" &&
-        event === "SIGNED_IN"
-      ) {
-
-        setTimeout(() => {
-          goHome();
-        }, 250);
-      }
-    }
-
-  }
-);
-
-
-/* =========================================================
-   START LOGIN SCREEN
-   ========================================================= */
-
-typeLines(
-  COPY.login.lines
-);
-
+typeLines(COPY.login.lines);
 
 /* =========================================================
    RISING GOLD EMBERS
    ========================================================= */
-
 (function () {
+  const canvas = $("fx");
+  const ctx = canvas.getContext("2d");
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const canvas =
-    $("fx");
-
-  const ctx =
-    canvas.getContext("2d");
-
-  const reducedMotion =
-    window.matchMedia &&
-    window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-  let W;
-  let H;
-
-  let particles = [];
-
+  let W, H;
+  const particles = [];
 
   function resize() {
-
-    W = canvas.width =
-      window.innerWidth;
-
-    H = canvas.height =
-      window.innerHeight;
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
   }
-
-  window.addEventListener(
-    "resize",
-    resize
-  );
-
+  window.addEventListener("resize", resize);
   resize();
 
-
   function makeParticle(initial = false) {
-
     return {
       x: Math.random() * W,
-
-      y:
-        initial
-          ? Math.random() * H
-          : H + 20,
-
-      r:
-        0.8 +
-        Math.random() * 2.6,
-
-      v:
-        0.3 +
-        Math.random() * 1.1,
-
-      s:
-        Math.random() * Math.PI * 2,
-
-      a:
-        0.35 +
-        Math.random() * 0.65,
-
-      big:
-        Math.random() < 0.08
+      y: initial ? Math.random() * H : H + 20,
+      r: 0.8 + Math.random() * 2.6,
+      v: 0.3 + Math.random() * 1.1,
+      s: Math.random() * Math.PI * 2,
+      a: 0.35 + Math.random() * 0.65,
+      big: Math.random() < 0.08
     };
   }
 
-
-  const count =
-    Math.min(
-      130,
-      Math.floor(
-        window.innerWidth / 9
-      )
-    );
-
-
-  for (let i = 0; i < count; i++) {
-    particles.push(
-      makeParticle(true)
-    );
-  }
-
+  const count = Math.min(130, Math.floor(window.innerWidth / 9));
+  for (let i = 0; i < count; i++) particles.push(makeParticle(true));
 
   let time = 0;
 
-
   function frame() {
-
     time += 0.02;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
 
-    ctx.clearRect(
-      0,
-      0,
-      W,
-      H
-    );
-
-    ctx.globalCompositeOperation =
-      "lighter";
-
-
-    for (const particle of particles) {
-
+    for (const p of particles) {
       if (!reducedMotion) {
-
-        particle.y -=
-          particle.v *
-          (
-            particle.big
-              ? 0.5
-              : 1
-          );
-
-        particle.s += 0.012;
-
-        particle.x +=
-          Math.sin(
-            particle.s
-          ) * 0.4;
+        p.y -= p.v * (p.big ? 0.5 : 1);
+        p.s += 0.012;
+        p.x += Math.sin(p.s) * 0.4;
       }
+      if (p.y < -30) Object.assign(p, makeParticle(false));
 
+      const radius = p.r * (p.big ? 14 : 6);
+      const twinkle = 0.65 + 0.35 * Math.sin(time * 3 + p.s * 5);
+      const alpha = p.a * twinkle * Math.min(1, Math.max(0, p.y / (H * 0.3))) * (p.big ? 0.3 : 1);
 
-      if (particle.y < -30) {
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
+      g.addColorStop(0, `rgba(255,244,200,${alpha})`);
+      g.addColorStop(0.3, `rgba(212,175,55,${alpha * 0.55})`);
+      g.addColorStop(1, "rgba(212,175,55,0)");
 
-        Object.assign(
-          particle,
-          makeParticle(false)
-        );
-      }
-
-
-      const radius =
-        particle.r *
-        (
-          particle.big
-            ? 14
-            : 6
-        );
-
-      const twinkle =
-        0.65 +
-        0.35 *
-        Math.sin(
-          time * 3 +
-          particle.s * 5
-        );
-
-      const alpha =
-        particle.a *
-        twinkle *
-        Math.min(
-          1,
-          Math.max(
-            0,
-            particle.y /
-            (H * 0.3)
-          )
-        ) *
-        (
-          particle.big
-            ? 0.3
-            : 1
-        );
-
-
-      const gradient =
-        ctx.createRadialGradient(
-          particle.x,
-          particle.y,
-          0,
-          particle.x,
-          particle.y,
-          radius
-        );
-
-      gradient.addColorStop(
-        0,
-        `rgba(255,244,200,${alpha})`
-      );
-
-      gradient.addColorStop(
-        0.3,
-        `rgba(212,175,55,${alpha * 0.55})`
-      );
-
-      gradient.addColorStop(
-        1,
-        "rgba(212,175,55,0)"
-      );
-
-
-      ctx.fillStyle =
-        gradient;
-
+      ctx.fillStyle = g;
       ctx.beginPath();
-
-      ctx.arc(
-        particle.x,
-        particle.y,
-        radius,
-        0,
-        Math.PI * 2
-      );
-
+      ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
 
-
-    if (!reducedMotion) {
-      requestAnimationFrame(frame);
-    }
+    if (!reducedMotion) requestAnimationFrame(frame);
   }
-
-
   frame();
-
 })();
 </script>
 </body>
