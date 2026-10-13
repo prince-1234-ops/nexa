@@ -691,12 +691,27 @@ document.addEventListener("keydown", e => {
 
 /* =========================================================
    EXISTING SESSION CHECK (runs once when the page opens)
-   Only redirects if the server confirms the account exists.
+   - If the page was opened with ?logout=1 (from the logout
+     button on home.html), it signs out fully and STAYS here.
+   - Otherwise it only redirects if the server confirms the
+     account exists.
    There is no onAuthStateChange redirect: it caused the
    login <-> home flicker because two redirects raced.
    ========================================================= */
 (async function checkExistingSession() {
   try {
+    // Coming from a logout: wipe everything and stay on the login page
+    if (new URLSearchParams(window.location.search).get("logout") === "1") {
+      try { await sb.auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }
+      localStorage.removeItem("nexaCurrentUser");
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("sb-"))
+        .forEach(k => localStorage.removeItem(k));
+      history.replaceState(null, "", window.location.pathname);
+      say("You have been signed out.", "ok");
+      return;
+    }
+
     const { data, error } = await sb.auth.getSession();
     if (error || !data || !data.session || redirecting) return;
 
