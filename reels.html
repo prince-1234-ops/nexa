@@ -1,0 +1,1145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050505">
+<title>NEXA Reels</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+:root {
+    --gold: #d4af37;
+    --light-gold: #f1cf70;
+    --black: #050505;
+    --panel: #101010;
+    --muted: #999;
+    --border: rgba(212,175,55,.22);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--black);
+    color: #fff;
+    font-family: Inter, sans-serif;
+}
+
+button, input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.topbar {
+    height: 70px;
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    background: rgba(5,5,5,.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(15px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--gold);
+    font: 700 23px Cinzel, serif;
+    letter-spacing: 3px;
+}
+
+.brand-mark {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    font-size: 23px;
+    background: linear-gradient(145deg,#24200f,#080808);
+}
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--light-gold);
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.top-button:hover {
+    background: rgba(212,175,55,.1);
+}
+
+.upload-button {
+    background: var(--gold);
+    color: #080808;
+    border: none;
+    font-weight: 700;
+}
+
+.layout {
+    max-width: 1150px;
+    margin: auto;
+    padding: 94px 24px 30px;
+    display: grid;
+    grid-template-columns: 190px minmax(0, 470px) 190px;
+    justify-content: center;
+    gap: 28px;
+}
+
+.sidebar {
+    position: sticky;
+    top: 95px;
+    align-self: start;
+}
+
+.side-title {
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin: 16px 10px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 12px;
+    margin-bottom: 5px;
+    color: #c7c7c7;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: .2s;
+}
+
+.nav-link i {
+    width: 19px;
+    font-size: 17px;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--light-gold);
+    background: rgba(212,175,55,.1);
+}
+
+.nav-link.active {
+    border-left: 2px solid var(--gold);
+}
+
+.sidebar-note {
+    border-top: 1px solid var(--border);
+    padding: 18px 10px;
+    margin-top: 25px;
+    color: #777;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.sidebar-note strong {
+    color: var(--gold);
+}
+
+.main-content {
+    min-width: 0;
+}
+
+.page-heading {
+    margin-bottom: 18px;
+}
+
+.page-heading h1 {
+    font: 600 28px Cinzel, serif;
+    color: var(--light-gold);
+}
+
+.page-heading p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 7px;
+}
+
+.reel-card {
+    height: min(72vh, 700px);
+    min-height: 440px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #111;
+    margin-bottom: 22px;
+    isolation: isolate;
+}
+
+.reel-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #111;
+    z-index: -2;
+}
+
+.reel-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+        180deg,
+        rgba(0,0,0,.35),
+        transparent 25%,
+        transparent 48%,
+        rgba(0,0,0,.8) 100%
+    );
+    pointer-events: none;
+}
+
+.reel-top {
+    position: absolute;
+    top: 17px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.live-label {
+    padding: 7px 10px;
+    border: 1px solid rgba(241,207,112,.5);
+    border-radius: 7px;
+    background: rgba(0,0,0,.5);
+    color: var(--light-gold);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+}
+
+.sound-button {
+    width: 38px;
+    height: 38px;
+    background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.25);
+    color: white;
+    border-radius: 50%;
+}
+
+.play-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 23px;
+    color: white;
+    background: rgba(0,0,0,.48);
+    border: 1px solid rgba(255,255,255,.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+}
+
+.play-indicator.show {
+    opacity: 1;
+}
+
+.reel-bottom {
+    position: absolute;
+    left: 17px;
+    right: 17px;
+    bottom: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.reel-info {
+    min-width: 0;
+    max-width: 80%;
+}
+
+.creator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--light-gold);
+    background: #19160c;
+    border: 1px solid var(--gold);
+    font-weight: 700;
+}
+
+.creator-name {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.creator-handle {
+    color: #ddd;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+.follow-button {
+    background: transparent;
+    color: var(--light-gold);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 10px;
+}
+
+.follow-button.following {
+    background: var(--gold);
+    color: #000;
+}
+
+.caption {
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.hashtags {
+    color: var(--light-gold);
+    font-size: 11px;
+    margin-top: 7px;
+}
+
+.reel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.action-button {
+    background: transparent;
+    color: #fff;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 37px;
+}
+
+.action-button i {
+    font-size: 23px;
+    filter: drop-shadow(0 1px 4px #000);
+}
+
+.action-button span {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.action-button.liked {
+    color: #ff526b;
+}
+
+.action-button.saved {
+    color: var(--light-gold);
+}
+
+.right-panel {
+    position: sticky;
+    top: 95px;
+    align-self: start;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 17px 14px;
+    background: #0b0b0b;
+}
+
+.right-panel h3 {
+    font: 600 15px Cinzel,serif;
+    color: var(--light-gold);
+    margin-bottom: 12px;
+}
+
+.right-panel p {
+    color: #999;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.trending {
+    margin-top: 22px;
+}
+
+.trend {
+    color: #ddd;
+    font-size: 11px;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+}
+
+.trend span {
+    display: block;
+    color: #888;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+.empty-message {
+    padding: 24px;
+    color: #aaa;
+    text-align: center;
+    font-size: 13px;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.82);
+    backdrop-filter: blur(8px);
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 430px;
+    padding: 25px;
+    background: #101010;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+}
+
+.modal-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-heading h2 {
+    font: 600 20px Cinzel,serif;
+    color: var(--light-gold);
+}
+
+.close-modal {
+    background: transparent;
+    color: #fff;
+    border: none;
+    font-size: 22px;
+}
+
+.field-label {
+    display: block;
+    font-size: 12px;
+    color: #bbb;
+    margin: 14px 0 8px;
+}
+
+.field {
+    width: 100%;
+    padding: 12px;
+    background: #080808;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    outline: none;
+}
+
+.field:focus {
+    border-color: var(--gold);
+}
+
+.file-field {
+    font-size: 11px;
+}
+
+.primary-button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 8px;
+    color: #050505;
+    background: linear-gradient(120deg,var(--gold),var(--light-gold));
+    font-weight: 700;
+}
+
+.helper {
+    color: #888;
+    font-size: 11px;
+    line-height: 1.7;
+    margin-top: 12px;
+}
+
+.toast {
+    position: fixed;
+    z-index: 70;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 18px;
+    background: #19160d;
+    color: var(--light-gold);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: .25s;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+.mobile-nav {
+    display: none;
+}
+
+@media(max-width: 950px) {
+    .layout {
+        grid-template-columns: 165px minmax(0,470px);
+        gap: 20px;
+    }
+
+    .right-panel {
+        display: none;
+    }
+}
+
+@media(max-width: 650px) {
+    .topbar {
+        height: 60px;
+        padding: 0 15px;
+    }
+
+    .brand {
+        font-size: 19px;
+    }
+
+    .brand-mark {
+        width: 33px;
+        height: 33px;
+    }
+
+    .top-button {
+        padding: 9px 10px;
+        font-size: 11px;
+    }
+
+    .layout {
+        display: block;
+        padding: 77px 0 70px;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .page-heading {
+        padding: 0 15px 14px;
+        margin-bottom: 0;
+    }
+
+    .page-heading h1 {
+        font-size: 24px;
+    }
+
+    .reel-card {
+        height: calc(100svh - 155px);
+        min-height: 440px;
+        max-height: 760px;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        margin-bottom: 0;
+    }
+
+    .reel-bottom {
+        left: 13px;
+        right: 12px;
+        bottom: 16px;
+    }
+
+    .reel-info {
+        max-width: calc(100% - 55px);
+    }
+
+    .caption {
+        font-size: 11px;
+    }
+
+    .reel-actions {
+        gap: 19px;
+    }
+
+    .action-button i {
+        font-size: 22px;
+    }
+
+    .mobile-nav {
+        position: fixed;
+        z-index: 25;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        background: rgba(5,5,5,.97);
+        border-top: 1px solid var(--border);
+    }
+
+    .mobile-nav a {
+        color: #999;
+        text-decoration: none;
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        font-size: 9px;
+    }
+
+    .mobile-nav a i {
+        font-size: 19px;
+    }
+
+    .mobile-nav a.active {
+        color: var(--light-gold);
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="brand" href="home.html">
+        <span class="brand-mark">N</span>
+        <span>NEXA</span>
+    </a>
+
+    <div class="top-actions">
+        <button class="top-button" id="savedFilter">
+            <i class="fa-regular fa-bookmark"></i> Saved
+        </button>
+        <button class="top-button upload-button" id="openUpload">
+            <i class="fa-solid fa-plus"></i> Create Reel
+        </button>
+    </div>
+</header>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <p class="side-title">Your NEXA</p>
+
+        <a class="nav-link" href="home.html">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+
+        <a class="nav-link" href="people.html">
+            <i class="fa-solid fa-users"></i> People
+        </a>
+
+        <a class="nav-link" href="messages.html">
+            <i class="fa-regular fa-comment-dots"></i> Messages
+        </a>
+
+        <a class="nav-link active" href="reels.html">
+            <i class="fa-solid fa-clapperboard"></i> Reels
+        </a>
+
+        <a class="nav-link" href="profile.html">
+            <i class="fa-regular fa-user"></i> Profile
+        </a>
+
+        <a class="nav-link" href="settings.html">
+            <i class="fa-solid fa-gear"></i> Settings
+        </a>
+
+        <div class="sidebar-note">
+            <strong>NEXA REELS</strong><br>
+            Your moments.<br>
+            Your creativity.<br>
+            Your community.
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-heading">
+            <h1>Reels <span style="color:#d4af37">✦</span></h1>
+            <p>Discover moments. Share your world.</p>
+        </div>
+
+        <div id="reelsContainer"></div>
+    </main>
+
+    <aside class="right-panel">
+        <h3>Creator space</h3>
+        <p>Have something worth sharing? Create a reel and let your creativity shine.</p>
+
+        <button class="primary-button" id="rightUpload">
+            <i class="fa-solid fa-video"></i> Upload a Reel
+        </button>
+
+        <div class="trending">
+            <h3>Explore</h3>
+            <div class="trend">#NEXACommunity<span>Connect with people</span></div>
+            <div class="trend">#DailyMoments<span>Life in motion</span></div>
+            <div class="trend">#Creativity<span>Share your talent</span></div>
+        </div>
+    </aside>
+
+</div>
+
+<nav class="mobile-nav">
+    <a href="home.html"><i class="fa-solid fa-house"></i>Home</a>
+    <a href="people.html"><i class="fa-solid fa-users"></i>People</a>
+    <a href="reels.html" class="active"><i class="fa-solid fa-clapperboard"></i>Reels</a>
+    <a href="messages.html"><i class="fa-regular fa-comment-dots"></i>Messages</a>
+    <a href="profile.html"><i class="fa-regular fa-user"></i>Profile</a>
+</nav>
+
+<div class="modal" id="uploadModal">
+    <div class="modal-content">
+        <div class="modal-heading">
+            <h2>Create a Reel</h2>
+            <button class="close-modal" id="closeUpload" aria-label="Close">&times;</button>
+        </div>
+
+        <form id="uploadForm">
+            <label class="field-label" for="reelFile">Choose a video</label>
+            <input class="field file-field" id="reelFile" type="file"
+                accept="video/mp4,video/webm,video/quicktime" required>
+
+            <label class="field-label" for="reelCaption">Caption</label>
+            <input class="field" id="reelCaption" type="text"
+                maxlength="300" placeholder="Tell your story...">
+
+            <label class="field-label" for="reelTags">Hashtags (optional)</label>
+            <input class="field" id="reelTags" type="text"
+                maxlength="150" placeholder="#NEXA #MyMoment">
+
+            <button class="primary-button" type="submit" id="publishButton">
+                Publish Reel
+            </button>
+
+            <p class="helper">
+                Videos should be reasonably short and compressed for mobile data.
+                Uploading to a shared online feed requires a connected storage service.
+            </p>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const reelsContainer = document.getElementById("reelsContainer");
+const uploadModal = document.getElementById("uploadModal");
+const uploadForm = document.getElementById("uploadForm");
+const fileInput = document.getElementById("reelFile");
+const captionInput = document.getElementById("reelCaption");
+const tagsInput = document.getElementById("reelTags");
+const publishButton = document.getElementById("publishButton");
+
+let reels = [
+    {
+        id: "demo-1",
+        username: "NEXA Creator",
+        handle: "@nexa",
+        avatar: "N",
+        caption: "Welcome to NEXA Reels. Your next great moment starts here.",
+        tags: "#NEXA #NEXACommunity",
+        video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        likes: 0,
+        comments: [],
+        liked: false,
+        saved: false,
+        following: false,
+        demo: true
+    }
+];
+
+let activeIndex = 0;
+let savedOnly = false;
+let toastTimer;
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function visibleReels() {
+    return savedOnly ? reels.filter(reel => reel.saved) : reels;
+}
+
+function renderReels() {
+    const list = visibleReels();
+
+    if (!list.length) {
+        reelsContainer.innerHTML = `
+            <div class="empty-message">
+                <i class="fa-regular fa-bookmark"
+                   style="font-size:32px;color:#d4af37"></i>
+                <p style="margin-top:14px">No saved reels yet.</p>
+            </div>`;
+        return;
+    }
+
+    reelsContainer.innerHTML = list.map((reel, index) => `
+        <article class="reel-card" data-id="${escapeHTML(reel.id)}">
+            <video class="reel-video"
+                src="${escapeHTML(reel.video)}"
+                playsinline
+                loop
+                preload="${index === 0 ? "auto" : "metadata"}"
+                aria-label="Reel video"></video>
+
+            <div class="reel-shade"></div>
+
+            <div class="reel-top">
+                <span class="live-label">✦ NEXA ORIGINALS</span>
+                <button class="sound-button" data-action="sound"
+                    aria-label="Toggle sound">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                </button>
+            </div>
+
+            <button class="play-indicator" data-action="play"
+                aria-label="Play or pause video">
+                <i class="fa-solid fa-play"></i>
+            </button>
+
+            <div class="reel-bottom">
+                <div class="reel-info">
+                    <div class="creator">
+                        <div class="avatar">${escapeHTML(reel.avatar)}</div>
+                        <div>
+                            <div class="creator-name">${escapeHTML(reel.username)}</div>
+                            <div class="creator-handle">${escapeHTML(reel.handle)}</div>
+                        </div>
+                        ${reel.demo ? "" : `
+                        <button class="follow-button ${reel.following ? "following" : ""}"
+                            data-action="follow">
+                            ${reel.following ? "Following" : "Follow"}
+                        </button>`}
+                    </div>
+
+                    <p class="caption">${escapeHTML(reel.caption)}</p>
+                    <p class="hashtags">${escapeHTML(reel.tags || "")}</p>
+                </div>
+
+                <div class="reel-actions">
+                    <button class="action-button ${reel.liked ? "liked" : ""}"
+                        data-action="like" aria-label="Like reel">
+                        <i class="${reel.liked ? "fa-solid" : "fa-regular"} fa-heart"></i>
+                        <span>${reel.likes}</span>
+                    </button>
+
+                    <button class="action-button" data-action="comment"
+                        aria-label="Comment on reel">
+                        <i class="fa-regular fa-comment"></i>
+                        <span>${reel.comments.length}</span>
+                    </button>
+
+                    <button class="action-button" data-action="share"
+                        aria-label="Share reel">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Share</span>
+                    </button>
+
+                    <button class="action-button ${reel.saved ? "saved" : ""}"
+                        data-action="save" aria-label="Save reel">
+                        <i class="${reel.saved ? "fa-solid" : "fa-regular"} fa-bookmark"></i>
+                        <span>${reel.saved ? "Saved" : "Save"}</span>
+                    </button>
+                </div>
+            </div>
+        </article>
+    `).join("");
+
+    setupVideoPlayback();
+}
+
+function setupVideoPlayback() {
+    const cards = [...reelsContainer.querySelectorAll(".reel-card")];
+
+    if (!("IntersectionObserver" in window)) {
+        cards.forEach((card, index) => {
+            const video = card.querySelector("video");
+            if (index === 0) video.play().catch(() => {});
+        });
+        return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const video = entry.target.querySelector("video");
+            if (!video) return;
+
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.65) {
+                cards.forEach(card => {
+                    if (card !== entry.target) {
+                        card.querySelector("video")?.pause();
+                    }
+                });
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+            }
+        });
+    }, { threshold: [0, 0.65, 1] });
+
+    cards.forEach(card => observer.observe(card));
+}
+
+function getReelFromCard(card) {
+    return reels.find(reel => reel.id === card.dataset.id);
+}
+
+reelsContainer.addEventListener("click", async event => {
+    const card = event.target.closest(".reel-card");
+    if (!card) return;
+
+    const reel = getReelFromCard(card);
+    if (!reel) return;
+
+    const button = event.target.closest("[data-action]");
+    const video = card.querySelector("video");
+
+    if (!button) {
+        if (video.paused) {
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+
+        const indicator = card.querySelector(".play-indicator");
+        indicator.querySelector("i").className =
+            video.paused ? "fa-solid fa-play" : "fa-solid fa-pause";
+        indicator.classList.add("show");
+        setTimeout(() => indicator.classList.remove("show"), 650);
+        return;
+    }
+
+    const action = button.dataset.action;
+
+    if (action === "play") {
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+
+        button.querySelector("i").className =
+            video.paused ? "fa-solid fa-play" : "fa-solid fa-pause";
+    }
+
+    if (action === "sound") {
+        video.muted = !video.muted;
+        button.innerHTML = video.muted
+            ? '<i class="fa-solid fa-volume-xmark"></i>'
+            : '<i class="fa-solid fa-volume-high"></i>';
+    }
+
+    if (action === "like") {
+        reel.liked = !reel.liked;
+        reel.likes += reel.liked ? 1 : -1;
+        renderReels();
+    }
+
+    if (action === "save") {
+        reel.saved = !reel.saved;
+        showToast(reel.saved ? "Reel saved." : "Reel removed from saved.");
+        renderReels();
+    }
+
+    if (action === "comment") {
+        const comment = prompt("Write your comment:");
+        if (comment && comment.trim()) {
+            reel.comments.push(comment.trim());
+            renderReels();
+            showToast("Comment added on this device.");
+        }
+    }
+
+    if (action === "share") {
+        const shareData = {
+            title: "NEXA Reels",
+            text: reel.caption,
+            url: location.href
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else if (navigator.clipboard) {
+                await navigator.clipboard.writeText(location.href);
+                showToast("Page link copied. Share it with your friends.");
+            } else {
+                prompt("Copy this link to share:", location.href);
+            }
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                showToast("Sharing is unavailable in this browser.");
+            }
+        }
+    }
+
+    if (action === "follow") {
+        reel.following = !reel.following;
+        renderReels();
+        showToast(reel.following ? "Following creator." : "Unfollowed creator.");
+    }
+});
+
+function openUpload() {
+    uploadModal.classList.add("open");
+}
+
+function closeUpload() {
+    uploadModal.classList.remove("open");
+}
+
+document.getElementById("openUpload").addEventListener("click", openUpload);
+document.getElementById("rightUpload").addEventListener("click", openUpload);
+document.getElementById("closeUpload").addEventListener("click", closeUpload);
+
+uploadModal.addEventListener("click", event => {
+    if (event.target === uploadModal) closeUpload();
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeUpload();
+});
+
+document.getElementById("savedFilter").addEventListener("click", () => {
+    savedOnly = !savedOnly;
+    document.getElementById("savedFilter").innerHTML = savedOnly
+        ? '<i class="fa-solid fa-bookmark"></i> All Reels'
+        : '<i class="fa-regular fa-bookmark"></i> Saved';
+    renderReels();
+});
+
+uploadForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const file = fileInput.files[0];
+    if (!file) {
+        showToast("Choose a video first.");
+        return;
+    }
+
+    if (!file.type.startsWith("video/")) {
+        showToast("Please select a video file.");
+        return;
+    }
+
+    // This first version previews uploaded videos locally.
+    // The video is NOT uploaded to Supabase yet.
+    const videoURL = URL.createObjectURL(file);
+    const caption = captionInput.value.trim() || "A new moment on NEXA.";
+    const tags = tagsInput.value.trim();
+
+    const reel = {
+        id: "local-" + Date.now(),
+        username: "You",
+        handle: "@you",
+        avatar: "Y",
+        caption,
+        tags,
+        video: videoURL,
+        likes: 0,
+        comments: [],
+        liked: false,
+        saved: false,
+        following: false,
+        demo: false
+    };
+
+    reels.unshift(reel);
+    savedOnly = false;
+    document.getElementById("savedFilter").innerHTML =
+        '<i class="fa-regular fa-bookmark"></i> Saved';
+
+    uploadForm.reset();
+    closeUpload();
+    renderReels();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast("Reel preview created on this device.");
+});
+
+renderReels();
+</script>
+
+</body>
+</html>
