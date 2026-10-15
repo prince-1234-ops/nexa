@@ -10,11 +10,9 @@
 
     /* ---------- Supabase client ---------- */
     function getClient() {
+        try { if (typeof nexaSupabase !== "undefined" && nexaSupabase.from) return nexaSupabase; } catch (e) {}
         try { if (typeof supabaseClient !== "undefined" && supabaseClient.from) return supabaseClient; } catch (e) {}
-        try { if (typeof supabase !== "undefined" && supabase.from) return supabase; } catch (e) {}
-        try { if (typeof db !== "undefined" && db.from) return db; } catch (e) {}
-        if (window.supabaseClient && window.supabaseClient.from) return window.supabaseClient;
-        if (window.supabase && window.supabase.from) return window.supabase;
+        if (window.nexaSupabase && window.nexaSupabase.from) return window.nexaSupabase;
         return null;
     }
 
