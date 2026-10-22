@@ -18,22 +18,28 @@
 }
 
 :root {
-  --bg: #050403;
-  --panel: rgba(12, 9, 5, .82);
-  --panel-solid: #0b0805;
-  --gold: #d4af37;
-  --gold-light: #f6e3a1;
-  --gold-deep: #8a6a1c;
-  --text: #f4ecda;
-  --muted: #a79b7e;
-  --line: rgba(212, 175, 55, .25);
-  --danger: #ff9b84;
-  --success: #ffe9a8;
-  --radius: 18px;
-  --metal: linear-gradient(115deg, #8a6a1c, #d4af37 28%, #f6e3a1 50%, #d4af37 72%, #8a6a1c);
+  --bg: #050a12;
+  --panel: rgba(9, 20, 36, .72);
+  --panel-solid: #0a1422;
+  --blue: #69c8ff;
+  --blue-light: #d9f4ff;
+  --blue-deep: #2875b5;
+  --text: #eaf7ff;
+  --muted: #9bb5c9;
+  --line: rgba(105, 200, 255, .23);
+  --danger: #ff9baf;
+  --success: #b7f4ff;
+  --metal: linear-gradient(
+    115deg,
+    #2875b5,
+    #69c8ff 30%,
+    #e2f8ff 50%,
+    #69c8ff 72%,
+    #2875b5
+  );
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "Manrope", system-ui, sans-serif;
-  --shadow: 0 30px 90px rgba(0, 0, 0, .75), 0 0 80px rgba(212, 175, 55, .16);
+  --shadow: 0 30px 90px rgba(0, 0, 0, .65), 0 0 80px rgba(52, 158, 255, .15);
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -49,9 +55,9 @@ body {
   color: var(--text);
   font-family: var(--sans);
   background:
-    radial-gradient(900px 600px at 15% 10%, rgba(212,175,55,.09), transparent 60%),
-    radial-gradient(900px 700px at 85% 95%, rgba(138,106,28,.16), transparent 65%),
-    radial-gradient(ellipse at 50% 120%, #1a1204, var(--bg) 62%);
+    radial-gradient(900px 600px at 15% 10%, rgba(52, 158, 255, .16), transparent 60%),
+    radial-gradient(900px 700px at 85% 95%, rgba(43, 111, 190, .20), transparent 65%),
+    radial-gradient(ellipse at 50% 120%, #0b1b30, var(--bg) 62%);
 }
 
 #fx {
@@ -61,6 +67,7 @@ body {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  filter: hue-rotate(145deg) saturate(1.3);
 }
 
 .shell {
@@ -72,10 +79,14 @@ body {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   min-height: 700px;
-  background: var(--panel);
-  backdrop-filter: blur(22px);
-  border: 1px solid rgba(212,175,55,.18);
-  box-shadow: var(--shadow);
+  background: rgba(8, 19, 34, .68);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
+  border: 1px solid rgba(132, 211, 255, .25);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, .65),
+    0 0 80px rgba(52, 158, 255, .15),
+    inset 0 1px 0 rgba(220, 246, 255, .08);
 }
 
 .shell::before {
@@ -88,11 +99,11 @@ body {
   pointer-events: none;
   background: conic-gradient(
     from var(--angle),
-    rgba(212,175,55,.12) 0 55%,
-    var(--gold) 76%,
-    #fff4c8 85%,
-    var(--gold) 93%,
-    rgba(212,175,55,.12)
+    rgba(105, 200, 255, .12) 0 55%,
+    #69c8ff 76%,
+    #effbff 85%,
+    #69c8ff 93%,
+    rgba(105, 200, 255, .12)
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -112,12 +123,12 @@ body {
   pointer-events: none;
   background: linear-gradient(
     transparent,
-    rgba(212,175,55,.65) 28%,
-    rgba(246,227,161,.95) 50%,
-    rgba(212,175,55,.65) 72%,
+    rgba(105, 200, 255, .55) 28%,
+    rgba(220, 246, 255, .9) 50%,
+    rgba(105, 200, 255, .55) 72%,
     transparent
   );
-  box-shadow: 0 0 22px rgba(212,175,55,.65);
+  box-shadow: 0 0 22px rgba(105, 200, 255, .55);
 }
 
 .panel {
@@ -131,13 +142,12 @@ body {
 .shell.swapped .art { transform: translateX(100%); }
 .shell.swapped .form { transform: translateX(-100%); }
 
-/* Left visual side */
 .art {
   justify-content: space-between;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% 115%, rgba(246,227,161,.20), transparent 60%),
-    linear-gradient(160deg, #0f0a04, #060402);
+    radial-gradient(ellipse at 50% 115%, rgba(125, 213, 255, .2), transparent 60%),
+    linear-gradient(160deg, rgba(15, 32, 53, .92), rgba(5, 12, 22, .96));
 }
 
 .beams { position: absolute; inset: 0; pointer-events: none; }
@@ -149,7 +159,7 @@ body {
   width: var(--w);
   height: 125%;
   border-radius: 50%;
-  background: linear-gradient(to top, transparent, rgba(212,175,55,.50), transparent);
+  background: linear-gradient(to top, transparent, rgba(105, 200, 255, .48), transparent);
   filter: blur(18px);
   opacity: 0;
   animation: beam var(--d) ease-in-out var(--t) infinite;
@@ -167,7 +177,12 @@ body {
   right: -25%;
   bottom: -28%;
   height: 72%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(246,227,161,.55), rgba(212,175,55,.25) 38%, transparent 70%);
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(195, 240, 255, .38),
+    rgba(64, 164, 231, .2) 38%,
+    transparent 70%
+  );
   filter: blur(30px);
   animation: breathe 7s ease-in-out infinite;
 }
@@ -181,12 +196,13 @@ body {
   z-index: 2;
   width: fit-content;
   padding: 8px 14px;
-  border: 1px solid rgba(212,175,55,.3);
+  border: 1px solid rgba(105, 200, 255, .34);
   border-radius: 999px;
   font: 700 .95rem var(--serif);
   letter-spacing: .35em;
-  background: rgba(212,175,55,.08);
-  color: var(--gold-light);
+  background: rgba(105, 200, 255, .08);
+  color: var(--blue-light);
+  box-shadow: inset 0 1px 0 rgba(220, 246, 255, .08);
 }
 
 .hero {
@@ -198,8 +214,8 @@ body {
 .hero h1 {
   min-height: 3.4em;
   font: 600 clamp(2.3rem, 4.2vw, 3.6rem)/1.05 var(--serif);
-  color: var(--gold-light);
-  text-shadow: 0 0 35px rgba(212,175,55,.45);
+  color: var(--blue-light);
+  text-shadow: 0 0 35px rgba(105, 200, 255, .42);
 }
 
 .hero h1::after {
@@ -209,8 +225,8 @@ body {
   height: .82em;
   margin-left: .1em;
   vertical-align: -.07em;
-  background: var(--gold);
-  box-shadow: 0 0 16px var(--gold);
+  background: var(--blue);
+  box-shadow: 0 0 16px var(--blue);
   animation: caret 1s steps(1) infinite;
 }
 
@@ -234,18 +250,19 @@ body {
 
 .badge {
   padding: 7px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(105, 200, 255, .22);
   border-radius: 999px;
-  background: rgba(0,0,0,.35);
-  color: var(--muted);
+  background: rgba(8, 22, 38, .55);
+  color: #a9c5d9;
   font-size: .78rem;
   letter-spacing: .04em;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
-/* Right form side */
 .form {
   justify-content: center;
-  background: linear-gradient(165deg, rgba(16,12,6,.9), rgba(6,4,2,.96));
+  background: linear-gradient(165deg, rgba(14, 29, 48, .78), rgba(5, 13, 24, .88));
 }
 
 .view { display: none; }
@@ -281,12 +298,13 @@ h2 {
 .field input {
   width: 100%;
   padding: 24px 46px 9px 15px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(119, 195, 235, .22);
   border-radius: 12px;
-  background: rgba(0,0,0,.55);
+  background: rgba(3, 11, 20, .48);
   color: var(--text);
   font: 500 .98rem var(--sans);
   outline: none;
+  box-shadow: inset 0 1px 0 rgba(220, 246, 255, .035);
   transition: border-color .22s, box-shadow .22s, background .22s;
 }
 
@@ -305,18 +323,20 @@ h2 {
   top: 7px;
   font-size: .68rem;
   letter-spacing: .06em;
-  color: var(--gold);
+  color: var(--blue);
 }
 
 .field input:focus {
-  border-color: var(--gold);
-  background: #000;
-  box-shadow: 0 0 0 3px rgba(212,175,55,.15), 0 0 26px rgba(212,175,55,.22);
+  border-color: var(--blue);
+  background: rgba(4, 13, 24, .82);
+  box-shadow:
+    0 0 0 3px rgba(105, 200, 255, .14),
+    0 0 26px rgba(52, 158, 255, .2);
 }
 
 .field.invalid input {
-  border-color: rgba(255,155,132,.75);
-  box-shadow: 0 0 0 3px rgba(255,155,132,.10);
+  border-color: rgba(255, 155, 175, .75);
+  box-shadow: 0 0 0 3px rgba(255, 155, 175, .1);
 }
 
 .field-error {
@@ -336,13 +356,13 @@ h2 {
   border: 0;
   background: none;
   padding: 8px;
-  color: var(--gold);
+  color: #82d6ff;
   font: 600 .74rem var(--sans);
   cursor: pointer;
   border-radius: 8px;
 }
 
-.eye:hover { color: var(--gold-light); }
+.eye:hover { color: #e1f8ff; }
 
 .strength {
   display: flex;
@@ -354,13 +374,13 @@ h2 {
   flex: 1;
   height: 3px;
   border-radius: 99px;
-  background: rgba(212,175,55,.14);
+  background: rgba(105, 200, 255, .14);
   transition: .25s;
 }
 
 .strength i.on {
   background: var(--metal);
-  box-shadow: 0 0 10px rgba(212,175,55,.6);
+  box-shadow: 0 0 10px rgba(105, 200, 255, .5);
 }
 
 .strength-label {
@@ -385,13 +405,16 @@ h2 {
 .chips label {
   position: relative;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(105, 200, 255, .22);
   border-radius: 12px;
+  background: rgba(3, 11, 20, .32);
   text-align: center;
   color: var(--text);
   font-size: .92rem;
   cursor: pointer;
   transition: .22s;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .chips input {
@@ -402,13 +425,13 @@ h2 {
 }
 
 .chips label:has(input:checked) {
-  border-color: var(--gold);
-  background: rgba(212,175,55,.12);
-  box-shadow: 0 0 20px rgba(212,175,55,.25);
+  border-color: var(--blue);
+  background: rgba(65, 159, 219, .14);
+  box-shadow: 0 0 20px rgba(52, 158, 255, .2);
 }
 
 .chips label:has(input:focus-visible) {
-  outline: 2px solid var(--gold);
+  outline: 2px solid #8bdcff;
   outline-offset: 2px;
 }
 
@@ -420,12 +443,14 @@ h2 {
   padding: 15px;
   border: 0;
   border-radius: 12px;
-  color: #191000;
+  color: #04111d;
   font: 700 1rem var(--sans);
   cursor: pointer;
   background: var(--metal);
   background-size: 220% 100%;
-  box-shadow: 0 0 28px rgba(212,175,55,.35), inset 0 1px 0 rgba(255,255,255,.45);
+  box-shadow:
+    0 0 28px rgba(52, 158, 255, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .55);
   transition: background-position .7s, box-shadow .25s, transform .1s;
 }
 
@@ -462,8 +487,8 @@ h2 {
   width: 20px;
   height: 20px;
   margin: -10px 0 0 -10px;
-  border: 2.5px solid rgba(25,16,0,.28);
-  border-top-color: #191000;
+  border: 2.5px solid rgba(4, 17, 29, .28);
+  border-top-color: #04111d;
   border-radius: 50%;
   animation: spin .7s linear infinite;
 }
@@ -483,7 +508,7 @@ h2 {
   border: 0;
   background: none;
   padding: 0;
-  color: var(--gold);
+  color: #7bd2ff;
   font: inherit;
   cursor: pointer;
   text-decoration: underline;
@@ -492,8 +517,8 @@ h2 {
 }
 
 .link:hover {
-  color: var(--gold-light);
-  text-shadow: 0 0 14px rgba(212,175,55,.7);
+  color: #e1f8ff;
+  text-shadow: 0 0 14px rgba(105, 200, 255, .55);
 }
 
 .link:disabled {
@@ -513,10 +538,10 @@ h2 {
   flex: 1;
   min-width: 0;
   height: 60px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(105, 200, 255, .22);
   border-radius: 12px;
-  background: rgba(0,0,0,.6);
-  color: var(--gold-light);
+  background: rgba(3, 11, 20, .5);
+  color: var(--blue-light);
   font: 600 1.55rem var(--serif);
   text-align: center;
   outline: none;
@@ -524,11 +549,13 @@ h2 {
 }
 
 .otp input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(212,175,55,.15), 0 0 24px rgba(212,175,55,.3);
+  border-color: var(--blue);
+  box-shadow:
+    0 0 0 3px rgba(105, 200, 255, .14),
+    0 0 24px rgba(52, 158, 255, .25);
 }
 
-.otp input.filled { border-color: var(--gold); }
+.otp input.filled { border-color: var(--blue); }
 
 .message {
   min-height: 1.5em;
@@ -550,7 +577,7 @@ h2 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid #8bdcff;
   outline-offset: 2px;
 }
 
@@ -614,13 +641,12 @@ h2 {
 
     <div class="badges">
       <span class="badge">Secure authentication</span>
-      <span class="badge">Email & phone codes</span>
+      <span class="badge">Email &amp; phone codes</span>
       <span class="badge">Connect. Discover. Belong.</span>
     </div>
   </section>
 
   <main class="panel form">
-    <!-- Password sign-in -->
     <section class="view active" id="view-login" aria-labelledby="login-title">
       <h2 id="login-title">Sign in</h2>
       <p class="subtitle">Welcome back. Use your email and password.</p>
@@ -646,7 +672,6 @@ h2 {
       </div>
     </section>
 
-    <!-- Sign up -->
     <section class="view" id="view-signup" aria-labelledby="signup-title">
       <h2 id="signup-title">Create account</h2>
       <p class="subtitle">We’ll send a one-time code to confirm it’s you.</p>
@@ -700,7 +725,6 @@ h2 {
       </div>
     </section>
 
-    <!-- Request login code -->
     <section class="view" id="view-code" aria-labelledby="code-title">
       <h2 id="code-title">Get a code</h2>
       <p class="subtitle">Enter the email or phone number connected to your account.</p>
@@ -718,7 +742,6 @@ h2 {
       </div>
     </section>
 
-    <!-- Verify OTP -->
     <section class="view" id="view-verify" aria-labelledby="verify-title">
       <h2 id="verify-title">Enter your code</h2>
       <p class="subtitle" id="verify-subtitle">We sent a 6-digit code.</p>
@@ -747,9 +770,6 @@ h2 {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-/* =========================================================
-   CONFIGURATION
-   ========================================================= */
 const SUPABASE_URL = "https://pakdneudwsxtanrkirmu.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nE5wMk921mJIsfLVTeWT4A_5bIDgnRP";
 const HOME_PAGE = "./home.html";
@@ -771,9 +791,6 @@ let pending = null;
 let typingRun = 0;
 let resendTimer = null;
 
-/* =========================================================
-   SMALL HELPERS
-   ========================================================= */
 function showMessage(text = "", type = "") {
   const box = $("message");
   box.textContent = text;
@@ -817,9 +834,6 @@ function goHome() {
   window.location.replace(HOME_PAGE);
 }
 
-/* =========================================================
-   VIEW MANAGEMENT
-   ========================================================= */
 const COPY = {
   login: {
     sub: "Sign in to pick up where you left off.",
@@ -890,9 +904,6 @@ function typeText(lines) {
   tick();
 }
 
-/* =========================================================
-   PASSWORD VISIBILITY + STRENGTH
-   ========================================================= */
 $$(".eye").forEach(button => {
   button.addEventListener("click", () => {
     const input = $(button.dataset.target);
@@ -920,9 +931,6 @@ $("signup-password").addEventListener("input", event => {
   $("strength-label").textContent = password ? `Password strength: ${labels[score]}` : "Password strength";
 });
 
-/* =========================================================
-   SESSION / PROFILE CHECK
-   ========================================================= */
 async function accountExists() {
   try {
     const { data, error } = await sb.auth.getUser();
@@ -962,9 +970,6 @@ async function accountExists() {
   }
 }
 
-/* =========================================================
-   PASSWORD LOGIN
-   ========================================================= */
 async function loginWithPassword() {
   if (redirecting) return;
 
@@ -1030,9 +1035,6 @@ async function loginWithPassword() {
   }
 }
 
-/* =========================================================
-   OTP REQUESTS
-   ========================================================= */
 async function requestOtp() {
   if (!pending) throw new Error("No authentication request is active.");
 
@@ -1174,9 +1176,6 @@ async function startCodeLogin() {
   }
 }
 
-/* =========================================================
-   OTP INPUTS
-   ========================================================= */
 const otpInputs = $$("#otp input");
 
 function getOtp() {
@@ -1227,9 +1226,6 @@ otpInputs.forEach((input, index) => {
   });
 });
 
-/* =========================================================
-   VERIFY VIEW
-   ========================================================= */
 function openVerifyView() {
   if (!pending) return;
 
@@ -1269,9 +1265,6 @@ function startResendCooldown() {
   }, 1000);
 }
 
-/* =========================================================
-   OTP VERIFICATION
-   ========================================================= */
 function verificationFailed(message) {
   verifying = false;
   setLoading($("verify-button"), false);
@@ -1387,9 +1380,6 @@ async function resendOtp() {
   }
 }
 
-/* =========================================================
-   EVENTS
-   ========================================================= */
 $("login-button").addEventListener("click", loginWithPassword);
 $("signup-button").addEventListener("click", startSignup);
 $("code-button").addEventListener("click", startCodeLogin);
@@ -1420,9 +1410,6 @@ document.addEventListener("keydown", event => {
   else if ($("view-verify").classList.contains("active")) verifyOtp();
 });
 
-/* =========================================================
-   EXISTING SESSION HANDLING
-   ========================================================= */
 (async function checkExistingSession() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -1460,9 +1447,6 @@ document.addEventListener("keydown", event => {
   }
 })();
 
-/* =========================================================
-   GOLD EMBERS
-   ========================================================= */
 (function embers() {
   const canvas = $("fx");
   const context = canvas.getContext("2d");
@@ -1543,9 +1527,6 @@ document.addEventListener("keydown", event => {
   frame();
 })();
 
-/* =========================================================
-   START
-   ========================================================= */
 showView("login");
 </script>
 </body>
