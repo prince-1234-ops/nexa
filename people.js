@@ -1,8 +1,6 @@
 /* =========================================================
-   NEXA — people.js (complete, rewritten)
-   Works with the people.html you shared.
-   Friends are stored in their own table: nexa_friends
-   (no more updating other users' rows in "profiles").
+   NEXA — people.js
+   Friend data is stored in the nexa_friends table.
 ========================================================= */
 
 (function () {
@@ -10,9 +8,22 @@
 
     /* ---------- Supabase client ---------- */
     function getClient() {
-        try { if (typeof nexaSupabase !== "undefined" && nexaSupabase.from) return nexaSupabase; } catch (e) {}
-        try { if (typeof supabaseClient !== "undefined" && supabaseClient.from) return supabaseClient; } catch (e) {}
-        if (window.nexaSupabase && window.nexaSupabase.from) return window.nexaSupabase;
+        try {
+            if (typeof nexaSupabase !== "undefined" && nexaSupabase.from) {
+                return nexaSupabase;
+            }
+        } catch (e) {}
+
+        try {
+            if (typeof supabaseClient !== "undefined" && supabaseClient.from) {
+                return supabaseClient;
+            }
+        } catch (e) {}
+
+        if (window.nexaSupabase && window.nexaSupabase.from) {
+            return window.nexaSupabase;
+        }
+
         return null;
     }
 
@@ -48,9 +59,9 @@
         me: null,
         myProfile: null,
         people: [],
-        iAdded: new Set(),     // people I added
-        addedMe: new Set(),    // people who added me
-        busy: new Set(),       // ids currently being toggled
+        iAdded: new Set(),
+        addedMe: new Set(),
+        busy: new Set(),
         query: ""
     };
 
@@ -64,61 +75,80 @@
             .replace(/'/g, "&#39;");
     }
 
-    function personName(p) {
-        return p.full_name || p.name || p.display_name || p.username || "NEXA User";
+    function personName(person) {
+        return (
+            person.full_name ||
+            person.name ||
+            person.display_name ||
+            person.username ||
+            "NEXA User"
+        );
     }
 
-    function personUsername(p) {
-        return p.username ? "@" + String(p.username).replace(/^@/, "") : "";
+    function personUsername(person) {
+        return person.username
+            ? "@" + String(person.username).replace(/^@/, "")
+            : "";
     }
 
-    function personAvatarUrl(p) {
-        return p.avatar_url || p.avatar || p.photo_url || p.profile_image || "";
+    function personAvatarUrl(person) {
+        return (
+            person.avatar_url ||
+            person.avatar ||
+            person.photo_url ||
+            person.profile_image ||
+            ""
+        );
     }
 
-    function initial(p) {
-        return personName(p).trim().charAt(0).toUpperCase() || "N";
+    function initial(person) {
+        return personName(person).trim().charAt(0).toUpperCase() || "N";
     }
 
-    function setAvatar(el, p) {
-        if (!el) return;
-        const url = personAvatarUrl(p);
+    function setAvatar(element, person) {
+        if (!element) return;
+
+        const url = personAvatarUrl(person);
+
         if (url) {
-            el.textContent = "";
-            el.style.backgroundImage = 'url("' + url.replace(/"/g, "%22") + '")';
-            el.style.backgroundSize = "cover";
-            el.style.backgroundPosition = "center";
+            element.textContent = "";
+            element.style.backgroundImage =
+                'url("' + url.replace(/"/g, "%22") + '")';
+            element.style.backgroundSize = "cover";
+            element.style.backgroundPosition = "center";
         } else {
-            el.style.backgroundImage = "";
-            el.textContent = initial(p);
+            element.style.backgroundImage = "";
+            element.textContent = initial(person);
         }
     }
 
     function notify(message, type) {
         if (!els.notifications) return;
+
         const item = document.createElement("div");
         item.className = "notification " + (type || "info");
         item.textContent = message;
-        item.style.cssText =
-            "background:#111;color:#fff;border:1px solid " +
-            (type === "error" ? "#ff5a5a" : "#d4af37") +
-            ";padding:12px 16px;border-radius:12px;margin-top:8px;font-size:14px;" +
-            "box-shadow:0 8px 24px rgba(0,0,0,.4);";
+
         els.notifications.appendChild(item);
-        setTimeout(() => item.remove(), 3200);
+
+        window.setTimeout(() => item.remove(), 3200);
     }
 
-    function setLoading(on) {
-        if (els.loading) els.loading.hidden = !on;
+    function setLoading(isLoading) {
+        if (els.loading) {
+            els.loading.hidden = !isLoading;
+        }
     }
 
-    /* ---------- Auth ---------- */
+    /* ---------- Authentication ---------- */
     async function requireUser() {
         const { data, error } = await client.auth.getSession();
+
         if (error || !data || !data.session) {
             window.location.href = "index.html";
             return null;
         }
+
         return data.session.user;
     }
 
@@ -130,25 +160,53 @@
             .eq("id", state.me.id)
             .maybeSingle();
 
-        if (error) console.error("NEXA my profile error:", error.message, error.code);
+        if (error) {
+            console.error(
+                "NEXA my profile error:",
+                error.message,
+                error.code
+            );
+        }
 
         state.myProfile = data || {
             id: state.me.id,
-            full_name: (state.me.user_metadata && state.me.user_metadata.full_name) || "NEXA User",
-            username: state.me.email ? state.me.email.split("@")[0] : "nexauser"
+            full_name:
+                (state.me.user_metadata &&
+                    state.me.user_metadata.full_name) ||
+                "NEXA User",
+            username: state.me.email
+                ? state.me.email.split("@")[0]
+                : "nexauser"
         };
 
-        const p = state.myProfile;
-        if (els.sidebarUserName) els.sidebarUserName.textContent = personName(p);
-        if (els.sidebarUsername) els.sidebarUsername.textContent = personUsername(p) || "@nexauser";
-        if (els.myProfileName) els.myProfileName.textContent = personName(p);
-        if (els.myProfileUsername) els.myProfileUsername.textContent = personUsername(p) || "@nexauser";
-        if (els.myProfileBio) els.myProfileBio.textContent = p.bio || "No bio yet.";
+        const profile = state.myProfile;
 
-        setAvatar(els.sidebarAvatar, p);
-        setAvatar(els.miniAvatar, p);
-        setAvatar(els.mobileProfileAvatar, p);
-        setAvatar(els.myProfileAvatar, p);
+        if (els.sidebarUserName) {
+            els.sidebarUserName.textContent = personName(profile);
+        }
+
+        if (els.sidebarUsername) {
+            els.sidebarUsername.textContent =
+                personUsername(profile) || "@nexauser";
+        }
+
+        if (els.myProfileName) {
+            els.myProfileName.textContent = personName(profile);
+        }
+
+        if (els.myProfileUsername) {
+            els.myProfileUsername.textContent =
+                personUsername(profile) || "@nexauser";
+        }
+
+        if (els.myProfileBio) {
+            els.myProfileBio.textContent = profile.bio || "No bio yet.";
+        }
+
+        setAvatar(els.sidebarAvatar, profile);
+        setAvatar(els.miniAvatar, profile);
+        setAvatar(els.mobileProfileAvatar, profile);
+        setAvatar(els.myProfileAvatar, profile);
     }
 
     async function loadPeople() {
@@ -159,48 +217,75 @@
             .limit(500);
 
         if (error) {
-            console.error("NEXA people load error:", error.message, error.code);
+            console.error(
+                "NEXA people load error:",
+                error.message,
+                error.code
+            );
             notify("Couldn't load people.", "error");
             state.people = [];
             return;
         }
+
         state.people = data || [];
     }
 
     async function loadFriends() {
         const me = state.me.id;
+
         const { data, error } = await client
             .from("nexa_friends")
             .select("user_id, friend_id")
             .or("user_id.eq." + me + ",friend_id.eq." + me);
 
         if (error) {
-            console.error("NEXA friends load error:", error.message, error.code, error.hint);
+            console.error(
+                "NEXA friends load error:",
+                error.message,
+                error.code,
+                error.hint
+            );
+
             if (error.code === "42P01" || error.code === "PGRST205") {
-                notify("Friends table missing. Run the SQL in Supabase first.", "error");
+                notify(
+                    "Friends table missing. Run the SQL in Supabase first.",
+                    "error"
+                );
             }
+
             return;
         }
 
         state.iAdded = new Set();
         state.addedMe = new Set();
+
         (data || []).forEach((row) => {
-            if (row.user_id === me) state.iAdded.add(row.friend_id);
-            if (row.friend_id === me) state.addedMe.add(row.user_id);
+            if (row.user_id === me) {
+                state.iAdded.add(row.friend_id);
+            }
+
+            if (row.friend_id === me) {
+                state.addedMe.add(row.user_id);
+            }
         });
     }
 
-    /* ---------- Friend toggle ---------- */
+    /* ---------- Friend actions ---------- */
     async function toggleFriend(targetId) {
-        if (state.busy.has(targetId)) return;
+        if (!targetId || state.busy.has(targetId)) return;
+
         state.busy.add(targetId);
 
         const me = state.me.id;
         const wasAdded = state.iAdded.has(targetId);
 
-        // optimistic UI
-        if (wasAdded) state.iAdded.delete(targetId);
-        else state.iAdded.add(targetId);
+        // Update the display immediately while the database request runs.
+        if (wasAdded) {
+            state.iAdded.delete(targetId);
+        } else {
+            state.iAdded.add(targetId);
+        }
+
         render();
 
         let error = null;
@@ -214,108 +299,171 @@
         } else {
             ({ error } = await client
                 .from("nexa_friends")
-                .insert({ user_id: me, friend_id: targetId }));
+                .insert({
+                    user_id: me,
+                    friend_id: targetId
+                }));
 
-            // already exists (double click / other tab) is not a real failure
-            if (error && error.code === "23505") error = null;
+            // A duplicate insert may happen if the request was already sent.
+            if (error && error.code === "23505") {
+                error = null;
+            }
         }
 
         state.busy.delete(targetId);
 
         if (error) {
-            console.error("NEXA friend error:", error.message, error.details, error.hint, error.code);
-            // roll back
-            if (wasAdded) state.iAdded.add(targetId);
-            else state.iAdded.delete(targetId);
+            console.error(
+                "NEXA friend error:",
+                error.message,
+                error.details,
+                error.hint,
+                error.code
+            );
+
+            // Restore the previous state if the request failed.
+            if (wasAdded) {
+                state.iAdded.add(targetId);
+            } else {
+                state.iAdded.delete(targetId);
+            }
+
             render();
             notify("Couldn't update friend. Try again.", "error");
             return;
         }
 
-        const person = state.people.find((p) => p.id === targetId);
+        const person = state.people.find((item) => item.id === targetId);
         const name = person ? personName(person) : "this person";
-        if (wasAdded) notify("Removed " + name + ".");
-        else if (state.addedMe.has(targetId)) notify("You and " + name + " are now friends.");
-        else notify("Friend request sent to " + name + ".");
+
+        if (wasAdded) {
+            notify("Removed " + name + ".");
+        } else if (state.addedMe.has(targetId)) {
+            notify("You and " + name + " are now friends.");
+        } else {
+            notify("Friend request sent to " + name + ".");
+        }
     }
 
-    /* ---------- Render ---------- */
+    /* ---------- Rendering ---------- */
     function friendState(id) {
         const mine = state.iAdded.has(id);
         const theirs = state.addedMe.has(id);
+
         if (mine && theirs) return "friends";
         if (mine) return "requested";
         if (theirs) return "incoming";
+
         return "none";
     }
 
-    function buttonLabel(s) {
-        if (s === "friends") return "Friends ✓";
-        if (s === "requested") return "Requested";
-        if (s === "incoming") return "Accept";
+    function buttonLabel(status) {
+        if (status === "friends") return "Friends ✓";
+        if (status === "requested") return "Requested";
+        if (status === "incoming") return "Accept";
+
         return "Add friend";
     }
 
-    function filtered() {
-        const q = state.query.trim().toLowerCase();
-        if (!q) return state.people;
-        return state.people.filter((p) => {
+    function filteredPeople() {
+        const query = state.query.trim().toLowerCase();
+
+        if (!query) return state.people;
+
+        return state.people.filter((person) => {
             return (
-                personName(p).toLowerCase().includes(q) ||
-                String(p.username || "").toLowerCase().includes(q) ||
-                String(p.bio || "").toLowerCase().includes(q)
+                personName(person).toLowerCase().includes(query) ||
+                String(person.username || "").toLowerCase().includes(query) ||
+                String(person.bio || "").toLowerCase().includes(query)
             );
         });
     }
 
-    function cardHTML(p) {
-        const s = friendState(p.id);
-        const url = personAvatarUrl(p);
-        const avatarStyle = url
-            ? ' style="background-image:url(&quot;' + esc(url) + '&quot;);background-size:cover;background-position:center;"'
+    function cardHTML(person) {
+        const status = friendState(person.id);
+        const avatarUrl = personAvatarUrl(person);
+
+        const avatarStyle = avatarUrl
+            ? ' style="background-image:url(&quot;' +
+              esc(avatarUrl) +
+              '&quot;);background-size:cover;background-position:center;"'
             : "";
-        const avatarText = url ? "" : esc(initial(p));
+
+        const avatarText = avatarUrl ? "" : esc(initial(person));
+        const profileUrl =
+            "profile.html?id=" + encodeURIComponent(person.id);
+        const messageUrl =
+            "messages.html?user=" + encodeURIComponent(person.id);
 
         return (
-            '<article class="user-card person-card" data-id="' + esc(p.id) + '">' +
-                '<a class="user-avatar person-avatar" href="profile.html?id=' + encodeURIComponent(p.id) + '"' + avatarStyle + ">" +
+            '<article class="user-card person-card" data-id="' +
+            esc(person.id) +
+            '">' +
+                '<a class="user-avatar person-avatar" href="' +
+                profileUrl +
+                '"' +
+                avatarStyle +
+                ">" +
                     avatarText +
                 "</a>" +
                 '<div class="user-info person-info">' +
-                    '<a class="user-name" href="profile.html?id=' + encodeURIComponent(p.id) + '">' + esc(personName(p)) + "</a>" +
-                    '<span class="user-username">' + esc(personUsername(p)) + "</span>" +
-                    '<p class="user-bio">' + esc(p.bio || "No bio yet.") + "</p>" +
+                    '<a class="user-name" href="' +
+                    profileUrl +
+                    '">' +
+                        esc(personName(person)) +
+                    "</a>" +
+                    '<span class="user-username">' +
+                        esc(personUsername(person)) +
+                    "</span>" +
+                    '<p class="user-bio">' +
+                        esc(person.bio || "No bio yet.") +
+                    "</p>" +
                 "</div>" +
                 '<div class="user-actions person-actions">' +
-                    '<button type="button" class="friend-button add-friend-button ' + s + '" data-action="friend" data-id="' + esc(p.id) + '">' +
-                        buttonLabel(s) +
+                    '<button type="button" class="friend-button add-friend-button ' +
+                    status +
+                    '" data-action="friend" data-id="' +
+                    esc(person.id) +
+                    '">' +
+                        buttonLabel(status) +
                     "</button>" +
-                    '<a class="message-button" href="messages.html?user=' + encodeURIComponent(p.id) + '">Message</a>' +
+                    '<a class="message-button" href="' +
+                    messageUrl +
+                    '">Message</a>' +
                 "</div>" +
             "</article>"
         );
     }
 
     function render() {
-        const list = filtered();
+        const people = filteredPeople();
 
         if (els.peopleCount) {
             els.peopleCount.textContent =
-                state.people.length + (state.people.length === 1 ? " person" : " people");
+                state.people.length +
+                (state.people.length === 1 ? " person" : " people");
         }
 
         if (els.searchStatus) {
             els.searchStatus.textContent = state.query.trim()
-                ? list.length + (list.length === 1 ? " result" : " results") + ' for "' + state.query.trim() + '"'
+                ? people.length +
+                  (people.length === 1 ? " result" : " results") +
+                  ' for "' +
+                  state.query.trim() +
+                  '"'
                 : "";
         }
 
-        if (els.clearButton) els.clearButton.hidden = !state.query;
+        if (els.clearButton) {
+            els.clearButton.hidden = !state.query;
+        }
 
-        if (els.emptyPeople) els.emptyPeople.hidden = list.length > 0;
+        if (els.emptyPeople) {
+            els.emptyPeople.hidden = people.length > 0;
+        }
 
         if (els.usersList) {
-            els.usersList.innerHTML = list.map(cardHTML).join("");
+            els.usersList.innerHTML = people.map(cardHTML).join("");
         }
     }
 
@@ -323,17 +471,23 @@
     function bindEvents() {
         if (els.usersList) {
             els.usersList.addEventListener("click", (event) => {
-                const btn = event.target.closest('[data-action="friend"]');
-                if (!btn) return;
-                toggleFriend(btn.getAttribute("data-id"));
+                const button = event.target.closest(
+                    '[data-action="friend"]'
+                );
+
+                if (!button || !els.usersList.contains(button)) return;
+
+                toggleFriend(button.getAttribute("data-id"));
             });
         }
 
-        let timer = null;
+        let searchTimer = null;
+
         if (els.searchInput) {
             els.searchInput.addEventListener("input", () => {
-                clearTimeout(timer);
-                timer = setTimeout(() => {
+                window.clearTimeout(searchTimer);
+
+                searchTimer = window.setTimeout(() => {
                     state.query = els.searchInput.value;
                     render();
                 }, 150);
@@ -349,7 +503,10 @@
 
         if (els.searchButton) {
             els.searchButton.addEventListener("click", () => {
-                state.query = els.searchInput ? els.searchInput.value : "";
+                state.query = els.searchInput
+                    ? els.searchInput.value
+                    : "";
+
                 render();
             });
         }
@@ -357,61 +514,63 @@
         if (els.clearButton) {
             els.clearButton.addEventListener("click", () => {
                 state.query = "";
+
                 if (els.searchInput) {
                     els.searchInput.value = "";
                     els.searchInput.focus();
                 }
+
                 render();
             });
         }
 
         if (els.logout) {
             els.logout.addEventListener("click", async () => {
-                await client.auth.signOut();
+                if (client) {
+                    await client.auth.signOut();
+                }
+
                 window.location.href = "index.html";
             });
         }
     }
 
-    /* ---------- Minimal fallback styles (only for the buttons/cards
-       this file creates; your people.css still wins if it defines them) ---------- */
-    function injectFallbackStyles() {
-        const style = document.createElement("style");
-        style.textContent =
-            ".friend-button{cursor:pointer;border:1px solid #d4af37;background:#d4af37;color:#111;" +
-            "font-weight:600;padding:9px 16px;border-radius:999px;font-size:14px;transition:.2s}" +
-            ".friend-button.requested,.friend-button.friends{background:transparent;color:#d4af37}" +
-            ".friend-button:hover{opacity:.85}" +
-            ".message-button{margin-left:8px;color:#fff;text-decoration:none;border:1px solid #333;" +
-            "padding:9px 16px;border-radius:999px;font-size:14px}";
-        document.head.appendChild(style);
-    }
-
-    /* ---------- Init ---------- */
+    /* ---------- Initialize ---------- */
     async function init() {
         if (!client) {
-            console.error("NEXA: Supabase client not found. Check supabase.js defines your client.");
+            console.error(
+                "NEXA: Supabase client not found. Check supabase.js."
+            );
             notify("Supabase isn't connected.", "error");
             return;
         }
 
-        injectFallbackStyles();
         bindEvents();
         setLoading(true);
 
         try {
             state.me = await requireUser();
+
             if (!state.me) return;
 
-            await Promise.all([loadMyProfile(), loadPeople(), loadFriends()]);
+            await Promise.all([
+                loadMyProfile(),
+                loadPeople(),
+                loadFriends()
+            ]);
+
             render();
-        } catch (err) {
-            console.error("NEXA people init error:", err);
+        } catch (error) {
+            console.error("NEXA people init error:", error);
             notify("Something went wrong loading people.", "error");
         } finally {
             setLoading(false);
         }
     }
 
-    document.addEventListener("DOMContentLoaded", init);
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
 })();
