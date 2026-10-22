@@ -1756,49 +1756,62 @@ function getFriendIds() {
 /* =========================================================
    USERS — FAST PROFILE LOADING
 ========================================================= */
-
 async function getUsers() {
+
+    const profileColumns = ["id", "name", "username", "profile_picture", "created_at"].join(",");
 
     try {
 
         const localUser = JSON.parse(localStorage.getItem("nexaCurrentUser")) || {};
-        const storedFriends = normalizeFriends(localUser.friends);
+        const localFriends = normalizeFriends(localUser.friends);
 
-        const friendIds = storedFriends
-            .map(friend => (typeof friend === "object" ? friend?.id : friend))
-            .filter(id => id !== undefined && id !== null)
-            .map(id => String(id));
-
-        const profileColumns = ["id", "name", "username", "profile_picture", "created_at"].join(",");
-
-        const currentUserPromise = nexaSupabase
+        /* 1. Current user from the database, INCLUDING the friends column */
+        const { data: freshCurrentUser, error: currentError } = await nexaSupabase
             .from("profiles")
-            .select(profileColumns)
+            .select(profileColumns + ", friends")
             .eq("id", String(currentUser.id))
             .maybeSingle();
 
-        const friendsPromise = friendIds.length
-            ? nexaSupabase.from("profiles").select(profileColumns).in("id", friendIds)
-            : Promise.resolve({ data: [], error: null });
+        if (currentError) throw currentError;
 
-        const [currentResult, friendsResult] = await Promise.all([currentUserPromise, friendsPromise]);
+        /* 2. Merge database friends + local friends, no duplicates */
+        const dbFriends = normalizeFriends(freshCurrentUser?.friends);
 
-        if (currentResult.error) throw currentResult.error;
-        if (friendsResult.error) throw friendsResult.error;
+        const friendIds = [...new Set(
+            [...dbFriends, ...localFriends]
+                .map(friend => (typeof friend === "object" ? friend?.id : friend))
+                .filter(id => id !== undefined && id !== null && String(id).trim() !== "")
+                .map(id => String(id))
+        )];
 
-        const freshCurrentUser = currentResult.data;
-        const friendProfiles = Array.isArray(friendsResult.data) ? friendsResult.data : [];
+        /* 3. Load the friend profiles */
+        let friendProfiles = [];
+
+        if (friendIds.length) {
+
+            const { data, error } = await nexaSupabase
+                .from("profiles")
+                .select(profileColumns)
+                .in("id", friendIds);
+
+            if (error) throw error;
+
+            friendProfiles = Array.isArray(data) ? data : [];
+        }
 
         users = [freshCurrentUser, ...friendProfiles]
             .filter(Boolean)
-            .filter((user, index, array) => array.findIndex(other => String(other.id) === String(user.id)) === index);
+            .filter((user, index, array) =>
+                array.findIndex(other => String(other.id) === String(user.id)) === index
+            );
 
-        currentUser.friends = storedFriends;
+        currentUser.friends = friendIds;
 
         if (freshCurrentUser) {
             currentUser.name = freshCurrentUser.name ?? currentUser.name;
             currentUser.username = freshCurrentUser.username ?? currentUser.username;
-            currentUser.profilePicture = freshCurrentUser.profile_picture || currentUser.profilePicture || "";
+            currentUser.profilePicture =
+                freshCurrentUser.profile_picture || currentUser.profilePicture || "";
         }
 
         localStorage.setItem("nexaCurrentUser", JSON.stringify(currentUser));
@@ -9423,7 +9436,12 @@ function showNexaComingSoon(type = "Group calling") {
 
         }, 4500);
 }
-
+window.addEventListener("pageshow", async event => {
+    if (event.persisted) {
+        await getUsers();
+        displayConversations(getConversationSearchValue());
+    }
+});
 
 /* =========================================================
    START
