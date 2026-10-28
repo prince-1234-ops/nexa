@@ -2237,10 +2237,40 @@ function subscribeToMessages() {
             }
 
 
+                 /* =====================================================
+               PRIVATE MESSAGE: show it live if this chat is open
+            ===================================================== */
+
+            const isIncoming =
+                String(frontendMessage.senderId) !== currentId;
+
+            const belongsToOpenChat =
+                selectedFriend &&
+                String(frontendMessage.senderId) === String(selectedFriend.id) &&
+                String(frontendMessage.receiverId) === currentId;
+
+            if (belongsToOpenChat) {
+
+                /* Show it on the ✓✓ side right away */
+                frontendMessage.read = true;
+                addMessage(frontendMessage);
+
+                const nearBottom =
+                    messagesContainer
+                        ? messagesContainer.scrollHeight -
+                          messagesContainer.scrollTop -
+                          messagesContainer.clientHeight < 150
+                        : true;
+
+                renderCurrentConversation(!nearBottom);
+
+                /* Tell the database it was read so the sender sees ✓✓ */
+                if (isIncoming) {
+                    markSingleMessageRead(frontendMessage.id);
+                }
+            }
+
             displayConversations(getConversationSearchValue());
-        })
-        .on("postgres_changes", {
-            event: "UPDATE",
             schema: "public",
             table: "messages"
         }, payload => {
