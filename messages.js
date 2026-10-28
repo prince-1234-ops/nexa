@@ -1762,26 +1762,27 @@ async function getUsers() {
 
     try {
 
-        const localUser = JSON.parse(localStorage.getItem("nexaCurrentUser")) || {};
-        const localFriends = normalizeFriends(localUser.friends);
+        const me = String(currentUser.id);
 
-        /* 1. Current user from the database, INCLUDING the friends column */
+        /* 1. Current user's profile */
         const { data: freshCurrentUser, error: currentError } = await nexaSupabase
             .from("profiles")
-            .select(profileColumns + ", friends")
-            .eq("id", String(currentUser.id))
+            .select(profileColumns)
+            .eq("id", me)
             .maybeSingle();
 
         if (currentError) throw currentError;
 
-        /* 2. Merge database friends + local friends, no duplicates */
-        const dbFriends = normalizeFriends(freshCurrentUser?.friends);
+        /* 2. Friends come from the nexa_friends table (same as people.js) */
+        const { data: friendRows, error: friendsError } = await nexaSupabase
+            .from("nexa_friends")
+            .select("user_id, friend_id")
+            .eq("user_id", me);
+
+        if (friendsError) throw friendsError;
 
         const friendIds = [...new Set(
-            [...dbFriends, ...localFriends]
-                .map(friend => (typeof friend === "object" ? friend?.id : friend))
-                .filter(id => id !== undefined && id !== null && String(id).trim() !== "")
-                .map(id => String(id))
+            (friendRows || []).map(row => String(row.friend_id))
         )];
 
         /* 3. Load the friend profiles */
@@ -1824,21 +1825,7 @@ async function getUsers() {
 
         console.error("NEXA profile loading error:", error);
 
-        try {
-            const stored = JSON.parse(localStorage.getItem("nexaCurrentUser"));
-            if (stored) Object.assign(currentUser, stored);
-        } catch (_) { }
-
-        const localFriends = normalizeFriends(currentUser.friends);
-
-        users = localFriends
-            .filter(friend => typeof friend === "object")
-            .map(friend => ({
-                id: friend.id,
-                name: friend.name || "NEXA Member",
-                username: friend.username || "",
-                profile_picture: friend.profile_picture || friend.profilePicture || ""
-            }));
+        users = [];
 
         return users;
     }
