@@ -4,32 +4,23 @@
 
    FIXES IN THIS VERSION
    ----------------------------------------------------------
-   1. MEDIA NEVER LOADED (the main bug):
-      loadConversationMedia() used to filter by
-      `.eq("conversation_id", conversationId)`. But
-      loadConversation() intentionally does NOT trust
-      conversation_id when loading text (see its comments) —
-      it loads by sender/receiver pair instead, because rows
-      in the DB don't reliably share one consistent
-      conversation_id. So the media query was filtering on a
-      column that often didn't match anything, silently
-      returned 0 rows, and every photo/video/voice note sat
-      on "Loading…" forever. Fixed by fetching media with
-      `.in("id", messageIds)` using the exact message ids
-      already on screen — same source of truth as the text.
+   1. FRIENDS NOW COME FROM THE nexa_friends TABLE
+      people.js saves friends in nexa_friends (user_id,
+      friend_id). getUsers() used to read the old
+      profiles.friends column + localStorage, so the Messages
+      page was blank. It now reads nexa_friends, same as
+      people.js.
 
-   2. ONLINE STATUS NOT LIVE IN THE OPEN CHAT:
-      Presence updates used to refresh the sidebar only.
-      If you were already chatting with someone and they
-      came online/offline, the chat header never updated.
-      Fixed by re-running updateChatHeader() for the open
-      conversation whenever presence changes, plus a
-      periodic re-track so presence doesn't silently expire.
+   2. INCOMING MESSAGES SHOW LIVE IN THE OPEN CHAT
+      The realtime INSERT handler used to only refresh the
+      sidebar for private chats. It now re-renders the open
+      conversation, marks the message as read (so the sender
+      sees the double tick) and only auto-scrolls when you
+      are already near the bottom.
 
-   3. Small polish: message fade/slide-in animation, a
-      shimmer effect on "loading" media placeholders instead
-      of flat text, a pulsing dot on online avatars, a glow
-      on the live recording waveform, and smooth scrolling.
+   3. Media loads together with the conversation, online
+      status updates live in the chat header, plus small
+      animation polish.
 ========================================================= */
 
 
@@ -93,13 +84,13 @@ const conversationFilterButtons = document.querySelectorAll(".conversation-filte
 const sidebarCount = document.querySelector(".sidebar-count");
 const backToConversations = document.getElementById("backToConversations");
 const chatCloseButton = document.querySelector(".chat-close-button");
+
+
 /* =========================================================
    UNIFIED COMPOSER STATE
 ========================================================= */
 
-const composerBox =
-    document.getElementById("composerBox");
-
+const composerBox = document.getElementById("composerBox");
 
 function updateComposerTypingState() {
 
@@ -107,46 +98,20 @@ function updateComposerTypingState() {
         return;
     }
 
-    /*
-     * Only switch to typing mode when there is actual text.
-     * This keeps the normal buttons visible when the box is
-     * empty.
-     */
-    const hasText =
-        messageInput.value.trim().length > 0;
+    const hasText = messageInput.value.trim().length > 0;
 
-    composerBox.classList.toggle(
-        "is-typing",
-        hasText
-    );
+    composerBox.classList.toggle("is-typing", hasText);
 }
 
-
-/*
- * Real typing
- */
 if (messageInput) {
 
-    messageInput.addEventListener(
-        "input",
-        updateComposerTypingState
-    );
+    messageInput.addEventListener("input", updateComposerTypingState);
 
-    messageInput.addEventListener(
-        "paste",
-        () => {
-            setTimeout(
-                updateComposerTypingState,
-                0
-            );
-        }
-    );
+    messageInput.addEventListener("paste", () => {
+        setTimeout(updateComposerTypingState, 0);
+    });
 }
 
-
-/*
- * Return to normal after sending.
- */
 function resetComposerAfterSend() {
 
     if (messageInput) {
@@ -158,9 +123,7 @@ function resetComposerAfterSend() {
     }
 
     if (composerBox) {
-        composerBox.classList.remove(
-            "is-typing"
-        );
+        composerBox.classList.remove("is-typing");
     }
 }
 
@@ -172,21 +135,13 @@ function resetComposerAfterSend() {
 let users = [];
 let selectedFriend = null;
 let messages = [];
-/* =========================================================
-   GROUP CHAT STATE
-========================================================= */
 
+/* GROUP CHAT STATE */
 let groups = [];
 let selectedGroup = null;
 let messagesLoaded = false;
 let loadingMessagesPromise = null;
 
-/*
- * NEXA FIX: media loading is now tracked per conversation
- * key (friend id), not per DB conversation_id, since the DB
- * column isn't trustworthy. This also lets us skip refetching
- * media we already have when a chat is simply reopened.
- */
 let mediaLoadingKey = null;
 let mediaLoadedKeys = new Set();
 
@@ -223,112 +178,71 @@ let activeGroupCall = null;
 let groupAudioContext = null;
 let groupAudioSources = new Map();
 
+
 /* =========================================================
    RESET GROUP CALL STATE
-   Starts every new group call from a completely clean state.
 ========================================================= */
 
 function resetGroupCallState() {
 
-    /* Close any old WebRTC connections */
     if (groupPeerConnections.size) {
 
         groupPeerConnections.forEach(connection => {
-
             try {
                 connection.close();
             } catch (_) { }
-
         });
 
         groupPeerConnections.clear();
     }
 
-
-    /* Stop old local tracks */
     if (localStream) {
 
         localStream.getTracks().forEach(track => {
-
             try {
                 track.stop();
             } catch (_) { }
-
         });
 
         localStream = null;
     }
 
-
-    /* Clear remote streams */
     groupRemoteStreams.clear();
-
-    /* Clear connected participants */
     groupCallParticipants.clear();
-
-    /* Clear member list */
     groupCallMembers = [];
-
-
-    /* Reset active group call */
     activeGroupCall = null;
-
-
-    /* Reset call state */
     callInProgress = false;
     callAnswered = false;
-
-
-    /* Clear pending ICE */
     pendingIceCandidates = [];
 
-
-    /* Stop old group audio routing */
     groupAudioSources.forEach(source => {
-
         try {
             source.disconnect();
         } catch (_) { }
-
     });
 
     groupAudioSources.clear();
 
-
-    /* Remove generated group media elements */
     document
-        .querySelectorAll(
-            'audio[id^="nexa-group-audio-"]'
-        )
+        .querySelectorAll('audio[id^="nexa-group-audio-"]')
         .forEach(audio => {
-
             try {
                 audio.pause();
             } catch (_) { }
-
             audio.srcObject = null;
             audio.remove();
-
         });
 
-
     document
-        .querySelectorAll(
-            'video[id^="nexa-group-video-"]'
-        )
+        .querySelectorAll('video[id^="nexa-group-video-"]')
         .forEach(video => {
-
             try {
                 video.pause();
             } catch (_) { }
-
             video.srcObject = null;
             video.remove();
-
         });
 
-
-    /* Reset UI */
     if (incomingCall) {
         incomingCall.style.display = "none";
     }
@@ -345,10 +259,7 @@ function resetGroupCallState() {
         remoteCallArea.style.display = "none";
     }
 
-
-    console.log(
-        "NEXA GROUP CALL STATE RESET"
-    );
+    console.log("NEXA GROUP CALL STATE RESET");
 }
 
 async function ensureGroupAudioContext() {
@@ -362,26 +273,20 @@ async function ensureGroupAudioContext() {
     }
 
     if (!groupAudioContext) {
-        groupAudioContext =
-            new AudioContextClass();
+        groupAudioContext = new AudioContextClass();
     }
 
-    if (
-        groupAudioContext.state ===
-        "suspended"
-    ) {
+    if (groupAudioContext.state === "suspended") {
         try {
             await groupAudioContext.resume();
         } catch (error) {
-            console.warn(
-                "NEXA group audio context resume error:",
-                error
-            );
+            console.warn("NEXA group audio context resume error:", error);
         }
     }
 
     return groupAudioContext;
 }
+
 
 /* =========================================================
    ACTIVE CALL VISUAL STATE
@@ -415,134 +320,73 @@ function startNexaIncomingRingtone() {
         }
 
         if (!nexaIncomingRingtoneContext) {
-
-            nexaIncomingRingtoneContext =
-                new AudioContextClass();
-
+            nexaIncomingRingtoneContext = new AudioContextClass();
         }
 
-        if (
-            nexaIncomingRingtoneContext.state ===
-            "suspended"
-        ) {
-
-            nexaIncomingRingtoneContext.resume()
-                .catch(() => { });
-
+        if (nexaIncomingRingtoneContext.state === "suspended") {
+            nexaIncomingRingtoneContext.resume().catch(() => { });
         }
 
-        const context =
-            nexaIncomingRingtoneContext;
+        const context = nexaIncomingRingtoneContext;
 
-        nexaIncomingRingtoneGain =
-            context.createGain();
+        nexaIncomingRingtoneGain = context.createGain();
+        nexaIncomingRingtoneGain.gain.value = 0.035;
+        nexaIncomingRingtoneGain.connect(context.destination);
 
-        nexaIncomingRingtoneGain.gain.value =
-            0.035;
-
-        nexaIncomingRingtoneGain.connect(
-            context.destination
-        );
-
-        nexaIncomingRingtonePlaying =
-            true;
+        nexaIncomingRingtonePlaying = true;
 
         const ringOnce = () => {
 
-            if (
-                !nexaIncomingRingtonePlaying
-            ) {
+            if (!nexaIncomingRingtonePlaying) {
                 return;
             }
 
-            const oscillator =
-                context.createOscillator();
+            const oscillator = context.createOscillator();
 
-            oscillator.type =
-                "sine";
+            oscillator.type = "sine";
 
-            oscillator.frequency.setValueAtTime(
-                523.25,
-                context.currentTime
-            );
+            oscillator.frequency.setValueAtTime(523.25, context.currentTime);
+            oscillator.frequency.setValueAtTime(659.25, context.currentTime + 0.18);
+            oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.36);
 
-            oscillator.frequency.setValueAtTime(
-                659.25,
-                context.currentTime + 0.18
-            );
-
-            oscillator.frequency.setValueAtTime(
-                783.99,
-                context.currentTime + 0.36
-            );
-
-            oscillator.connect(
-                nexaIncomingRingtoneGain
-            );
+            oscillator.connect(nexaIncomingRingtoneGain);
 
             oscillator.start();
+            oscillator.stop(context.currentTime + 0.5);
 
-            oscillator.stop(
-                context.currentTime + 0.5
-            );
-
-            nexaIncomingRingtoneOscillator =
-                oscillator;
+            nexaIncomingRingtoneOscillator = oscillator;
         };
 
         ringOnce();
 
-        nexaIncomingRingtoneTimer =
-            setInterval(
-                ringOnce,
-                1800
-            );
+        nexaIncomingRingtoneTimer = setInterval(ringOnce, 1800);
 
     } catch (error) {
-
-        console.warn(
-            "NEXA incoming ringtone unavailable:",
-            error
-        );
+        console.warn("NEXA incoming ringtone unavailable:", error);
     }
 }
 
-
 function stopNexaIncomingRingtone() {
 
-    nexaIncomingRingtonePlaying =
-        false;
+    nexaIncomingRingtonePlaying = false;
 
     if (nexaIncomingRingtoneTimer) {
-
-        clearInterval(
-            nexaIncomingRingtoneTimer
-        );
-
-        nexaIncomingRingtoneTimer =
-            null;
+        clearInterval(nexaIncomingRingtoneTimer);
+        nexaIncomingRingtoneTimer = null;
     }
 
-    if (
-        nexaIncomingRingtoneOscillator
-    ) {
-
+    if (nexaIncomingRingtoneOscillator) {
         try {
             nexaIncomingRingtoneOscillator.stop();
         } catch (_) { }
-
-        nexaIncomingRingtoneOscillator =
-            null;
+        nexaIncomingRingtoneOscillator = null;
     }
 
     if (nexaIncomingRingtoneGain) {
-
         try {
             nexaIncomingRingtoneGain.disconnect();
         } catch (_) { }
-
-        nexaIncomingRingtoneGain =
-            null;
+        nexaIncomingRingtoneGain = null;
     }
 }
 
@@ -589,8 +433,7 @@ function ensureActiveCallScreen() {
 
     if (!remoteCallArea) return null;
 
-    let screen =
-        document.getElementById("nexaActiveCallScreen");
+    let screen = document.getElementById("nexaActiveCallScreen");
 
     if (screen) return screen;
 
@@ -611,33 +454,21 @@ function ensureActiveCallScreen() {
             <span class="nexa-call-ring nexa-call-ring-two"></span>
             <span class="nexa-call-ring nexa-call-ring-one"></span>
 
-            <div
-                id="nexaCallAvatar"
-                class="nexa-call-avatar"
-            >
+            <div id="nexaCallAvatar" class="nexa-call-avatar">
                 N
             </div>
 
         </div>
 
-        <div
-            id="nexaCallName"
-            class="nexa-call-name"
-        >
+        <div id="nexaCallName" class="nexa-call-name">
             NEXA Member
         </div>
 
-        <div
-            id="nexaCallStatus"
-            class="nexa-call-status"
-        >
+        <div id="nexaCallStatus" class="nexa-call-status">
             Connecting...
         </div>
 
-        <div
-            id="nexaCallTimer"
-            class="nexa-call-timer"
-        >
+        <div id="nexaCallTimer" class="nexa-call-timer">
             00:00
         </div>
     `;
@@ -654,10 +485,7 @@ function ensureActiveCallScreen() {
 
 function ensureGroupCallScreen() {
 
-    let screen =
-        document.getElementById(
-            "nexaGroupCallScreen"
-        );
+    let screen = document.getElementById("nexaGroupCallScreen");
 
     if (screen) {
         return screen;
@@ -667,14 +495,10 @@ function ensureGroupCallScreen() {
         return null;
     }
 
-    screen =
-        document.createElement("div");
+    screen = document.createElement("div");
 
-    screen.id =
-        "nexaGroupCallScreen";
-
-    screen.className =
-        "nexa-group-call-screen";
+    screen.id = "nexaGroupCallScreen";
+    screen.className = "nexa-group-call-screen";
 
     screen.innerHTML = `
         <div class="nexa-group-call-kicker">
@@ -686,17 +510,12 @@ function ensureGroupCallScreen() {
             class="nexa-group-call-participants"
         ></div>
 
-        <div
-            id="nexaGroupCallStatus"
-            class="nexa-group-call-status"
-        >
+        <div id="nexaGroupCallStatus" class="nexa-group-call-status">
             Connecting...
         </div>
     `;
 
-    remoteCallArea.appendChild(
-        screen
-    );
+    remoteCallArea.appendChild(screen);
 
     return screen;
 }
@@ -708,255 +527,137 @@ function ensureGroupCallScreen() {
 
 function renderGroupCallParticipants() {
 
-    const screen =
-        ensureGroupCallScreen();
+    const screen = ensureGroupCallScreen();
 
     if (!screen) {
         return;
     }
 
-    const container =
-        document.getElementById(
-            "nexaGroupCallParticipants"
-        );
+    const container = document.getElementById("nexaGroupCallParticipants");
 
     if (!container) {
         return;
     }
 
-
     const memberIds = new Set();
 
-    groupCallMembers.forEach(
-        member => {
+    groupCallMembers.forEach(member => {
+        memberIds.add(String(member.id));
+    });
 
-            memberIds.add(
-                String(member.id)
-            );
+    groupCallParticipants.forEach(memberId => {
+        memberIds.add(String(memberId));
+    });
+
+    /* Always show yourself too. */
+    memberIds.add(String(currentUser.id));
+
+    memberIds.forEach(memberId => {
+
+        const isMe = String(memberId) === String(currentUser.id);
+
+        const member = isMe ? currentUser : findUserById(memberId);
+
+        const name = member?.name || member?.username || "NEXA Member";
+
+        const picture =
+            member?.profile_picture ||
+            member?.profilePicture ||
+            "";
+
+        const online = isMe ? true : isUserOnline(memberId);
+
+        const connected = isMe ? true : groupCallParticipants.has(String(memberId));
+
+        const existingCard = container.querySelector(
+            '.nexa-group-call-participant[data-user-id="' + String(memberId) + '"]'
+        );
+
+        if (existingCard) {
+            return;
         }
-    );
 
-    groupCallParticipants.forEach(
-        memberId => {
+        const card = document.createElement("div");
 
-            memberIds.add(
-                String(memberId)
-            );
+        card.className = "nexa-group-call-participant";
+        card.dataset.userId = String(memberId);
+
+        let visualContent = "";
+
+        if (activeGroupCall && activeGroupCall.callType === "video") {
+
+            visualContent = `
+                <video
+                    id="nexa-group-video-${escapeHTML(String(memberId))}"
+                    class="nexa-group-call-video"
+                    autoplay
+                    playsinline
+                ></video>
+            `;
+
+        } else {
+
+            visualContent = picture
+                ? `<img src="${escapeHTML(picture)}" alt="${escapeHTML(name)}">`
+                : `<span>${escapeHTML(
+                    String(name).trim().charAt(0).toUpperCase() || "N"
+                )}</span>`;
         }
-    );
 
-    /*
-     * Always show yourself too.
-     */
-    memberIds.add(
-        String(currentUser.id)
-    );
+        card.innerHTML = `
+            <div
+                class="nexa-group-call-avatar
+                ${connected ? "is-connected" : ""}
+                ${online ? "is-online" : "is-offline"}"
+            >
+                ${visualContent}
 
-    memberIds.forEach(
-        memberId => {
+                <span class="nexa-group-call-online-dot"></span>
 
-            const member =
-                String(memberId) ===
-                    String(currentUser.id)
+                <span class="nexa-group-call-speaking-ring"></span>
+            </div>
 
-                    ? currentUser
+            <strong>${escapeHTML(name)}</strong>
 
-                    : findUserById(
-                        memberId
-                    );
-
-            const name =
-                member?.name ||
-                member?.username ||
-                "NEXA Member";
-
-            const picture =
-                member?.profile_picture ||
-                member?.profilePicture ||
-                "";
-
-            const online =
-                String(memberId) ===
-                    String(currentUser.id)
-                    ? true
-                    : isUserOnline(
-                        memberId
-                    );
-
-            const connected =
-                String(memberId) ===
-                    String(currentUser.id)
-                    ? true
-                    : groupCallParticipants.has(
-                        String(memberId)
-                    );
-
-            const existingCard =
-                container.querySelector(
-                    '.nexa-group-call-participant[data-user-id="' +
-                    String(memberId) +
-                    '"]'
-                );
-
-            if (existingCard) {
-                return;
-            }
-
-            const card =
-                document.createElement("div");
-
-
-
-            card.className =
-                "nexa-group-call-participant";
-
-            card.dataset.userId =
-                String(memberId);
-
-            let visualContent = "";
-
-            if (
-                activeGroupCall &&
-                activeGroupCall.callType === "video"
-            ) {
-
-                visualContent = `
-        <video
-            id="nexa-group-video-${escapeHTML(
-                    String(memberId)
-                )}"
-            class="nexa-group-call-video"
-            autoplay
-            playsinline
-        ></video>
-    `;
-
-            } else {
-
-                visualContent =
-                    picture
-                        ? `
-                <img
-                    src="${escapeHTML(
-                            picture
-                        )}"
-                    alt="${escapeHTML(
-                            name
-                        )}"
-                >
-              `
-                        : `
-                <span>
-                    ${escapeHTML(
-                            String(name)
-                                .trim()
-                                .charAt(0)
-                                .toUpperCase() ||
-                            "N"
-                        )}
-                </span>
-              `;
-            }
-
-            card.innerHTML = `
-
-             <div
-    class="nexa-group-call-avatar
-    ${connected ? "is-connected" : ""}
-    ${online ? "is-online" : "is-offline"}"
->
-    ${visualContent}
-
-    <span
-        class="nexa-group-call-online-dot"
-    ></span>
-
-    <span
-        class="nexa-group-call-speaking-ring"
-    ></span>
-</div>
-
-                <strong>
-                    ${escapeHTML(
-                name
-            )}
-                </strong>
-
-                <small
-                    class="nexa-group-call-member-status"
-                >
-                    ${String(memberId) ===
-                    String(currentUser.id)
-
+            <small class="nexa-group-call-member-status">
+                ${isMe
                     ? "You"
-
                     : connected
                         ? "Connected"
                         : online
                             ? "Online"
-                            : "Offline"
-                }
-                </small>
-            `;
+                            : "Offline"}
+            </small>
+        `;
 
-            container.appendChild(
-                card
-            );
+        container.appendChild(card);
 
+        if (activeGroupCall && activeGroupCall.callType === "video") {
 
+            const video = card.querySelector(".nexa-group-call-video");
 
-            if (
-                activeGroupCall &&
-                activeGroupCall.callType === "video"
-            ) {
+            const stream = groupRemoteStreams.get(String(memberId));
 
-                const video =
-                    card.querySelector(
-                        ".nexa-group-call-video"
-                    );
+            if (video && stream && video.srcObject !== stream) {
 
-                const stream =
-                    groupRemoteStreams.get(
-                        String(memberId)
-                    );
+                video.srcObject = stream;
 
-                if (
-                    video &&
-                    stream &&
-                    video.srcObject !== stream
-                ) {
-
-                    video.srcObject =
-                        stream;
-
-                    video.play().catch(
-                        error => {
-
-                            console.error(
-                                "NEXA group video playback error:",
-                                error
-                            );
-
-                        }
-                    );
-                }
+                video.play().catch(error => {
+                    console.error("NEXA group video playback error:", error);
+                });
             }
-
-
-
         }
-    );
+    });
 
-    screen.style.display =
-        "flex";
+    screen.style.display = "flex";
 
     if (remoteCallArea) {
-        remoteCallArea.style.display =
-            "block";
+        remoteCallArea.style.display = "block";
     }
 
     updateGroupCallStatusText();
 }
+
 
 /* =========================================================
    UPDATE GROUP CALL STATUS
@@ -964,34 +665,21 @@ function renderGroupCallParticipants() {
 
 function updateGroupCallStatusText() {
 
-    const status =
-        document.getElementById(
-            "nexaGroupCallStatus"
-        );
+    const status = document.getElementById("nexaGroupCallStatus");
 
     if (!status) {
         return;
     }
 
-    const total =
-        groupCallMembers.length;
-
-    const connected =
-        groupCallParticipants.size;
+    const total = groupCallMembers.length;
+    const connected = groupCallParticipants.size;
 
     if (!total) {
-
-        status.textContent =
-            "Group call";
-
+        status.textContent = "Group call";
         return;
     }
 
-    status.textContent =
-        connected +
-        " of " +
-        total +
-        " members connected";
+    status.textContent = connected + " of " + total + " members connected";
 }
 
 
@@ -1007,14 +695,9 @@ function showActiveCallScreen() {
 
     const user = getActiveCallUser();
 
-    const avatar =
-        document.getElementById("nexaCallAvatar");
-
-    const name =
-        document.getElementById("nexaCallName");
-
-    const status =
-        document.getElementById("nexaCallStatus");
+    const avatar = document.getElementById("nexaCallAvatar");
+    const name = document.getElementById("nexaCallName");
+    const status = document.getElementById("nexaCallStatus");
 
     if (name) {
         name.textContent =
@@ -1037,10 +720,10 @@ function showActiveCallScreen() {
                 <img
                     src="${escapeHTML(profilePicture)}"
                     alt="${escapeHTML(
-                user?.name ||
-                user?.username ||
-                "NEXA Member"
-            )}"
+                        user?.name ||
+                        user?.username ||
+                        "NEXA Member"
+                    )}"
                 >
             `;
 
@@ -1053,10 +736,7 @@ function showActiveCallScreen() {
                 "N";
 
             avatar.textContent =
-                String(displayName)
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase() || "N";
+                String(displayName).trim().charAt(0).toUpperCase() || "N";
         }
     }
 
@@ -1092,19 +772,12 @@ function startCallTimer() {
 
         if (!callStartedAt) return;
 
-        const elapsed =
-            Math.floor(
-                (Date.now() - callStartedAt) / 1000
-            );
+        const elapsed = Math.floor((Date.now() - callStartedAt) / 1000);
 
-        const minutes =
-            Math.floor(elapsed / 60);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
 
-        const seconds =
-            elapsed % 60;
-
-        const timer =
-            document.getElementById("nexaCallTimer");
+        const timer = document.getElementById("nexaCallTimer");
 
         if (timer) {
             timer.textContent =
@@ -1115,7 +788,6 @@ function startCallTimer() {
 
     }, 250);
 }
-
 
 function stopCallTimer() {
 
@@ -1146,182 +818,101 @@ async function startRemoteSpeakingVisualizer(stream) {
 
     try {
 
-        remoteAudioContext =
-            new AudioContextClass();
+        remoteAudioContext = new AudioContextClass();
 
-        if (
-            remoteAudioContext.state === "suspended"
-        ) {
+        if (remoteAudioContext.state === "suspended") {
             await remoteAudioContext.resume();
         }
 
-        remoteAudioSource =
-            remoteAudioContext
-                .createMediaStreamSource(stream);
+        remoteAudioSource = remoteAudioContext.createMediaStreamSource(stream);
 
-        remoteAnalyser =
-            remoteAudioContext
-                .createAnalyser();
+        remoteAnalyser = remoteAudioContext.createAnalyser();
 
         remoteAnalyser.fftSize = 256;
         remoteAnalyser.smoothingTimeConstant = 0.82;
 
-        remoteAudioSource.connect(
-            remoteAnalyser
-        );
+        remoteAudioSource.connect(remoteAnalyser);
 
-        const dataArray =
-            new Uint8Array(
-                remoteAnalyser.fftSize
-            );
+        const dataArray = new Uint8Array(remoteAnalyser.fftSize);
 
         const animate = () => {
 
-            if (
-                !remoteAnalyser ||
-                !activeCall
-            ) {
+            if (!remoteAnalyser || !activeCall) {
                 remoteVoiceAnimationFrame = null;
                 return;
             }
 
-            remoteAnalyser.getByteTimeDomainData(
-                dataArray
-            );
+            remoteAnalyser.getByteTimeDomainData(dataArray);
 
             let sum = 0;
 
-            for (
-                let i = 0;
-                i < dataArray.length;
-                i++
-            ) {
-
-                const sample =
-                    (dataArray[i] - 128) / 128;
-
+            for (let i = 0; i < dataArray.length; i++) {
+                const sample = (dataArray[i] - 128) / 128;
                 sum += sample * sample;
             }
 
-            const rms =
-                Math.sqrt(
-                    sum / dataArray.length
-                );
+            const rms = Math.sqrt(sum / dataArray.length);
 
-            const level =
-                Math.min(
-                    0.20,
-                    Math.pow(rms * 7, 0.7) * 0.20
-                );
+            const level = Math.min(0.20, Math.pow(rms * 7, 0.7) * 0.20);
 
-            const speaking =
-                rms > 0.025;
+            const speaking = rms > 0.025;
 
-            const screen =
-                document.getElementById(
-                    "nexaActiveCallScreen"
-                );
-
-            const avatar =
-                document.getElementById(
-                    "nexaCallAvatar"
-                );
+            const screen = document.getElementById("nexaActiveCallScreen");
+            const avatar = document.getElementById("nexaCallAvatar");
 
             if (screen) {
-                screen.style.setProperty(
-                    "--call-level",
-                    String(level)
-                );
+                screen.style.setProperty("--call-level", String(level));
             }
 
             if (avatar) {
 
-                avatar.classList.toggle(
-                    "is-speaking",
-                    speaking
-                );
+                avatar.classList.toggle("is-speaking", speaking);
 
-                if (speaking) {
-
-                    avatar.style.transform =
-                        `scale(${1 + level * 0.7})`;
-
-                } else {
-
-                    avatar.style.transform =
-                        "scale(1)";
-                }
+                avatar.style.transform = speaking
+                    ? `scale(${1 + level * 0.7})`
+                    : "scale(1)";
             }
 
-            remoteVoiceAnimationFrame =
-                requestAnimationFrame(animate);
+            remoteVoiceAnimationFrame = requestAnimationFrame(animate);
         };
 
         animate();
 
     } catch (error) {
-
-        console.warn(
-            "NEXA remote voice visualizer unavailable:",
-            error
-        );
+        console.warn("NEXA remote voice visualizer unavailable:", error);
     }
 }
-
 
 function stopRemoteSpeakingVisualizer() {
 
     if (remoteVoiceAnimationFrame !== null) {
-
-        cancelAnimationFrame(
-            remoteVoiceAnimationFrame
-        );
-
+        cancelAnimationFrame(remoteVoiceAnimationFrame);
         remoteVoiceAnimationFrame = null;
     }
 
     if (remoteAudioSource) {
-
         try {
             remoteAudioSource.disconnect();
         } catch (_) { }
-
         remoteAudioSource = null;
     }
 
     remoteAnalyser = null;
 
     if (remoteAudioContext) {
-
         try {
-
-            if (
-                remoteAudioContext.state !==
-                "closed"
-            ) {
+            if (remoteAudioContext.state !== "closed") {
                 remoteAudioContext.close();
             }
-
         } catch (_) { }
-
         remoteAudioContext = null;
     }
 
-    const screen =
-        document.getElementById(
-            "nexaActiveCallScreen"
-        );
-
-    const avatar =
-        document.getElementById(
-            "nexaCallAvatar"
-        );
+    const screen = document.getElementById("nexaActiveCallScreen");
+    const avatar = document.getElementById("nexaCallAvatar");
 
     if (screen) {
-        screen.style.setProperty(
-            "--call-level",
-            "0"
-        );
+        screen.style.setProperty("--call-level", "0");
     }
 
     if (avatar) {
@@ -1364,12 +955,7 @@ const rtcConfiguration = {
 
 
 /* =========================================================
-   COOL FACTOR: injected animation styles
-   The page only ships JS to us, so the safest way to add
-   real motion without needing a separate CSS deploy is to
-   inject one small <style> tag once at startup. Everything
-   here is additive — it only styles classes this file adds,
-   so it can't clash with existing page styles.
+   INJECTED ANIMATION STYLES
 ========================================================= */
 
 function injectNexaAnimationStyles() {
@@ -1479,6 +1065,7 @@ function injectNexaAnimationStyles() {
         .nexa-voice-play:active, .voice-composer-button:active {
             transform: scale(0.88);
         }
+
         /* =====================================================
            GROUP CALL SCREEN
         ===================================================== */
@@ -1580,14 +1167,14 @@ function injectNexaAnimationStyles() {
             border-radius: 50%;
         }
 
-            .nexa-group-call-avatar .nexa-group-call-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    display: block;
-    background: #000;
-}
+        .nexa-group-call-avatar .nexa-group-call-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            background: #000;
+        }
 
         .nexa-group-call-online-dot {
             position: absolute;
@@ -1677,7 +1264,6 @@ function injectNexaAnimationStyles() {
                 font-size: 23px;
             }
         }
-
     `;
 
     document.head.appendChild(style);
@@ -1754,8 +1340,10 @@ function getFriendIds() {
 
 
 /* =========================================================
-   USERS — FAST PROFILE LOADING
+   USERS — FRIENDS COME FROM THE nexa_friends TABLE
+   (the same table people.js saves to)
 ========================================================= */
+
 async function getUsers() {
 
     const profileColumns = ["id", "name", "username", "profile_picture", "created_at"].join(",");
@@ -1773,7 +1361,7 @@ async function getUsers() {
 
         if (currentError) throw currentError;
 
-        /* 2. Friends come from the nexa_friends table (same as people.js) */
+        /* 2. Friends come from nexa_friends (same as people.js) */
         const { data: friendRows, error: friendsError } = await nexaSupabase
             .from("nexa_friends")
             .select("user_id, friend_id")
@@ -1947,19 +1535,7 @@ async function loadMessagesFromServer(force = false) {
 
 /* =========================================================
    LOAD MEDIA FOR ONE CONVERSATION
-
-   NEXA FIX (the main bug): this used to filter by
-   `.eq("conversation_id", conversationId)`, but the text
-   loader above deliberately does NOT trust conversation_id
-   (see loadConversation() below — same issue, same fix
-   philosophy). That mismatch meant this query usually
-   matched zero rows, so media never arrived and bubbles
-   stayed on "Loading…" forever.
-
-   Fixed: pass in the exact message ids currently on screen
-   for this conversation and fetch by `.in("id", messageIds)`.
-   That's the same source of truth the text used, so it can
-   never disagree with what's rendered.
+   Fetches media by the exact message ids on screen.
 ========================================================= */
 
 async function loadConversationMedia(friendKey, messageIds) {
@@ -2000,12 +1576,6 @@ async function loadConversationMedia(friendKey, messageIds) {
         });
 
         mediaLoadedKeys.add(friendKey);
-
-        /*
-         * Only re-render if the user is still looking at this
-         * same conversation — they may have switched chats
-         * while the fetch was in flight.
-         */
 
         if (selectedFriend && String(selectedFriend.id) === String(friendKey)) {
             renderCurrentConversation(true);
@@ -2068,48 +1638,36 @@ async function sendMessageToServer(message) {
                     ? String(message.groupId)
                     : null,
 
-            sender_id:
-                String(message.senderId),
+            sender_id: String(message.senderId),
 
             receiver_id:
                 message.receiverId
                     ? String(message.receiverId)
                     : null,
 
-            text:
-                message.text || "",
+            text: message.text || "",
 
-            media:
-                message.media || null,
+            media: message.media || null,
 
-            media_type:
-                message.mediaType || null,
+            media_type: message.mediaType || null,
 
-            latitude:
-                message.latitude ?? null,
+            latitude: message.latitude ?? null,
 
-            longitude:
-                message.longitude ?? null,
+            longitude: message.longitude ?? null,
 
             timestamp:
                 message.timestamp ||
                 new Date().toISOString(),
 
-            read:
-                Boolean(message.read)
+            read: Boolean(message.read)
         };
 
-        const { error } =
-            await nexaSupabase
-                .from("messages")
-                .insert(payload);
+        const { error } = await nexaSupabase
+            .from("messages")
+            .insert(payload);
 
         if (error) {
-            console.error(
-                "NEXA Supabase message save error:",
-                error
-            );
-
+            console.error("NEXA Supabase message save error:", error);
             throw error;
         }
 
@@ -2117,10 +1675,7 @@ async function sendMessageToServer(message) {
 
     } catch (error) {
 
-        console.error(
-            "NEXA Supabase message save error:",
-            error
-        );
+        console.error("NEXA Supabase message save error:", error);
 
         return false;
     }
@@ -2140,15 +1695,13 @@ function subscribeToMessages() {
     messagesRealtimeChannel = nexaSupabase
         .channel("nexa-messages-" + currentUser.id)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async payload => {
+
             const message = payload.new;
             if (!message) return;
 
             const currentId = String(currentUser.id);
 
-
-
-            const isGroupMessage =
-                Boolean(message.group_id);
+            const isGroupMessage = Boolean(message.group_id);
 
             const belongsToUser =
                 String(message.sender_id) === currentId ||
@@ -2161,88 +1714,55 @@ function subscribeToMessages() {
 
             const frontendMessage = {
                 id: message.id,
-
-                conversationId:
-                    message.conversation_id,
-
-                groupId:
-                    message.group_id || null,
-
-                senderId:
-                    String(message.sender_id),
-
-                receiverId:
-                    message.receiver_id
-                        ? String(message.receiver_id)
-                        : null,
-
-                text:
-                    message.text || "",
-
-                media:
-                    message.media || null,
-
-                mediaType:
-                    message.media_type || null,
-
-                latitude:
-                    message.latitude ?? null,
-
-                longitude:
-                    message.longitude ?? null,
-
-                timestamp:
-                    message.timestamp,
-
-                read:
-                    Boolean(message.read)
+                conversationId: message.conversation_id,
+                groupId: message.group_id || null,
+                senderId: String(message.sender_id),
+                receiverId: message.receiver_id
+                    ? String(message.receiver_id)
+                    : null,
+                text: message.text || "",
+                media: message.media || null,
+                mediaType: message.media_type || null,
+                latitude: message.latitude ?? null,
+                longitude: message.longitude ?? null,
+                timestamp: message.timestamp,
+                read: Boolean(message.read)
             };
 
             addMessage(frontendMessage);
 
+            /* =====================================================
+               GROUP MESSAGE
+            ===================================================== */
+
             if (isGroupMessage) {
-
-                addMessage(frontendMessage);
-
 
                 if (
                     selectedGroup &&
-                    String(message.group_id) ===
-                    String(selectedGroup.id)
+                    String(message.group_id) === String(selectedGroup.id)
                 ) {
 
-                    renderGroupConversation(
-                        getCurrentGroupMessages()
-                    );
+                    renderGroupConversation(getCurrentGroupMessages());
 
-                    await markGroupAsRead(
-                        message.group_id
-                    );
+                    await markGroupAsRead(message.group_id);
 
                     if (messagesContainer) {
-                        messagesContainer.scrollTop =
-                            messagesContainer.scrollHeight;
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
                     }
-
                 }
-
 
                 await loadMyGroups();
 
-                displayConversations(
-                    getConversationSearchValue()
-                );
+                displayConversations(getConversationSearchValue());
 
                 return;
             }
 
-
-                 /* =====================================================
+            /* =====================================================
                PRIVATE MESSAGE: show it live if this chat is open
             ===================================================== */
 
-            const isIncoming =
-                String(frontendMessage.senderId) !== currentId;
+            const isIncoming = String(frontendMessage.senderId) !== currentId;
 
             const belongsToOpenChat =
                 selectedFriend &&
@@ -2251,7 +1771,7 @@ function subscribeToMessages() {
 
             if (belongsToOpenChat) {
 
-                /* Show it on the ✓✓ side right away */
+                /* Show it as read right away (✓✓) */
                 frontendMessage.read = true;
                 addMessage(frontendMessage);
 
@@ -2271,19 +1791,20 @@ function subscribeToMessages() {
             }
 
             displayConversations(getConversationSearchValue());
+        })
+        .on("postgres_changes", {
+            event: "UPDATE",
             schema: "public",
             table: "messages"
         }, payload => {
+
             const updated = payload.new;
 
             if (!updated) return;
 
-            const localMessage =
-                messages.find(
-                    message =>
-                        String(message.id) ===
-                        String(updated.id)
-                );
+            const localMessage = messages.find(
+                message => String(message.id) === String(updated.id)
+            );
 
             if (!localMessage) return;
 
@@ -2291,11 +1812,9 @@ function subscribeToMessages() {
 
             saveCachedMessages();
 
-            /*
-             * If this is the currently open conversation,
-             * immediately turn ✓ into ✓✓.
-             */
+            /* If this is the open conversation, turn ✓ into ✓✓ now. */
             if (selectedFriend) {
+
                 const senderId = String(localMessage.senderId);
                 const receiverId = String(localMessage.receiverId);
                 const currentId = String(currentUser.id);
@@ -2371,22 +1890,15 @@ function readFileAsDataURL(file) {
 
 async function sendTextOrMediaMessage() {
 
-    /*
-     * We need either a friend OR a group.
-     */
     if (!selectedFriend && !selectedGroup) {
         alert("Open a conversation first.");
         return;
     }
 
-    const text =
-        messageInput
-            ? messageInput.value.trim()
-            : "";
+    const text = messageInput ? messageInput.value.trim() : "";
 
     const mediaFile =
-        mediaInput &&
-            mediaInput.files
+        mediaInput && mediaInput.files
             ? mediaInput.files[0]
             : null;
 
@@ -2399,19 +1911,9 @@ async function sendTextOrMediaMessage() {
     if (mediaFile) {
 
         try {
-
-            mediaData =
-                await readFileAsDataURL(
-                    mediaFile
-                );
-
+            mediaData = await readFileAsDataURL(mediaFile);
         } catch (error) {
-
-            console.error(
-                "NEXA media reading error:",
-                error
-            );
-
+            console.error("NEXA media reading error:", error);
             return;
         }
     }
@@ -2424,56 +1926,24 @@ async function sendTextOrMediaMessage() {
     if (selectedGroup) {
 
         const newMessage = {
-
-            id:
-                createMessageId(),
-
-            conversationId:
-                null,
-
-            groupId:
-                String(selectedGroup.id),
-
-            senderId:
-                String(currentUser.id),
-
-            receiverId:
-                null,
-
-            text:
-                text,
-
-            media:
-                mediaData,
-
-            mediaType:
-                mediaFile
-                    ? mediaFile.type
-                    : null,
-
-            timestamp:
-                new Date().toISOString(),
-
-            read:
-                true
+            id: createMessageId(),
+            conversationId: null,
+            groupId: String(selectedGroup.id),
+            senderId: String(currentUser.id),
+            receiverId: null,
+            text: text,
+            media: mediaData,
+            mediaType: mediaFile ? mediaFile.type : null,
+            timestamp: new Date().toISOString(),
+            read: true
         };
 
-
-        const saved =
-            await sendMessageToServer(
-                newMessage
-            );
-
+        const saved = await sendMessageToServer(newMessage);
 
         if (!saved) {
-
-            alert(
-                "Group message could not be saved."
-            );
-
+            alert("Group message could not be saved.");
             return;
         }
-
 
         addMessage(newMessage);
 
@@ -2481,13 +1951,10 @@ async function sendTextOrMediaMessage() {
 
         resetComposerAfterSend();
 
-        renderGroupConversation(
-            getCurrentGroupMessages()
-        );
+        renderGroupConversation(getCurrentGroupMessages());
 
         if (messagesContainer) {
-            messagesContainer.scrollTop =
-                messagesContainer.scrollHeight;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
         return;
@@ -2501,59 +1968,24 @@ async function sendTextOrMediaMessage() {
     if (selectedFriend) {
 
         const newMessage = {
-
-            id:
-                createMessageId(),
-
-            conversationId:
-                createConversationId(
-                    currentUser,
-                    selectedFriend
-                ),
-
-            groupId:
-                null,
-
-            senderId:
-                String(currentUser.id),
-
-            receiverId:
-                String(selectedFriend.id),
-
-            text:
-                text,
-
-            media:
-                mediaData,
-
-            mediaType:
-                mediaFile
-                    ? mediaFile.type
-                    : null,
-
-            timestamp:
-                new Date().toISOString(),
-
-            read:
-                false
+            id: createMessageId(),
+            conversationId: createConversationId(currentUser, selectedFriend),
+            groupId: null,
+            senderId: String(currentUser.id),
+            receiverId: String(selectedFriend.id),
+            text: text,
+            media: mediaData,
+            mediaType: mediaFile ? mediaFile.type : null,
+            timestamp: new Date().toISOString(),
+            read: false
         };
 
-
-        const saved =
-            await sendMessageToServer(
-                newMessage
-            );
-
+        const saved = await sendMessageToServer(newMessage);
 
         if (!saved) {
-
-            alert(
-                "Message could not be saved."
-            );
-
+            alert("Message could not be saved.");
             return;
         }
-
 
         addMessage(newMessage);
 
@@ -2561,13 +1993,9 @@ async function sendTextOrMediaMessage() {
 
         resetComposerAfterSend();
 
-        renderCurrentConversation(
-            true
-        );
+        renderCurrentConversation(true);
 
-        displayConversations(
-            getConversationSearchValue()
-        );
+        displayConversations(getConversationSearchValue());
 
         if (messageInput) {
             messageInput.focus();
@@ -2582,20 +2010,16 @@ async function sendTextOrMediaMessage() {
 
 if (messageForm) {
 
-    messageForm.addEventListener(
-        "submit",
-        async event => {
+    messageForm.addEventListener("submit", async event => {
 
-            event.preventDefault();
+        event.preventDefault();
 
-            if (isRecording) {
-                return;
-            }
-
-            await sendTextOrMediaMessage();
+        if (isRecording) {
+            return;
         }
-    );
 
+        await sendTextOrMediaMessage();
+    });
 }
 
 
@@ -2616,52 +2040,26 @@ function playNexaSendSound() {
         if (!AudioContextClass) return;
 
         if (!nexaSendAudioContext) {
-            nexaSendAudioContext =
-                new AudioContextClass();
+            nexaSendAudioContext = new AudioContextClass();
         }
 
         if (nexaSendAudioContext.state === "suspended") {
             nexaSendAudioContext.resume();
         }
 
-        const now =
-            nexaSendAudioContext.currentTime;
+        const now = nexaSendAudioContext.currentTime;
 
-        const oscillator =
-            nexaSendAudioContext.createOscillator();
-
-        const gain =
-            nexaSendAudioContext.createGain();
+        const oscillator = nexaSendAudioContext.createOscillator();
+        const gain = nexaSendAudioContext.createGain();
 
         oscillator.type = "sine";
 
-        /*
-         * Small royal NEXA notification tone.
-         */
-        oscillator.frequency.setValueAtTime(
-            720,
-            now
-        );
+        oscillator.frequency.setValueAtTime(720, now);
+        oscillator.frequency.exponentialRampToValueAtTime(960, now + 0.07);
 
-        oscillator.frequency.exponentialRampToValueAtTime(
-            960,
-            now + 0.07
-        );
-
-        gain.gain.setValueAtTime(
-            0,
-            now
-        );
-
-        gain.gain.linearRampToValueAtTime(
-            0.055,
-            now + 0.015
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            now + 0.12
-        );
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.055, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
         oscillator.connect(gain);
         gain.connect(nexaSendAudioContext.destination);
@@ -2670,11 +2068,7 @@ function playNexaSendSound() {
         oscillator.stop(now + 0.13);
 
     } catch (error) {
-
-        console.warn(
-            "NEXA send sound unavailable:",
-            error
-        );
+        console.warn("NEXA send sound unavailable:", error);
     }
 }
 
@@ -2764,6 +2158,8 @@ function insertEmoji(emoji) {
 
     messageInput.focus();
     messageInput.setSelectionRange(newPosition, newPosition);
+
+    updateComposerTypingState();
 }
 
 if (emojiButton) {
@@ -2854,7 +2250,6 @@ function formatVoiceTime(seconds) {
 
     return String(minutes).padStart(2, "0") + ":" + String(secondsPart).padStart(2, "0");
 }
-
 
 function ensureVoiceControls() {
 
@@ -3046,7 +2441,6 @@ function startVoiceTimer() {
     }, 200);
 }
 
-
 function updateLiveWaveform() {
 
     if (!isRecording || !analyser || !voiceWaveform) {
@@ -3097,7 +2491,6 @@ function updateLiveWaveform() {
 
     voiceAnimationFrame = requestAnimationFrame(updateLiveWaveform);
 }
-
 
 function getVoicePreviewAudio() {
 
@@ -3172,7 +2565,6 @@ function resetVoiceRecording() {
     resetWaveform();
     showNormalComposer();
 }
-
 
 async function startVoiceRecording() {
 
@@ -3284,7 +2676,6 @@ async function startVoiceRecording() {
     }
 }
 
-
 function stopVoiceRecording() {
 
     if (!mediaRecorder || !isRecording) return;
@@ -3304,7 +2695,6 @@ function stopVoiceRecording() {
         resetVoiceRecording();
     }
 }
-
 
 if (recordButton) {
     recordButton.addEventListener("click", event => {
@@ -3364,7 +2754,6 @@ document.addEventListener("ended", event => {
     }
 }, true);
 
-
 if (actualSendVoiceButton) {
     actualSendVoiceButton.addEventListener("click", async event => {
 
@@ -3382,6 +2771,7 @@ if (actualSendVoiceButton) {
         try {
 
             const audioData = await readFileAsDataURL(recordedVoiceBlob);
+
             const newMessage = {
 
                 id: createMessageId(),
@@ -3389,18 +2779,14 @@ if (actualSendVoiceButton) {
                 conversationId:
                     selectedGroup
                         ? null
-                        : createConversationId(
-                            currentUser,
-                            selectedFriend
-                        ),
+                        : createConversationId(currentUser, selectedFriend),
 
                 groupId:
                     selectedGroup
                         ? String(selectedGroup.id)
                         : null,
 
-                senderId:
-                    String(currentUser.id),
+                senderId: String(currentUser.id),
 
                 receiverId:
                     selectedGroup
@@ -3409,31 +2795,25 @@ if (actualSendVoiceButton) {
 
                 text: "",
 
-                media:
-                    audioData,
+                media: audioData,
 
                 mediaType:
                     recordedVoiceMimeType ||
                     recordedVoiceBlob.type ||
                     "audio/webm",
 
-                timestamp:
-                    new Date().toISOString(),
+                timestamp: new Date().toISOString(),
 
-                read:
-                    selectedGroup
-                        ? true
-                        : false
+                read: selectedGroup ? true : false
             };
 
             const saved = await sendMessageToServer(newMessage);
 
             if (!saved) {
                 alert("Message could not be saved.");
+                actualSendVoiceButton.disabled = false;
                 return;
             }
-
-            playNexaSendSound();
 
             addMessage(newMessage);
 
@@ -3443,22 +2823,17 @@ if (actualSendVoiceButton) {
 
             if (selectedGroup) {
 
-                renderGroupConversation(
-                    getCurrentGroupMessages()
-                );
+                renderGroupConversation(getCurrentGroupMessages());
 
                 if (messagesContainer) {
-                    messagesContainer.scrollTop =
-                        messagesContainer.scrollHeight;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 }
 
             } else {
 
                 renderCurrentConversation(true);
 
-                displayConversations(
-                    getConversationSearchValue()
-                );
+                displayConversations(getConversationSearchValue());
             }
 
         } catch (error) {
@@ -3469,7 +2844,6 @@ if (actualSendVoiceButton) {
         }
     });
 }
-
 
 function voiceMessageWaveform(messageId) {
 
@@ -3491,7 +2865,6 @@ function voiceMessageWaveform(messageId) {
 
     return bars.join("");
 }
-
 
 function getVoiceButtonForAudio(audio) {
 
@@ -3607,7 +2980,7 @@ document.addEventListener("timeupdate", event => {
     const remaining = seconds % 60;
 
     durationElement.textContent = minutes + ":" + String(remaining).padStart(2, "0");
-});
+}, true);
 
 
 /* =========================================================
@@ -3646,8 +3019,7 @@ if (locationButton) {
         if (!selectedFriend && !selectedGroup) {
 
             if (locationStatus) {
-                locationStatus.textContent =
-                    "Open a conversation first.";
+                locationStatus.textContent = "Open a conversation first.";
             }
 
             return;
@@ -3666,52 +3038,38 @@ if (locationButton) {
 
                 const newMessage = {
 
-                    id:
-                        createMessageId(),
+                    id: createMessageId(),
 
                     conversationId:
                         selectedGroup
                             ? null
-                            : createConversationId(
-                                currentUser,
-                                selectedFriend
-                            ),
+                            : createConversationId(currentUser, selectedFriend),
 
                     groupId:
                         selectedGroup
                             ? String(selectedGroup.id)
                             : null,
 
-                    senderId:
-                        String(currentUser.id),
+                    senderId: String(currentUser.id),
 
                     receiverId:
                         selectedGroup
                             ? null
                             : String(selectedFriend.id),
 
-                    text:
-                        "📍 Location shared",
+                    text: "📍 Location shared",
 
-                    media:
-                        null,
+                    media: null,
 
-                    mediaType:
-                        "location",
+                    mediaType: "location",
 
-                    latitude:
-                        position.coords.latitude,
+                    latitude: position.coords.latitude,
 
-                    longitude:
-                        position.coords.longitude,
+                    longitude: position.coords.longitude,
 
-                    timestamp:
-                        new Date().toISOString(),
+                    timestamp: new Date().toISOString(),
 
-                    read:
-                        selectedGroup
-                            ? true
-                            : false
+                    read: selectedGroup ? true : false
                 };
 
                 const saved = await sendMessageToServer(newMessage);
@@ -3720,35 +3078,28 @@ if (locationButton) {
                     if (locationStatus) locationStatus.textContent = "Could not send location.";
                     return;
                 }
+
                 playNexaSendSound();
 
                 if (locationStatus) {
-                    locationStatus.textContent =
-                        "📍 Location sent.";
+                    locationStatus.textContent = "📍 Location sent.";
                 }
-
-                playNexaSendSound();
 
                 addMessage(newMessage);
 
                 if (selectedGroup) {
 
-                    renderGroupConversation(
-                        getCurrentGroupMessages()
-                    );
+                    renderGroupConversation(getCurrentGroupMessages());
 
                     if (messagesContainer) {
-                        messagesContainer.scrollTop =
-                            messagesContainer.scrollHeight;
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
                     }
 
                 } else {
 
                     renderCurrentConversation(true);
 
-                    displayConversations(
-                        getConversationSearchValue()
-                    );
+                    displayConversations(getConversationSearchValue());
                 }
             },
 
@@ -3762,14 +3113,6 @@ if (locationButton) {
 
 /* =========================================================
    PRESENCE / ONLINE STATUS
-
-   NEXA FIX: presence changes used to only refresh the
-   sidebar. Now, if the chat you currently have open belongs
-   to a friend whose presence just changed, the chat header
-   (avatar dot + "Online"/"Offline" label) updates live too.
-   A periodic re-track is also added since some Supabase
-   presence setups silently drop a stale client if it never
-   re-announces itself.
 ========================================================= */
 
 function isUserOnline(userId) {
@@ -3791,20 +3134,11 @@ function refreshOnlineUsers() {
 
     updateVisibleConversationUI();
 
-    /*
-     * Live-update the open chat's header, not just the list.
-     */
+    /* Live-update the open chat's header, not just the list. */
     if (selectedFriend) {
-
-        updateChatHeader(
-            selectedFriend
-        );
-
+        updateChatHeader(selectedFriend);
     } else if (selectedGroup) {
-
-        updateGroupHeader(
-            selectedGroup
-        );
+        updateGroupHeader(selectedGroup);
     }
 }
 
@@ -3848,22 +3182,12 @@ async function subscribeToPresence() {
 
                 await trackPresence();
 
-                /*
-                 * Re-announce presence periodically so this
-                 * client doesn't quietly drop off as "offline"
-                 * to everyone else after a long idle stretch.
-                 */
+                /* Re-announce presence so this client doesn't drop off. */
                 presenceHeartbeatTimer = setInterval(trackPresence, 25000);
             }
         });
 }
 
-/*
- * Re-track presence when the tab regains focus/visibility —
- * covers laptops sleeping, phones locking, tab switching,
- * so "online" reflects reality quickly when someone comes
- * back rather than waiting for the next heartbeat tick.
- */
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && presenceChannel) {
         presenceChannel.track({
@@ -3916,279 +3240,159 @@ if (conversationSearch) {
     });
 }
 
+
 /* =========================================================
    LOAD MY GROUPS
-   Includes:
-   - group data
-   - last message preview
-   - unread count
-   - online presence
 ========================================================= */
 
 async function loadMyGroups() {
 
     try {
 
-        const currentId =
-            String(currentUser.id);
+        const currentId = String(currentUser.id);
 
-        const { data: memberships, error: membershipError } =
-            await nexaSupabase
-                .from("group_members")
-                .select("group_id")
-                .eq("user_id", currentId);
+        const { data: memberships, error: membershipError } = await nexaSupabase
+            .from("group_members")
+            .select("group_id")
+            .eq("user_id", currentId);
 
         if (membershipError) {
             throw membershipError;
         }
 
-        const groupIds =
-            (memberships || [])
-                .map(row => String(row.group_id));
+        const groupIds = (memberships || []).map(row => String(row.group_id));
 
         if (!groupIds.length) {
-
             groups = [];
-
             return;
         }
 
-
-
-
-        /* -----------------------------------------------------
-           GROUPS
-        ----------------------------------------------------- */
-
-        const { data: groupRows, error: groupError } =
-            await nexaSupabase
-                .from("groups")
-                .select(`
-                    id,
-                    name,
-                    description,
-                    group_picture,
-                    created_by,
-                    created_at
-                `)
-                .in("id", groupIds)
-                .order("created_at", {
-                    ascending: false
-                });
+        /* GROUPS */
+        const { data: groupRows, error: groupError } = await nexaSupabase
+            .from("groups")
+            .select(`
+                id,
+                name,
+                description,
+                group_picture,
+                created_by,
+                created_at
+            `)
+            .in("id", groupIds)
+            .order("created_at", { ascending: false });
 
         if (groupError) {
             throw groupError;
         }
 
-
-        /* -----------------------------------------------------
-           GROUP MEMBERS
-        ----------------------------------------------------- */
-
-        const { data: memberRows, error: memberError } =
-            await nexaSupabase
-                .from("group_members")
-                .select("group_id, user_id")
-                .in("group_id", groupIds);
+        /* GROUP MEMBERS */
+        const { data: memberRows, error: memberError } = await nexaSupabase
+            .from("group_members")
+            .select("group_id, user_id")
+            .in("group_id", groupIds);
 
         if (memberError) {
             throw memberError;
         }
 
-
-        /* -----------------------------------------------------
-           GROUP READ STATES
-        ----------------------------------------------------- */
-
-        const { data: readRows, error: readError } =
-            await nexaSupabase
-                .from("group_reads")
-                .select("group_id, last_read_at")
-                .eq("user_id", currentId)
-                .in("group_id", groupIds);
+        /* GROUP READ STATES */
+        const { data: readRows, error: readError } = await nexaSupabase
+            .from("group_reads")
+            .select("group_id, last_read_at")
+            .eq("user_id", currentId)
+            .in("group_id", groupIds);
 
         if (readError) {
             throw readError;
         }
 
-
         const readMap = new Map();
 
         (readRows || []).forEach(row => {
-
-            readMap.set(
-                String(row.group_id),
-                row.last_read_at
-            );
-
+            readMap.set(String(row.group_id), row.last_read_at);
         });
 
-
-        /* -----------------------------------------------------
-           RECENT GROUP MESSAGES
-        ----------------------------------------------------- */
-
-        const { data: groupMessages, error: messageError } =
-            await nexaSupabase
-                .from("messages")
-                .select(`
-                    id,
-                    group_id,
-                    sender_id,
-                    text,
-                    media_type,
-                    timestamp
-                `)
-                .in("group_id", groupIds)
-                .order("timestamp", {
-                    ascending: false
-                })
-                .limit(300);
+        /* RECENT GROUP MESSAGES */
+        const { data: groupMessages, error: messageError } = await nexaSupabase
+            .from("messages")
+            .select(`
+                id,
+                group_id,
+                sender_id,
+                text,
+                media_type,
+                timestamp
+            `)
+            .in("group_id", groupIds)
+            .order("timestamp", { ascending: false })
+            .limit(300);
 
         if (messageError) {
             throw messageError;
         }
 
+        /* BUILD GROUP UI DATA */
+        groups = (groupRows || []).map(group => {
 
-        /* -----------------------------------------------------
-           BUILD GROUP UI DATA
-        ----------------------------------------------------- */
+            const groupId = String(group.id);
 
-        groups =
-            (groupRows || []).map(group => {
+            const members = (memberRows || []).filter(
+                member => String(member.group_id) === groupId
+            );
 
-                const groupId =
-                    String(group.id);
+            const memberIds = members.map(member => String(member.user_id));
 
-                const members =
-                    (memberRows || [])
-                        .filter(member =>
-                            String(member.group_id) ===
-                            groupId
-                        );
+            const onlineMemberExists = memberIds.some(
+                memberId =>
+                    memberId !== currentId &&
+                    isUserOnline(memberId)
+            );
 
-                const memberIds =
-                    members.map(member =>
-                        String(member.user_id)
-                    );
+            const groupMessagesForGroup = (groupMessages || []).filter(
+                message => String(message.group_id) === groupId
+            );
 
+            const lastMessage = groupMessagesForGroup[0] || null;
 
-                const onlineMemberExists =
-                    memberIds.some(memberId =>
-                        memberId !== currentId &&
-                        isUserOnline(memberId)
-                    );
+            const lastReadAt = readMap.get(groupId) || group.created_at;
 
+            const unreadCount = groupMessagesForGroup.filter(message =>
+                String(message.sender_id) !== currentId &&
+                new Date(message.timestamp) > new Date(lastReadAt)
+            ).length;
 
-                const groupMessagesForGroup =
-                    (groupMessages || [])
-                        .filter(message =>
-                            String(message.group_id) ===
-                            groupId
-                        );
+            let preview = "Group conversation";
 
+            if (lastMessage) {
 
-                const lastMessage =
-                    groupMessagesForGroup[0] ||
-                    null;
-
-
-                const lastReadAt =
-                    readMap.get(groupId) ||
-                    group.created_at;
-
-
-                const unreadCount =
-                    groupMessagesForGroup.filter(message =>
-
-                        String(message.sender_id) !== currentId &&
-
-                        new Date(message.timestamp) >
-                        new Date(lastReadAt)
-
-                    ).length;
-
-
-                let preview =
-                    "Group conversation";
-
-
-                if (lastMessage) {
-
-                    if (lastMessage.text) {
-
-                        preview =
-                            lastMessage.text;
-
-                    } else if (
-                        lastMessage.media_type ===
-                        "location"
-                    ) {
-
-                        preview =
-                            "📍 Location";
-
-                    } else if (
-                        String(
-                            lastMessage.media_type || ""
-                        ).startsWith("audio/")
-                    ) {
-
-                        preview =
-                            "🎤 Voice message";
-
-                    } else if (
-                        String(
-                            lastMessage.media_type || ""
-                        ).startsWith("image/")
-                    ) {
-
-                        preview =
-                            "📷 Photo";
-
-                    } else if (
-                        String(
-                            lastMessage.media_type || ""
-                        ).startsWith("video/")
-                    ) {
-
-                        preview =
-                            "🎥 Video";
-                    }
+                if (lastMessage.text) {
+                    preview = lastMessage.text;
+                } else if (lastMessage.media_type === "location") {
+                    preview = "📍 Location";
+                } else if (String(lastMessage.media_type || "").startsWith("audio/")) {
+                    preview = "🎤 Voice message";
+                } else if (String(lastMessage.media_type || "").startsWith("image/")) {
+                    preview = "📷 Photo";
+                } else if (String(lastMessage.media_type || "").startsWith("video/")) {
+                    preview = "🎥 Video";
                 }
+            }
 
+            return {
+                ...group,
+                memberCount: members.length,
+                online: onlineMemberExists,
+                unreadCount,
+                lastMessage,
+                preview
+            };
+        });
 
-                return {
-
-                    ...group,
-
-                    memberCount:
-                        members.length,
-
-                    online:
-                        onlineMemberExists,
-
-                    unreadCount,
-
-                    lastMessage,
-
-                    preview
-                };
-
-            });
-
-
-        console.log(
-            "NEXA groups loaded:",
-            groups
-        );
+        console.log("NEXA groups loaded:", groups);
 
     } catch (error) {
 
-        console.error(
-            "NEXA group loading error:",
-            error
-        );
+        console.error("NEXA group loading error:", error);
 
         groups = [];
     }
@@ -4317,189 +3521,91 @@ async function displayConversations(search = "") {
         }
 
         conversationsList.appendChild(conversationBox);
-
-
-
     });
 
-    /* =========================================================
+
+    /* =====================================================
        DISPLAY GROUPS
-    ========================================================= */
+    ===================================================== */
 
-    const groupSearchText =
-        String(search || "")
-            .trim()
-            .toLowerCase();
+    const groupSearchText = String(search || "").trim().toLowerCase();
 
+    const visibleGroups = groups.filter(group => {
 
-    const visibleGroups =
-        groups.filter(group => {
+        if (!groupSearchText) {
+            return true;
+        }
 
-            if (!groupSearchText) {
-                return true;
-            }
+        const name = String(group.name || "").toLowerCase();
+        const description = String(group.description || "").toLowerCase();
 
-            const name =
-                String(group.name || "")
-                    .toLowerCase();
-
-            const description =
-                String(group.description || "")
-                    .toLowerCase();
-
-            return (
-                name.includes(groupSearchText) ||
-                description.includes(groupSearchText)
-            );
-
-        });
-
+        return (
+            name.includes(groupSearchText) ||
+            description.includes(groupSearchText)
+        );
+    });
 
     if (visibleGroups.length) {
 
-        const heading =
-            document.createElement("div");
+        const heading = document.createElement("div");
 
-        heading.className =
-            "messages-group-section-heading";
+        heading.className = "messages-group-section-heading";
+        heading.textContent = "Groups";
 
-        heading.textContent =
-            "Groups";
-
-        conversationsList.appendChild(
-            heading
-        );
-
+        conversationsList.appendChild(heading);
 
         visibleGroups.forEach(group => {
 
-            const wrapper =
-                document.createElement("div");
+            const wrapper = document.createElement("div");
 
+            const picture = group.group_picture || "";
 
-            const picture =
-                group.group_picture || "";
+            const avatar = picture
+                ? `<img src="${escapeHTML(picture)}" alt="${escapeHTML(group.name || "Group")}">`
+                : `<span class="group-conversation-icon">👥</span>`;
 
-
-            const avatar =
-                picture
-
-                    ? `
-                    <img
-                        src="${escapeHTML(
-                        picture
-                    )}"
-                        alt="${escapeHTML(
-                        group.name ||
-                        "Group"
-                    )}"
-                    >
-                  `
-
-                    : `
-                    <span class="group-conversation-icon">
-                        👥
-                    </span>
-                  `;
-
-
-            const unread =
-                Number(
-                    group.unreadCount || 0
-                );
-
+            const unread = Number(group.unreadCount || 0);
 
             wrapper.innerHTML = `
-
-            <button
-                type="button"
-                class="
-                    groupConversationButton
-                    ${group.online ? "is-online" : "is-offline"}
-                "
-                data-group-id="${escapeHTML(
-                String(group.id)
-            )}"
-            >
-
-                <span
-                    class="groupConversationAvatar"
+                <button
+                    type="button"
+                    class="groupConversationButton ${group.online ? "is-online" : "is-offline"}"
+                    data-group-id="${escapeHTML(String(group.id))}"
                 >
 
-                    ${avatar}
+                    <span class="groupConversationAvatar">
 
-                    <span
-                        class="group-online-dot"
-                    ></span>
+                        ${avatar}
 
-                </span>
+                        <span class="group-online-dot"></span>
 
+                    </span>
 
-                <span
-                    class="groupConversationText"
-                >
+                    <span class="groupConversationText">
 
-                    <strong>
-                        ${escapeHTML(
-                group.name ||
-                "NEXA Group"
-            )}
-                    </strong>
+                        <strong>${escapeHTML(group.name || "NEXA Group")}</strong>
 
-                    <small>
-                        ${escapeHTML(
-                group.preview ||
-                "Group conversation"
-            )}
-                    </small>
+                        <small>${escapeHTML(group.preview || "Group conversation")}</small>
 
-                </span>
+                    </span>
 
+                    ${unread > 0
+                        ? `<span class="group-unread-count">${unread > 99 ? "99+" : unread}</span>`
+                        : ""}
 
-                ${unread > 0
+                </button>
+            `;
 
-                    ? `
-                            <span
-                                class="group-unread-count"
-                            >
-                                ${unread > 99
-                        ? "99+"
-                        : unread}
-                            </span>
-                          `
-
-                    : ""
-                }
-
-            </button>
-        `;
-
-
-            const button =
-                wrapper.querySelector(
-                    ".groupConversationButton"
-                );
-
+            const button = wrapper.querySelector(".groupConversationButton");
 
             if (button) {
-
-                button.addEventListener(
-                    "click",
-                    () => openGroup(group)
-                );
-
+                button.addEventListener("click", () => openGroup(group));
             }
 
-
-            conversationsList.appendChild(
-                wrapper
-            );
-
+            conversationsList.appendChild(wrapper);
         });
     }
-
 }
-
 
 
 /* =========================================================
@@ -4513,14 +3619,9 @@ async function openChat(friend) {
     selectedFriend = friend;
     selectedGroup = null;
 
-    localStorage.removeItem(
-        "nexaActiveGroup"
-    );
+    localStorage.removeItem("nexaActiveGroup");
 
-    localStorage.setItem(
-        "nexaActiveConversation",
-        String(friend.id)
-    );
+    localStorage.setItem("nexaActiveConversation", String(friend.id));
 
     if (chatSection) chatSection.style.display = "flex";
     if (emptyChatState) emptyChatState.style.display = "none";
@@ -4551,19 +3652,11 @@ async function openGroup(group) {
     selectedGroup = group;
     selectedFriend = null;
 
-    localStorage.setItem(
-        "nexaActiveGroup",
-        String(group.id)
-    );
+    localStorage.setItem("nexaActiveGroup", String(group.id));
 
-    localStorage.removeItem(
-        "nexaActiveConversation"
-    );
+    localStorage.removeItem("nexaActiveConversation");
 
-    const shell =
-        document.querySelector(
-            ".messages-shell"
-        );
+    const shell = document.querySelector(".messages-shell");
 
     if (shell) {
         shell.classList.add("chat-open");
@@ -4581,25 +3674,17 @@ async function openGroup(group) {
 
     await loadGroupConversation(group);
 
-    /*
-     * Opening the group means the user has now seen
-     * the messages. Save that read position.
-     */
+    /* Save the read position. */
     await markGroupAsRead(group.id);
 
-    /*
-     * Refresh the sidebar so the red unread number
-     * disappears immediately.
-     */
-    await displayConversations(
-        getConversationSearchValue()
-    );
+    /* Refresh the sidebar so the unread number disappears. */
+    await displayConversations(getConversationSearchValue());
 
     if (messagesContainer) {
-        messagesContainer.scrollTop =
-            messagesContainer.scrollHeight;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 }
+
 
 /* =========================================================
    MARK GROUP AS READ
@@ -4609,43 +3694,32 @@ async function markGroupAsRead(groupId) {
 
     if (!groupId) return;
 
-    const now =
-        new Date().toISOString();
+    const now = new Date().toISOString();
 
     try {
 
-        const { error } =
-            await nexaSupabase
-                .from("group_reads")
-                .upsert(
-                    {
-                        group_id:
-                            String(groupId),
-
-                        user_id:
-                            String(currentUser.id),
-
-                        last_read_at:
-                            now
-                    },
-                    {
-                        onConflict:
-                            "group_id,user_id"
-                    }
-                );
+        const { error } = await nexaSupabase
+            .from("group_reads")
+            .upsert(
+                {
+                    group_id: String(groupId),
+                    user_id: String(currentUser.id),
+                    last_read_at: now
+                },
+                {
+                    onConflict: "group_id,user_id"
+                }
+            );
 
         if (error) {
             throw error;
         }
 
     } catch (error) {
-
-        console.error(
-            "NEXA group read-state error:",
-            error
-        );
+        console.error("NEXA group read-state error:", error);
     }
 }
+
 
 /* =========================================================
    GROUP ONLINE STATUS
@@ -4654,70 +3728,43 @@ async function markGroupAsRead(groupId) {
 async function getGroupOnlineStatus(groupId) {
 
     if (!groupId) {
-
-        return {
-            online: false,
-            onlineCount: 0,
-            memberCount: 0
-        };
+        return { online: false, onlineCount: 0, memberCount: 0 };
     }
 
     try {
 
-        const { data, error } =
-            await nexaSupabase
-                .from("group_members")
-                .select("user_id")
-                .eq(
-                    "group_id",
-                    String(groupId)
-                );
+        const { data, error } = await nexaSupabase
+            .from("group_members")
+            .select("user_id")
+            .eq("group_id", String(groupId));
 
         if (error) {
             throw error;
         }
 
-        const memberIds =
-            Array.isArray(data)
-                ? data.map(member =>
-                    String(member.user_id)
-                )
-                : [];
+        const memberIds = Array.isArray(data)
+            ? data.map(member => String(member.user_id))
+            : [];
 
-
-        const onlineMembers =
-            memberIds.filter(userId =>
-                userId !== String(currentUser.id) &&
-                isUserOnline(userId)
-            );
-
+        const onlineMembers = memberIds.filter(userId =>
+            userId !== String(currentUser.id) &&
+            isUserOnline(userId)
+        );
 
         return {
-
-            online:
-                onlineMembers.length > 0,
-
-            onlineCount:
-                onlineMembers.length,
-
-            memberCount:
-                memberIds.length
+            online: onlineMembers.length > 0,
+            onlineCount: onlineMembers.length,
+            memberCount: memberIds.length
         };
 
     } catch (error) {
 
-        console.error(
-            "NEXA group presence error:",
-            error
-        );
+        console.error("NEXA group presence error:", error);
 
-        return {
-            online: false,
-            onlineCount: 0,
-            memberCount: 0
-        };
+        return { online: false, onlineCount: 0, memberCount: 0 };
     }
 }
+
 
 /* =========================================================
    LOAD GROUP CALL MEMBERS
@@ -4732,44 +3779,28 @@ async function loadGroupCallMembers(groupId) {
 
     try {
 
-        const { data, error } =
-            await nexaSupabase
-                .from("group_members")
-                .select("user_id")
-                .eq(
-                    "group_id",
-                    String(groupId)
-                );
+        const { data, error } = await nexaSupabase
+            .from("group_members")
+            .select("user_id")
+            .eq("group_id", String(groupId));
 
         if (error) {
             throw error;
         }
 
-        const memberIds =
-            (data || [])
-                .map(member =>
-                    String(member.user_id)
-                )
-                .filter(userId =>
-                    userId !==
-                    String(currentUser.id)
-                );
+        const memberIds = (data || [])
+            .map(member => String(member.user_id))
+            .filter(userId => userId !== String(currentUser.id));
 
-        groupCallMembers =
-            memberIds
-                .map(userId =>
-                    findUserById(userId)
-                )
-                .filter(Boolean);
+        groupCallMembers = memberIds
+            .map(userId => findUserById(userId))
+            .filter(Boolean);
 
         return groupCallMembers;
 
     } catch (error) {
 
-        console.error(
-            "NEXA group call members error:",
-            error
-        );
+        console.error("NEXA group call members error:", error);
 
         groupCallMembers = [];
 
@@ -4777,117 +3808,65 @@ async function loadGroupCallMembers(groupId) {
     }
 }
 
+
 /* =========================================================
    GROUP HEADER
 ========================================================= */
+
 async function updateGroupHeader(group) {
 
     if (!group) return;
 
-    const chatAvatar =
-        document.getElementById("chatAvatar");
+    const chatAvatar = document.getElementById("chatAvatar");
+    const status = document.getElementById("chatOnlineStatus");
 
-    const status =
-        document.getElementById("chatOnlineStatus");
-
-    /*
-     * Check the real presence of the group's members.
-     * We only need to know whether AT LEAST ONE member
-     * other than the current user is online.
-     */
     let isOnline = false;
 
     try {
 
-        const onlineInfo =
-            await getGroupOnlineStatus(group.id);
+        const onlineInfo = await getGroupOnlineStatus(group.id);
 
-        isOnline =
-            Boolean(onlineInfo?.online);
+        isOnline = Boolean(onlineInfo?.online);
 
     } catch (error) {
-
-        console.error(
-            "NEXA group header presence error:",
-            error
-        );
+        console.error("NEXA group header presence error:", error);
     }
-
-
-    /* =====================================================
-       GROUP AVATAR
-    ===================================================== */
 
     if (chatAvatar) {
 
-        const picture =
-            group.group_picture || "";
+        const picture = group.group_picture || "";
 
         if (picture) {
 
             chatAvatar.innerHTML = `
-                <img
-                    src="${escapeHTML(picture)}"
-                    alt="${escapeHTML(
-                group.name || "Group"
-            )}"
-                >
-
+                <img src="${escapeHTML(picture)}" alt="${escapeHTML(group.name || "Group")}">
                 <span class="chat-avatar-online"></span>
             `;
 
         } else {
 
             chatAvatar.innerHTML = `
-                <span class="chat-avatar-letter">
-                    👥
-                </span>
-
+                <span class="chat-avatar-letter">👥</span>
                 <span class="chat-avatar-online"></span>
             `;
         }
 
-
-        chatAvatar.classList.toggle(
-            "is-online",
-            isOnline
-        );
-
-        chatAvatar.classList.toggle(
-            "is-offline",
-            !isOnline
-        );
+        chatAvatar.classList.toggle("is-online", isOnline);
+        chatAvatar.classList.toggle("is-offline", !isOnline);
     }
-
-
-    /* =====================================================
-       GROUP NAME
-    ===================================================== */
 
     if (chatWith) {
-
-        chatWith.textContent =
-            group.name || "NEXA Group";
+        chatWith.textContent = group.name || "NEXA Group";
     }
-
-
-    /* =====================================================
-       GROUP ONLINE STATUS
-    ===================================================== */
 
     if (status) {
 
-        status.textContent =
-            isOnline
-                ? "Online"
-                : "Offline";
+        status.textContent = isOnline ? "Online" : "Offline";
 
-        status.style.color =
-            isOnline
-                ? "var(--nexa-green)"
-                : "#7b7261";
+        status.style.color = isOnline ? "var(--nexa-green)" : "#7b7261";
     }
 }
+
 
 /* =========================================================
    LOAD GROUP CONVERSATION
@@ -4901,113 +3880,63 @@ async function loadGroupConversation(group) {
 
     try {
 
-        const { data, error } =
-            await nexaSupabase
-                .from("messages")
-                .select(`
-    id,
-    conversation_id,
-    group_id,
-    sender_id,
-    receiver_id,
-    text,
-    media,
-    media_type,
-    latitude,
-    longitude,
-    timestamp,
-    read
-`)
-                .eq(
-                    "group_id",
-                    String(group.id)
-                )
-                .order("timestamp", {
-                    ascending: true
-                });
+        const { data, error } = await nexaSupabase
+            .from("messages")
+            .select(`
+                id,
+                conversation_id,
+                group_id,
+                sender_id,
+                receiver_id,
+                text,
+                media,
+                media_type,
+                latitude,
+                longitude,
+                timestamp,
+                read
+            `)
+            .eq("group_id", String(group.id))
+            .order("timestamp", { ascending: true });
 
         if (error) {
             throw error;
         }
 
+        const groupMessages = Array.isArray(data)
+            ? data.map(message => ({
+                id: message.id,
+                conversationId: message.conversation_id,
+                groupId: String(message.group_id),
+                senderId: String(message.sender_id),
+                receiverId: message.receiver_id
+                    ? String(message.receiver_id)
+                    : null,
+                text: message.text || "",
+                media: message.media || null,
+                mediaType: message.media_type || null,
+                latitude: message.latitude ?? null,
+                longitude: message.longitude ?? null,
+                timestamp: message.timestamp,
+                read: Boolean(message.read)
+            }))
+            : [];
 
-        const groupMessages =
-            Array.isArray(data)
-                ? data.map(message => ({
-
-                    id:
-                        message.id,
-
-                    conversationId:
-                        message.conversation_id,
-
-                    groupId:
-                        String(message.group_id),
-
-                    senderId:
-                        String(message.sender_id),
-
-                    receiverId:
-                        message.receiver_id
-                            ? String(message.receiver_id)
-                            : null,
-
-                    text:
-                        message.text || "",
-
-                    media:
-                        message.media || null,
-
-                    mediaType:
-                        message.media_type || null,
-
-                    latitude:
-                        message.latitude ?? null,
-
-                    longitude:
-                        message.longitude ?? null,
-
-                    timestamp:
-                        message.timestamp,
-
-                    read:
-                        Boolean(message.read)
-
-                }))
-                : [];
-
-
-        /* =====================================================
-           IMPORTANT FIX
-
-           Put the loaded group messages into the main
-           messages array so that sending a new message,
-           location or voice note does NOT erase the history.
-        ===================================================== */
-
-        messages =
-            messages.filter(message =>
-                String(message.groupId || "") !==
-                String(group.id)
-            );
-
+        /* Keep loaded group messages in the main array so sending
+           a new message doesn't erase the history. */
+        messages = messages.filter(
+            message => String(message.groupId || "") !== String(group.id)
+        );
 
         messages.push(...groupMessages);
 
-
         saveCachedMessages();
 
-
-        renderGroupConversation(
-            getCurrentGroupMessages()
-        );
-
+        renderGroupConversation(getCurrentGroupMessages());
 
         if (messagesContainer) {
-            messagesContainer.scrollTop =
-                messagesContainer.scrollHeight;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-
 
         console.log(
             "NEXA group restored:",
@@ -5018,18 +3947,14 @@ async function loadGroupConversation(group) {
 
     } catch (error) {
 
-        console.error(
-            "NEXA group conversation error:",
-            error
-        );
+        console.error("NEXA group conversation error:", error);
 
         messagesContainer.innerHTML = `
-            <p>
-                Could not load this group conversation.
-            </p>
+            <p>Could not load this group conversation.</p>
         `;
     }
 }
+
 
 /* =========================================================
    CURRENT GROUP MESSAGES
@@ -5043,15 +3968,11 @@ function getCurrentGroupMessages() {
 
     return messages
         .filter(message =>
-            String(message.groupId || "") ===
-            String(selectedGroup.id)
+            String(message.groupId || "") === String(selectedGroup.id)
         )
-        .sort(
-            (a, b) =>
-                new Date(a.timestamp) -
-                new Date(b.timestamp)
-        );
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 }
+
 
 /* =========================================================
    RENDER GROUP CONVERSATION
@@ -5066,9 +3987,7 @@ function renderGroupConversation(groupMessages) {
     if (!groupMessages.length) {
 
         messagesContainer.innerHTML = `
-            <p>
-                No messages yet. Say hello to the group!
-            </p>
+            <p>No messages yet. Say hello to the group!</p>
         `;
 
         return;
@@ -5076,53 +3995,32 @@ function renderGroupConversation(groupMessages) {
 
     groupMessages.forEach(message => {
 
-        const messageElement =
-            document.createElement("div");
+        const messageElement = document.createElement("div");
 
-        const isMine =
-            String(message.senderId) ===
-            String(currentUser.id);
+        const isMine = String(message.senderId) === String(currentUser.id);
 
-        const senderUser =
-            findUserById(
-                message.senderId
+        const senderUser = findUserById(message.senderId);
+
+        const senderName = isMine
+            ? "You"
+            : (
+                senderUser?.name ||
+                senderUser?.username ||
+                "NEXA Member"
             );
 
-        const senderName =
-            isMine
-                ? "You"
-                : (
-                    senderUser?.name ||
-                    senderUser?.username ||
-                    "NEXA Member"
-                );
-
         messageElement.className =
-            "nexa-message " +
-            (isMine
-                ? "sent"
-                : "received");
+            "nexa-message " + (isMine ? "sent" : "received");
 
         let mediaHTML = "";
 
-
-        /* -------------------------------------------------
-           IMAGE
-        ------------------------------------------------- */
-
-        if (
-            message.mediaType &&
-            message.mediaType.startsWith("image/")
-        ) {
+        /* IMAGE */
+        if (message.mediaType && message.mediaType.startsWith("image/")) {
 
             mediaHTML = message.media
                 ? `
                     <div class="nexa-message-media">
-                        <img
-                            src="${escapeHTML(message.media)}"
-                            alt="Shared image"
-                            loading="lazy"
-                        >
+                        <img src="${escapeHTML(message.media)}" alt="Shared image" loading="lazy">
                     </div>
                   `
                 : `
@@ -5132,24 +4030,13 @@ function renderGroupConversation(groupMessages) {
                   `;
         }
 
-
-        /* -------------------------------------------------
-           VIDEO
-        ------------------------------------------------- */
-
-        else if (
-            message.mediaType &&
-            message.mediaType.startsWith("video/")
-        ) {
+        /* VIDEO */
+        else if (message.mediaType && message.mediaType.startsWith("video/")) {
 
             mediaHTML = message.media
                 ? `
                     <div class="nexa-message-media">
-                        <video
-                            src="${escapeHTML(message.media)}"
-                            controls
-                            preload="metadata"
-                        ></video>
+                        <video src="${escapeHTML(message.media)}" controls preload="metadata"></video>
                     </div>
                   `
                 : `
@@ -5159,25 +4046,13 @@ function renderGroupConversation(groupMessages) {
                   `;
         }
 
-
-        /* -------------------------------------------------
-           VOICE
-        ------------------------------------------------- */
-
-        else if (
-            message.mediaType &&
-            message.mediaType.startsWith("audio/")
-        ) {
+        /* VOICE */
+        else if (message.mediaType && message.mediaType.startsWith("audio/")) {
 
             if (message.media) {
 
                 const voiceId =
-                    "voice-" +
-                    String(message.id)
-                        .replace(
-                            /[^a-zA-Z0-9_-]/g,
-                            ""
-                        );
+                    "voice-" + String(message.id).replace(/[^a-zA-Z0-9_-]/g, "");
 
                 mediaHTML = `
                     <div class="nexa-voice-message">
@@ -5193,26 +4068,17 @@ function renderGroupConversation(groupMessages) {
 
                         <div class="nexa-voice-center">
 
-                            <div
-                                class="nexa-voice-wave"
-                                aria-hidden="true"
-                            >
-                                ${voiceMessageWaveform(
-                    message.id
-                )}
+                            <div class="nexa-voice-wave" aria-hidden="true">
+                                ${voiceMessageWaveform(message.id)}
                             </div>
 
                             <div class="nexa-voice-bottom">
 
-                                <span class="nexa-voice-label">
-                                    Voice message
-                                </span>
+                                <span class="nexa-voice-label">Voice message</span>
 
                                 <span
                                     class="nexa-voice-duration"
-                                    id="${escapeHTML(
-                    voiceId
-                )}-duration"
+                                    id="${escapeHTML(voiceId)}-duration"
                                 >
                                     0:00
                                 </span>
@@ -5245,37 +4111,22 @@ function renderGroupConversation(groupMessages) {
             }
         }
 
-
-        /* -------------------------------------------------
-           LOCATION
-        ------------------------------------------------- */
-
+        /* LOCATION */
         if (message.mediaType === "location") {
 
-            const latitude =
-                Number(message.latitude);
-
-            const longitude =
-                Number(message.longitude);
+            const latitude = Number(message.latitude);
+            const longitude = Number(message.longitude);
 
             const mapURL =
                 "https://www.google.com/maps?q=" +
-                encodeURIComponent(
-                    latitude + "," + longitude
-                );
+                encodeURIComponent(latitude + "," + longitude);
 
             mediaHTML = `
                 <div class="locationMessage">
 
-                    <strong>
-                        📍 Location shared
-                    </strong>
+                    <strong>📍 Location shared</strong>
 
-                    <a
-                        href="${mapURL}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <a href="${mapURL}" target="_blank" rel="noopener noreferrer">
                         View Location
                     </a>
 
@@ -5283,85 +4134,44 @@ function renderGroupConversation(groupMessages) {
             `;
         }
 
+        /* TEXT */
+        const textHTML = message.text
+            ? `<p class="nexa-message-text">${escapeHTML(message.text)}</p>`
+            : "";
 
-        /* -------------------------------------------------
-           TEXT
-        ------------------------------------------------- */
+        /* TICKS */
+        const readTicks = isMine
+            ? (
+                message.read
+                    ? `<span class="nexa-message-ticks is-read">✓✓</span>`
+                    : `<span class="nexa-message-ticks">✓</span>`
+            )
+            : "";
 
-        const textHTML =
-            message.text
-                ? `
-                    <p class="nexa-message-text">
-                        ${escapeHTML(message.text)}
-                    </p>
-                  `
-                : "";
-
-
-        /* -------------------------------------------------
-           TICKS
-        ------------------------------------------------- */
-
-        const readTicks =
-            isMine
-                ? (
-                    message.read
-                        ? `
-                            <span class="nexa-message-ticks is-read">
-                                ✓✓
-                            </span>
-                          `
-                        : `
-                            <span class="nexa-message-ticks">
-                                ✓
-                            </span>
-                          `
-                )
-                : "";
-
-
-        /* -------------------------------------------------
-           FINAL BUBBLE
-        ------------------------------------------------- */
-
+        /* FINAL BUBBLE */
         messageElement.innerHTML = `
-
             <div class="nexa-message-bubble">
 
                 ${!isMine
-                ? `
-                            <div class="nexa-message-sender">
-                                ${escapeHTML(senderName)}
-                            </div>
-                          `
-                : ""
-            }
+                    ? `<div class="nexa-message-sender">${escapeHTML(senderName)}</div>`
+                    : ""}
 
                 ${textHTML}
 
                 ${mediaHTML}
 
                 <small class="nexa-message-time">
-
-                    ${formatTime(
-                message.timestamp
-            )}
-
+                    ${formatTime(message.timestamp)}
                     ${readTicks}
-
                 </small>
 
             </div>
         `;
 
-        messagesContainer.appendChild(
-            messageElement
-        );
+        messagesContainer.appendChild(messageElement);
     });
 
-
-    messagesContainer.scrollTop =
-        messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 
@@ -5461,17 +4271,7 @@ async function markMessagesAsRead(friend) {
 
 /* =========================================================
    LOAD EXISTING CONVERSATION
-
-   Load directly by sender + receiver — NOT by conversation_id
-   (see notes at the top of the file for why).
-
-   Step 1 — fetch the conversation WITHOUT the "media" column
-            and render it immediately, so the chat opens
-            instantly even with a long history of photos,
-            videos, and voice notes.
-   Step 2 — in the background, fetch the real media bytes for
-            exactly those message ids, then quietly re-render
-            so images/audio/video fade in once they arrive.
+   Loads directly by sender + receiver (not conversation_id).
 ========================================================= */
 
 async function loadConversation() {
@@ -5486,18 +4286,18 @@ async function loadConversation() {
         const { data, error } = await nexaSupabase
             .from("messages")
             .select(`
-    id,
-    conversation_id,
-    sender_id,
-    receiver_id,
-    text,
-    media,
-    media_type,
-    latitude,
-    longitude,
-    timestamp,
-    read
-`)
+                id,
+                conversation_id,
+                sender_id,
+                receiver_id,
+                text,
+                media,
+                media_type,
+                latitude,
+                longitude,
+                timestamp,
+                read
+            `)
             .or(`and(sender_id.eq.${currentId},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${currentId})`)
             .order("timestamp", { ascending: true });
 
@@ -5544,13 +4344,6 @@ async function loadConversation() {
             conversationMessages.length
         );
 
-        /*
-         * Fetch the real media for exactly these message ids.
-         * Skip refetching if we already pulled media for this
-         * friend and nothing new needs it.
-         */
-
-
     } catch (error) {
 
         console.error("NEXA conversation restore error:", error);
@@ -5585,11 +4378,7 @@ function renderCurrentConversation(preserveScroll = false) {
                 (senderId === friendId && receiverId === currentId)
             );
         })
-        .sort(
-            (a, b) =>
-                new Date(a.timestamp) -
-                new Date(b.timestamp)
-        );
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     messagesContainer.innerHTML = "";
 
@@ -5611,12 +4400,6 @@ function renderCurrentConversation(preserveScroll = false) {
 
 /* =========================================================
    RENDER MESSAGE
-
-   While media hasn't arrived yet (message.media is still
-   null right after loadConversation() but before
-   loadConversationMedia() resolves), image/video/voice
-   bubbles show an animated shimmer placeholder instead of
-   blank space or dead text, driven purely by mediaType.
 ========================================================= */
 
 function renderMessage(message) {
@@ -5632,21 +4415,13 @@ function renderMessage(message) {
 
     let mediaHTML = "";
 
-    /* =========================================================
-   MISSED CALL MESSAGE
-========================================================= */
-
+    /* MISSED CALL MESSAGE */
     if (
         message.mediaType === "call_missed_voice" ||
         message.mediaType === "call_missed_video"
     ) {
 
-        const isVideo =
-            message.mediaType === "call_missed_video";
-
-        const isMine =
-            String(message.senderId) ===
-            String(currentUser.id);
+        const isVideo = message.mediaType === "call_missed_video";
 
         const otherName =
             selectedFriend?.name ||
@@ -5654,30 +4429,28 @@ function renderMessage(message) {
             "NEXA Member";
 
         mediaHTML = `
-        <div class="nexa-missed-call">
-            <div class="nexa-missed-call-icon">
-                ${isVideo ? "📹" : "📞"}
+            <div class="nexa-missed-call">
+                <div class="nexa-missed-call-icon">
+                    ${isVideo ? "📹" : "📞"}
+                </div>
+
+                <div class="nexa-missed-call-content">
+
+                    <strong>
+                        ${isMine ? "Call not answered" : "Missed call"}
+                    </strong>
+
+                    <span>
+                        ${isMine
+                            ? `No answer from ${escapeHTML(otherName)}`
+                            : isVideo
+                                ? "Missed video call"
+                                : "Missed voice call"}
+                    </span>
+
+                </div>
             </div>
-
-            <div class="nexa-missed-call-content">
-
-                <strong>
-                    ${isMine
-                ? "Call not answered"
-                : "Missed call"}
-                </strong>
-
-                <span>
-                    ${isMine
-                ? `No answer from ${escapeHTML(otherName)}`
-                : isVideo
-                    ? "Missed video call"
-                    : "Missed voice call"}
-                </span>
-
-            </div>
-        </div>
-    `;
+        `;
     }
 
     if (message.mediaType && message.mediaType.startsWith("image/")) {
@@ -5770,14 +4543,13 @@ function renderMessage(message) {
         ? `<p class="nexa-message-text">${escapeHTML(message.text)}</p>`
         : "";
 
-    const readTicks =
-        isMine
-            ? (
-                message.read
-                    ? `<span class="nexa-message-ticks is-read">✓✓</span>`
-                    : `<span class="nexa-message-ticks">✓</span>`
-            )
-            : "";
+    const readTicks = isMine
+        ? (
+            message.read
+                ? `<span class="nexa-message-ticks is-read">✓✓</span>`
+                : `<span class="nexa-message-ticks">✓</span>`
+        )
+        : "";
 
     messageElement.innerHTML = `
         <div class="nexa-message-bubble">
@@ -5785,9 +4557,9 @@ function renderMessage(message) {
             ${textHTML}
             ${mediaHTML}
             <small class="nexa-message-time">
-    ${formatTime(message.timestamp)}
-    ${readTicks}
-</small>
+                ${formatTime(message.timestamp)}
+                ${readTicks}
+            </small>
         </div>
     `;
 
@@ -5801,19 +4573,11 @@ function renderMessage(message) {
 
 function createPeerConnection(otherUserId) {
 
-    const connection =
-        new RTCPeerConnection(
-            rtcConfiguration
-        );
+    const connection = new RTCPeerConnection(rtcConfiguration);
 
-    const targetUserId =
-        String(otherUserId);
+    const targetUserId = String(otherUserId);
 
-
-    /* =====================================================
-       ICE CANDIDATES
-    ===================================================== */
-
+    /* ICE CANDIDATES */
     connection.onicecandidate = event => {
 
         if (!event.candidate) {
@@ -5832,10 +4596,7 @@ function createPeerConnection(otherUserId) {
             sendGroupCallSignal(
                 targetUserId,
                 "ice-candidate",
-                {
-                    candidate:
-                        event.candidate
-                },
+                { candidate: event.candidate },
                 callId
             );
 
@@ -5844,40 +4605,26 @@ function createPeerConnection(otherUserId) {
             sendCallSignal(
                 targetUserId,
                 "ice-candidate",
-                {
-                    candidate:
-                        event.candidate
-                },
+                { candidate: event.candidate },
                 callId
             );
         }
     };
 
-
-    /* =====================================================
-       REMOTE TRACK
-    ===================================================== */
-
+    /* REMOTE TRACK */
     connection.ontrack = async event => {
 
-        console.log(
-            "NEXA GROUP TRACK RECEIVED:",
-            {
-                user: String(otherUserId),
-                kind: event.track?.kind,
-                readyState: event.track?.readyState,
-                enabled: event.track?.enabled,
-                muted: event.track?.muted,
-                streams: event.streams?.length || 0
-            }
-        );
+        console.log("NEXA TRACK RECEIVED:", {
+            user: String(otherUserId),
+            kind: event.track?.kind,
+            readyState: event.track?.readyState,
+            muted: event.track?.muted,
+            streams: event.streams?.length || 0
+        });
 
-        const stream =
-            event.streams &&
-            event.streams[0];
+        const stream = event.streams && event.streams[0];
 
         if (!stream) {
-
             console.warn(
                 "NEXA remote track arrived without a MediaStream:",
                 event.track?.kind
@@ -5891,37 +4638,18 @@ function createPeerConnection(otherUserId) {
 
         if (activeGroupCall) {
 
-            const memberId =
-                String(
-                    targetUserId
-                );
+            const memberId = String(targetUserId);
 
-            groupRemoteStreams.set(
-                memberId,
-                stream
-            );
+            groupRemoteStreams.set(memberId, stream);
 
-            groupCallParticipants.add(
-                memberId
-            );
+            groupCallParticipants.add(memberId);
 
             renderGroupCallParticipants();
 
+            /* GROUP VIDEO */
+            if (activeGroupCall.callType === "video") {
 
-            /* =============================================
-               GROUP VIDEO
-            ============================================= */
-
-            if (
-                activeGroupCall.callType ===
-                "video"
-            ) {
-
-                const video =
-                    document.getElementById(
-                        "nexa-group-video-" +
-                        memberId
-                    );
+                const video = document.getElementById("nexa-group-video-" + memberId);
 
                 if (video) {
 
@@ -5929,83 +4657,46 @@ function createPeerConnection(otherUserId) {
                     video.playsInline = true;
                     video.muted = false;
 
-                    if (
-                        video.srcObject !==
-                        stream
-                    ) {
-
-                        video.srcObject =
-                            stream;
+                    if (video.srcObject !== stream) {
+                        video.srcObject = stream;
                     }
 
                     video.play()
                         .then(() => {
-
-                            console.log(
-                                "NEXA GROUP VIDEO PLAYING:",
-                                memberId
-                            );
-
+                            console.log("NEXA GROUP VIDEO PLAYING:", memberId);
                         })
                         .catch(error => {
-
-                            console.warn(
-                                "NEXA group video playback:",
-                                error
-                            );
-
+                            console.warn("NEXA group video playback:", error);
                         });
                 }
 
                 return;
             }
 
-
-            /* =====================================================
-               GROUP VOICE — HTML AUDIO OUTPUT
-            ===================================================== */
-
+            /* GROUP VOICE — HTML AUDIO OUTPUT */
             try {
 
                 if (!groupRemoteAudio) {
-                    console.warn(
-                        "NEXA group remote audio element not found."
-                    );
+                    console.warn("NEXA group remote audio element not found.");
                     return;
                 }
 
-                const audioStream =
-                    new MediaStream();
+                const audioStream = new MediaStream();
 
-                if (
-                    event.track &&
-                    event.track.kind === "audio"
-                ) {
-                    audioStream.addTrack(
-                        event.track
-                    );
+                if (event.track && event.track.kind === "audio") {
+                    audioStream.addTrack(event.track);
                 }
 
-                if (
-                    !audioStream.getAudioTracks().length
-                ) {
-                    console.warn(
-                        "NEXA group call: no audio track."
-                    );
+                if (!audioStream.getAudioTracks().length) {
+                    console.warn("NEXA group call: no audio track.");
                     return;
                 }
 
-                groupRemoteStreams.set(
-                    memberId,
-                    audioStream
-                );
+                groupRemoteStreams.set(memberId, audioStream);
 
-                groupCallParticipants.add(
-                    memberId
-                );
+                groupCallParticipants.add(memberId);
 
-                groupRemoteAudio.srcObject =
-                    audioStream;
+                groupRemoteAudio.srcObject = audioStream;
 
                 groupRemoteAudio.autoplay = true;
                 groupRemoteAudio.playsInline = true;
@@ -6015,30 +4706,10 @@ function createPeerConnection(otherUserId) {
                 const playGroupAudio = async () => {
 
                     try {
-
                         await groupRemoteAudio.play();
-                        console.log(
-    "NEXA GROUP AUDIO PLAY RESULT:",
-    {
-        paused: groupRemoteAudio.paused,
-        readyState: groupRemoteAudio.readyState,
-        currentTime: groupRemoteAudio.currentTime,
-        muted: groupRemoteAudio.muted,
-        volume: groupRemoteAudio.volume
-    }
-);
-
-                        console.log(
-                            "NEXA GROUP HTML AUDIO PLAYING:",
-                            memberId
-                        );
-
+                        console.log("NEXA GROUP HTML AUDIO PLAYING:", memberId);
                     } catch (error) {
-
-                        console.warn(
-                            "NEXA GROUP HTML AUDIO PLAY BLOCKED:",
-                            error
-                        );
+                        console.warn("NEXA GROUP HTML AUDIO PLAY BLOCKED:", error);
                     }
                 };
 
@@ -6046,30 +4717,9 @@ function createPeerConnection(otherUserId) {
 
                     event.track.onunmute = () => {
 
-                        console.log(
-                            "NEXA GROUP AUDIO UNMUTED:",
-                            memberId
-                        );
+                        console.log("NEXA GROUP AUDIO UNMUTED:", memberId);
 
-                        groupRemoteAudio.srcObject =
-                            audioStream;
-                        console.log(
-                            "NEXA GROUP AUDIO ELEMENT:",
-                            {
-                                exists: !!groupRemoteAudio,
-                                muted: groupRemoteAudio?.muted,
-                                volume: groupRemoteAudio?.volume,
-                                paused: groupRemoteAudio?.paused,
-                                readyState: groupRemoteAudio?.readyState,
-                                srcObject: !!groupRemoteAudio?.srcObject,
-                                audioTracks:
-                                    audioStream.getAudioTracks().map(track => ({
-                                        enabled: track.enabled,
-                                        muted: track.muted,
-                                        readyState: track.readyState
-                                    }))
-                            }
-                        );
+                        groupRemoteAudio.srcObject = audioStream;
 
                         playGroupAudio();
                     };
@@ -6082,15 +4732,10 @@ function createPeerConnection(otherUserId) {
                 renderGroupCallParticipants();
 
             } catch (error) {
-
-                console.error(
-                    "NEXA GROUP HTML AUDIO ERROR:",
-                    error
-                );
+                console.error("NEXA GROUP HTML AUDIO ERROR:", error);
             }
 
             return;
-
         }
 
 
@@ -6098,146 +4743,74 @@ function createPeerConnection(otherUserId) {
            PRIVATE CALL
         ================================================= */
 
-        remoteStream =
-            stream;
+        remoteStream = stream;
 
-        if (
-            activeCall &&
-            activeCall.callType ===
-            "video"
-        ) {
+        if (activeCall && activeCall.callType === "video") {
 
             if (remoteCallArea) {
-                remoteCallArea.style.display =
-                    "block";
+                remoteCallArea.style.display = "block";
             }
 
             if (remoteVideo) {
 
-                remoteVideo.style.display =
-                    "block";
+                remoteVideo.style.display = "block";
 
-                remoteVideo.srcObject =
-                    stream;
+                remoteVideo.srcObject = stream;
 
-                remoteVideo.play()
-                    .catch(() => { });
+                remoteVideo.play().catch(() => { });
             }
 
             if (remoteAudio) {
 
-                remoteAudio.style.display =
-                    "none";
+                remoteAudio.style.display = "none";
 
-                remoteAudio.srcObject =
-                    stream;
+                remoteAudio.srcObject = stream;
             }
 
-            const activeScreen =
-                document.getElementById(
-                    "nexaActiveCallScreen"
-                );
+            const activeScreen = document.getElementById("nexaActiveCallScreen");
 
             if (activeScreen) {
-                activeScreen.style.display =
-                    "none";
+                activeScreen.style.display = "none";
             }
 
         } else {
 
             if (remoteCallArea) {
-                remoteCallArea.style.display =
-                    "block";
+                remoteCallArea.style.display = "block";
             }
 
             if (remoteVideo) {
 
-                remoteVideo.style.display =
-                    "none";
+                remoteVideo.style.display = "none";
 
-                remoteVideo.srcObject =
-                    null;
+                remoteVideo.srcObject = null;
             }
 
             if (remoteAudio) {
 
-                remoteAudio.style.display =
-                    "block";
+                remoteAudio.style.display = "block";
 
-                remoteAudio.srcObject =
-                    stream;
+                remoteAudio.srcObject = stream;
 
-                remoteAudio.play()
-                    .catch(() => { });
+                remoteAudio.play().catch(() => { });
             }
 
             showActiveCallScreen();
 
-            startRemoteSpeakingVisualizer(
-                stream
-            );
+            startRemoteSpeakingVisualizer(stream);
         }
     };
 
-
-    /* =====================================================
-       CONNECTION STATE
-    ===================================================== */
-
+    /* CONNECTION STATE */
     connection.onconnectionstatechange = async () => {
 
-        console.log(
-            "NEXA WebRTC state:",
-            targetUserId,
-            connection.connectionState
-        );
+        console.log("NEXA WebRTC state:", targetUserId, connection.connectionState);
 
-
-        if (
-            activeGroupCall &&
-            connection.connectionState === "connected"
-        ) {
-
-            const stats =
-                await connection.getStats();
-
-            stats.forEach(report => {
-
-                if (
-                    report.type === "inbound-rtp" &&
-                    report.kind === "audio"
-                ) {
-
-                    console.log(
-                        "NEXA GROUP AUDIO INBOUND:",
-                        targetUserId,
-                        {
-                            packetsReceived:
-                                report.packetsReceived,
-
-                            bytesReceived:
-                                report.bytesReceived,
-
-                            packetsLost:
-                                report.packetsLost
-                        }
-                    );
-                }
-
-            });
-        }
-
-
-        if (
-            connection.connectionState ===
-            "connected"
-        ) {
+        if (connection.connectionState === "connected") {
 
             if (activeGroupCall) {
 
-                groupCallParticipants.add(
-                    targetUserId
-                );
+                groupCallParticipants.add(targetUserId);
 
                 callInProgress = true;
 
@@ -6248,36 +4821,24 @@ function createPeerConnection(otherUserId) {
                 callInProgress = true;
 
                 if (endCallButton) {
-                    endCallButton.style.display =
-                        "inline-block";
+                    endCallButton.style.display = "inline-block";
                 }
 
                 if (callStatus) {
-                    callStatus.textContent =
-                        "Connected";
+                    callStatus.textContent = "Connected";
                 }
 
-                if (
-                    activeCall &&
-                    activeCall.callType ===
-                    "voice"
-                ) {
+                if (activeCall && activeCall.callType === "voice") {
                     showActiveCallScreen();
                 }
             }
         }
 
-
-        if (
-            connection.connectionState ===
-            "failed"
-        ) {
+        if (connection.connectionState === "failed") {
 
             if (activeGroupCall) {
 
-                groupCallParticipants.delete(
-                    targetUserId
-                );
+                groupCallParticipants.delete(targetUserId);
 
                 renderGroupCallParticipants();
 
@@ -6287,17 +4848,11 @@ function createPeerConnection(otherUserId) {
             }
         }
 
-
-        if (
-            connection.connectionState ===
-            "closed"
-        ) {
+        if (connection.connectionState === "closed") {
 
             if (activeGroupCall) {
 
-                groupCallParticipants.delete(
-                    targetUserId
-                );
+                groupCallParticipants.delete(targetUserId);
 
                 renderGroupCallParticipants();
 
@@ -6308,7 +4863,6 @@ function createPeerConnection(otherUserId) {
         }
     };
 
-
     return connection;
 }
 
@@ -6316,12 +4870,8 @@ function createPeerConnection(otherUserId) {
 /* =========================================================
    GROUP CALL SIGNAL HELPER
 ========================================================= */
-async function sendGroupCallSignal(
-    receiverId,
-    signalType,
-    payload,
-    callId
-) {
+
+async function sendGroupCallSignal(receiverId, signalType, payload, callId) {
 
     const sent = await sendCallSignal(
         receiverId,
@@ -6344,6 +4894,7 @@ async function sendGroupCallSignal(
 
     return sent;
 }
+
 
 /* =========================================================
    CALL SIGNAL
@@ -6377,22 +4928,15 @@ async function sendCallSignal(receiverId, signalType, payload, callId) {
    Only add candidates after remoteDescription exists.
 ========================================================= */
 
-async function flushGroupIceCandidates(
-    peerId,
-    connection
-) {
+async function flushGroupIceCandidates(peerId, connection) {
 
-    if (
-        !activeGroupCall ||
-        !connection
-    ) {
+    if (!activeGroupCall || !connection) {
         return;
     }
 
     const id = String(peerId);
 
-    const candidates =
-        activeGroupCall.pendingCandidates?.get(id) || [];
+    const candidates = activeGroupCall.pendingCandidates?.get(id) || [];
 
     if (!candidates.length) {
         return;
@@ -6401,18 +4945,9 @@ async function flushGroupIceCandidates(
     for (const candidate of candidates) {
 
         try {
-
-            await connection.addIceCandidate(
-                candidate
-            );
-
+            await connection.addIceCandidate(candidate);
         } catch (error) {
-
-            console.warn(
-                "NEXA GROUP ICE FLUSH SKIPPED:",
-                id,
-                error
-            );
+            console.warn("NEXA GROUP ICE FLUSH SKIPPED:", id, error);
         }
     }
 
@@ -6448,34 +4983,18 @@ function subscribeToCallSignals() {
                GROUP CALL OFFER
             ========================================================= */
 
-            if (
-                signal.signal_type === "group-offer" &&
-                data.groupCall
-            ) {
+            if (signal.signal_type === "group-offer" && data.groupCall) {
 
-                const groupId =
-                    String(data.groupId || "");
+                const groupId = String(data.groupId || "");
 
-                const callerId =
-                    String(
-                        data.callerId ||
-                        signal.sender_id
-                    );
+                const callerId = String(data.callerId || signal.sender_id);
 
                 if (!groupId || !data.offer) {
                     return;
                 }
 
-
-                /* =====================================================
-   ALREADY IN GROUP CALL — AUTO ACCEPT NEW CONNECTION
-===================================================== */
-
-                const offerCallerId =
-                    String(
-                        data.callerId ||
-                        signal.sender_id
-                    );
+                /* ALREADY IN GROUP CALL — AUTO ACCEPT NEW CONNECTION */
+                const offerCallerId = String(data.callerId || signal.sender_id);
 
                 if (
                     activeGroupCall &&
@@ -6485,118 +5004,71 @@ function subscribeToCallSignals() {
 
                     try {
 
-                        let connection =
-                            groupPeerConnections.get(
-                                offerCallerId
-                            );
+                        let connection = groupPeerConnections.get(offerCallerId);
+
                         if (!connection) {
 
-                            connection =
-                                createPeerConnection(
-                                    offerCallerId
-                                );
+                            connection = createPeerConnection(offerCallerId);
 
-                            groupPeerConnections.set(
-                                offerCallerId,
-                                connection
-                            );
+                            groupPeerConnections.set(offerCallerId, connection);
 
                             if (localStream) {
-
-                                localStream
-                                    .getTracks()
-                                    .forEach(track => {
-
-                                        connection.addTrack(
-                                            track,
-                                            localStream
-                                        );
-
-                                    });
+                                localStream.getTracks().forEach(track => {
+                                    connection.addTrack(track, localStream);
+                                });
                             }
                         }
 
-
                         await connection.setRemoteDescription(
-                            new RTCSessionDescription(
-                                data.offer
-                            )
+                            new RTCSessionDescription(data.offer)
                         );
 
-                        const answer =
-                            await connection.createAnswer();
+                        const answer = await connection.createAnswer();
 
-                        await connection.setLocalDescription(
-                            answer
-                        );
+                        await connection.setLocalDescription(answer);
 
                         await sendGroupCallSignal(
                             offerCallerId,
                             "group-answer",
                             {
                                 groupId: groupId,
-
-                                callerId:
-                                    String(currentUser.id),
-
+                                callerId: String(currentUser.id),
                                 answer
                             },
                             signal.call_id
                         );
 
-                        groupCallParticipants.add(
-                            offerCallerId
-                        );
+                        groupCallParticipants.add(offerCallerId);
 
                         renderGroupCallParticipants();
 
-                        console.log(
-                            "NEXA GROUP MESH CONNECTION ACCEPTED:",
-                            offerCallerId
-                        );
+                        console.log("NEXA GROUP MESH CONNECTION ACCEPTED:", offerCallerId);
 
                     } catch (error) {
-
-                        console.error(
-                            "NEXA GROUP MESH OFFER ERROR:",
-                            error
-                        );
-
+                        console.error("NEXA GROUP MESH OFFER ERROR:", error);
                     }
 
                     return;
                 }
 
+                await loadGroupCallMembers(groupId);
 
-                await loadGroupCallMembers(
-                    groupId
-                );
-
-
-
-                const group =
-                    groups.find(
-                        item =>
-                            String(item.id) ===
-                            groupId
-                    );
+                const group = groups.find(item => String(item.id) === groupId);
 
                 if (group) {
                     selectedGroup = group;
                     selectedFriend = null;
                 }
+
                 activeGroupCall = {
 
                     ...(activeGroupCall || {}),
 
-                    callId:
-                        signal.call_id,
+                    callId: signal.call_id,
 
-                    groupId:
-                        groupId,
+                    groupId: groupId,
 
-                    callerId:
-                        callerId,
+                    callerId: callerId,
 
                     callerName:
                         data.callerName ||
@@ -6612,8 +5084,7 @@ function subscribeToCallSignals() {
                         activeGroupCall?.pendingCandidates ||
                         new Map(),
 
-                    offer:
-                        data.offer
+                    offer: data.offer
                 };
 
                 renderGroupCallParticipants();
@@ -6621,43 +5092,31 @@ function subscribeToCallSignals() {
                 callAnswered = false;
 
                 if (incomingCaller) {
-
                     incomingCaller.textContent =
-                        (
-                            data.callerName ||
-                            "Someone"
-                        ) +
+                        (data.callerName || "Someone") +
                         " is calling the group";
                 }
 
-                const icon =
-                    document.getElementById(
-                        "incomingCallIcon"
-                    );
+                const icon = document.getElementById("incomingCallIcon");
 
                 if (icon) {
-
                     icon.textContent =
-                        activeGroupCall.callType === "video"
-                            ? "📹"
-                            : "📞";
+                        activeGroupCall.callType === "video" ? "📹" : "📞";
                 }
 
                 if (incomingCall) {
 
-                    const title =
-                        incomingCall.querySelector("h2");
+                    const title = incomingCall.querySelector("h2");
 
                     if (title) {
-
                         title.textContent =
                             activeGroupCall.callType === "video"
                                 ? "Incoming Group Video Call"
                                 : "Incoming Group Voice Call";
                     }
 
-                    incomingCall.style.display =
-                        "flex";
+                    incomingCall.style.display = "flex";
+
                     startNexaIncomingRingtone();
                 }
 
@@ -6694,6 +5153,7 @@ function subscribeToCallSignals() {
                     }
 
                     incomingCall.style.display = "flex";
+
                     startNexaIncomingRingtone();
                 }
 
@@ -6702,187 +5162,120 @@ function subscribeToCallSignals() {
 
 
             /* =========================================================
-   GROUP CALL JOIN
-========================================================= */
-            if (
-                signal.signal_type === "group-join" &&
-                data.groupCall
-            ) {
+               GROUP CALL JOIN
+            ========================================================= */
 
-                const memberId =
-                    String(
-                        data.userId ||
-                        signal.sender_id
-                    );
+            if (signal.signal_type === "group-join" && data.groupCall) {
+
+                const memberId = String(data.userId || signal.sender_id);
 
                 if (
                     !activeGroupCall ||
-                    String(activeGroupCall.callerId) !==
-                    String(currentUser.id)
+                    String(activeGroupCall.callerId) !== String(currentUser.id)
                 ) {
                     return;
                 }
 
-                const peerIds =
-                    Array.from(
-                        groupPeerConnections.keys()
-                    )
-                        .map(id => String(id))
-                        .filter(
-                            id =>
-                                id !== memberId &&
-                                id !== String(currentUser.id)
-                        );
+                const peerIds = Array.from(groupPeerConnections.keys())
+                    .map(id => String(id))
+                    .filter(id =>
+                        id !== memberId &&
+                        id !== String(currentUser.id)
+                    );
 
                 await sendGroupCallSignal(
                     memberId,
                     "group-peer-list",
                     {
-                        groupId:
-                            activeGroupCall.groupId,
-
-                        peerIds:
-                            peerIds
+                        groupId: activeGroupCall.groupId,
+                        peerIds: peerIds
                     },
                     activeGroupCall.callId
                 );
 
-                groupCallParticipants.add(
-                    memberId
-                );
+                groupCallParticipants.add(memberId);
 
                 renderGroupCallParticipants();
 
-                console.log(
-                    "NEXA GROUP PEERS SENT TO:",
-                    memberId,
-                    peerIds
-                );
+                console.log("NEXA GROUP PEERS SENT TO:", memberId, peerIds);
 
                 return;
             }
 
 
             /* =========================================================
-   GROUP CALL PEER LIST
-========================================================= */
+               GROUP CALL PEER LIST
+            ========================================================= */
 
-            if (
-                signal.signal_type === "group-peer-list" &&
-                data.groupCall
-            ) {
+            if (signal.signal_type === "group-peer-list" && data.groupCall) {
 
                 if (!activeGroupCall) {
                     return;
                 }
 
-                const peerIds =
-                    Array.isArray(data.peerIds)
-                        ? data.peerIds.map(id => String(id))
-                        : [];
+                const peerIds = Array.isArray(data.peerIds)
+                    ? data.peerIds.map(id => String(id))
+                    : [];
 
-                for (
-                    const peerId
-                    of peerIds
-                ) {
+                for (const peerId of peerIds) {
 
-                    if (
-                        peerId ===
-                        String(currentUser.id)
-                    ) {
+                    if (peerId === String(currentUser.id)) {
                         continue;
                     }
 
-                    if (
-                        groupPeerConnections.has(
-                            peerId
-                        )
-                    ) {
+                    if (groupPeerConnections.has(peerId)) {
                         continue;
                     }
 
                     try {
 
-                        const connection =
-                            createPeerConnection(
-                                peerId
-                            );
+                        const connection = createPeerConnection(peerId);
 
-                        groupPeerConnections.set(
-                            peerId,
-                            connection
-                        );
+                        groupPeerConnections.set(peerId, connection);
 
                         if (localStream) {
-
-                            localStream
-                                .getTracks()
-                                .forEach(track => {
-
-                                    connection.addTrack(
-                                        track,
-                                        localStream
-                                    );
-
-                                });
+                            localStream.getTracks().forEach(track => {
+                                connection.addTrack(track, localStream);
+                            });
                         }
 
-                        const offer =
-                            await connection.createOffer();
+                        const offer = await connection.createOffer();
 
-                        await connection.setLocalDescription(
-                            offer
-                        );
+                        await connection.setLocalDescription(offer);
 
                         await sendGroupCallSignal(
                             peerId,
                             "group-peer-offer",
                             {
-                                groupId:
-                                    activeGroupCall.groupId,
-
-                                callerId:
-                                    String(currentUser.id),
-
-                                callerName:
-                                    currentUser.name,
-
-                                callType:
-                                    activeGroupCall.callType,
-
+                                groupId: activeGroupCall.groupId,
+                                callerId: String(currentUser.id),
+                                callerName: currentUser.name,
+                                callType: activeGroupCall.callType,
                                 offer
                             },
                             activeGroupCall.callId
                         );
 
                     } catch (error) {
-
-                        console.error(
-                            "NEXA GROUP PEER CONNECTION ERROR:",
-                            peerId,
-                            error
-                        );
+                        console.error("NEXA GROUP PEER CONNECTION ERROR:", peerId, error);
                     }
                 }
 
                 return;
             }
 
-            /* =====================================================
-   GROUP PEER OFFER
-===================================================== */
 
-            if (
-                signal.signal_type === "group-peer-offer" &&
-                data.groupCall
-            ) {
+            /* =====================================================
+               GROUP PEER OFFER
+            ===================================================== */
+
+            if (signal.signal_type === "group-peer-offer" && data.groupCall) {
 
                 if (!activeGroupCall) {
                     return;
                 }
 
-                const peerId =
-                    String(signal.sender_id);
+                const peerId = String(signal.sender_id);
 
                 if (!data.offer) {
                     return;
@@ -6890,115 +5283,63 @@ function subscribeToCallSignals() {
 
                 try {
 
-                    let connection =
-                        groupPeerConnections.get(
-                            peerId
-                        );
+                    let connection = groupPeerConnections.get(peerId);
 
                     if (!connection) {
 
-                        connection =
-                            createPeerConnection(
-                                peerId
-                            );
+                        connection = createPeerConnection(peerId);
 
-                        groupPeerConnections.set(
-                            peerId,
-                            connection
-                        );
+                        groupPeerConnections.set(peerId, connection);
 
                         if (localStream) {
-
-                            localStream
-                                .getTracks()
-                                .forEach(track => {
-
-                                    connection.addTrack(
-                                        track,
-                                        localStream
-                                    );
-
-                                });
+                            localStream.getTracks().forEach(track => {
+                                connection.addTrack(track, localStream);
+                            });
                         }
                     }
 
                     await connection.setRemoteDescription(
-                        new RTCSessionDescription(
-                            data.offer
-                        )
+                        new RTCSessionDescription(data.offer)
                     );
-                    const waitingCandidates =
-                        activeGroupCall
-                            .pendingCandidates
-                            ?.get(peerId) || [];
 
-                    for (
-                        const candidate
-                        of waitingCandidates
-                    ) {
+                    const waitingCandidates =
+                        activeGroupCall.pendingCandidates?.get(peerId) || [];
+
+                    for (const candidate of waitingCandidates) {
 
                         try {
-
-                            await connection.addIceCandidate(
-                                candidate
-                            );
-
+                            await connection.addIceCandidate(candidate);
                         } catch (error) {
-
-                            console.error(
-                                "NEXA GROUP PEER ICE ERROR:",
-                                error
-                            );
+                            console.error("NEXA GROUP PEER ICE ERROR:", error);
                         }
                     }
 
-                    if (
-                        activeGroupCall.pendingCandidates
-                    ) {
-
-                        activeGroupCall
-                            .pendingCandidates
-                            .delete(peerId);
+                    if (activeGroupCall.pendingCandidates) {
+                        activeGroupCall.pendingCandidates.delete(peerId);
                     }
 
+                    const answer = await connection.createAnswer();
 
-
-                    const answer =
-                        await connection.createAnswer();
-
-                    await connection.setLocalDescription(
-                        answer
-                    );
+                    await connection.setLocalDescription(answer);
 
                     await sendGroupCallSignal(
                         peerId,
                         "group-peer-answer",
                         {
-                            groupId:
-                                activeGroupCall.groupId,
-
+                            groupId: activeGroupCall.groupId,
                             answer
                         },
                         activeGroupCall.callId
                     );
 
-                    groupCallParticipants.add(
-                        peerId
-                    );
+                    groupCallParticipants.add(peerId);
 
                     renderGroupCallParticipants();
 
-                    console.log(
-                        "NEXA GROUP PEER ANSWER SENT:",
-                        peerId
-                    );
+                    console.log("NEXA GROUP PEER ANSWER SENT:", peerId);
 
                 } catch (error) {
-
-                    console.error(
-                        "NEXA GROUP PEER OFFER ERROR:",
-                        error
-                    );
+                    console.error("NEXA GROUP PEER OFFER ERROR:", error);
                 }
 
                 return;
@@ -7006,136 +5347,79 @@ function subscribeToCallSignals() {
 
 
             /* =====================================================
-   GROUP PEER ANSWER
-===================================================== */
+               GROUP PEER ANSWER
+            ===================================================== */
 
-            if (
-                signal.signal_type === "group-peer-answer" &&
-                data.groupCall
-            ) {
+            if (signal.signal_type === "group-peer-answer" && data.groupCall) {
 
                 if (!activeGroupCall) {
                     return;
                 }
 
-                const peerId =
-                    String(signal.sender_id);
+                const peerId = String(signal.sender_id);
 
-                const connection =
-                    groupPeerConnections.get(
-                        peerId
-                    );
+                const connection = groupPeerConnections.get(peerId);
 
-                if (
-                    !connection ||
-                    !data.answer
-                ) {
+                if (!connection || !data.answer) {
                     return;
                 }
 
-                if (
-                    connection.signalingState !==
-                    "have-local-offer"
-                ) {
+                if (connection.signalingState !== "have-local-offer") {
                     return;
                 }
 
                 try {
 
                     await connection.setRemoteDescription(
-                        new RTCSessionDescription(
-                            data.answer
-                        )
+                        new RTCSessionDescription(data.answer)
                     );
 
                     const waitingCandidates =
-                        activeGroupCall
-                            .pendingCandidates
-                            ?.get(peerId) || [];
+                        activeGroupCall.pendingCandidates?.get(peerId) || [];
 
-                    for (
-                        const candidate
-                        of waitingCandidates
-                    ) {
+                    for (const candidate of waitingCandidates) {
 
                         try {
-
-                            await connection.addIceCandidate(
-                                candidate
-                            );
-
+                            await connection.addIceCandidate(candidate);
                         } catch (error) {
-
-                            console.error(
-                                "NEXA GROUP PEER ICE ERROR:",
-                                error
-                            );
+                            console.error("NEXA GROUP PEER ICE ERROR:", error);
                         }
                     }
 
-                    if (
-                        activeGroupCall.pendingCandidates
-                    ) {
-
-                        activeGroupCall
-                            .pendingCandidates
-                            .delete(peerId);
+                    if (activeGroupCall.pendingCandidates) {
+                        activeGroupCall.pendingCandidates.delete(peerId);
                     }
 
-                    groupCallParticipants.add(
-                        peerId
-                    );
+                    groupCallParticipants.add(peerId);
 
                     renderGroupCallParticipants();
 
-                    console.log(
-                        "NEXA GROUP PEER CONNECTED:",
-                        peerId
-                    );
+                    console.log("NEXA GROUP PEER CONNECTED:", peerId);
 
                 } catch (error) {
-
-                    console.error(
-                        "NEXA GROUP PEER ANSWER ERROR:",
-                        error
-                    );
+                    console.error("NEXA GROUP PEER ANSWER ERROR:", error);
                 }
 
                 return;
             }
 
+
             /* =========================================================
                GROUP CALL ANSWER
             ========================================================= */
 
-            if (
-                signal.signal_type === "group-answer" &&
-                data.groupCall
-            ) {
+            if (signal.signal_type === "group-answer" && data.groupCall) {
 
-                const memberId =
-                    String(signal.sender_id);
+                const memberId = String(signal.sender_id);
 
-                const connection =
-                    groupPeerConnections.get(
-                        memberId
-                    );
+                const connection = groupPeerConnections.get(memberId);
 
                 if (!connection || !data.answer) {
                     return;
                 }
 
-                /*
-                 * A valid group answer can only be applied while
-                 * this connection is waiting for its answer.
-                 *
-                 * If it is already stable, the answer was already
-                 * applied and we must ignore the duplicate signal.
-                 */
-                if (
-                    connection.signalingState !==
-                    "have-local-offer"
-                ) {
+                /* Ignore duplicate answers once the connection is stable. */
+                if (connection.signalingState !== "have-local-offer") {
 
                     console.log(
                         "NEXA GROUP ANSWER IGNORED:",
@@ -7150,44 +5434,29 @@ function subscribeToCallSignals() {
                 try {
 
                     await connection.setRemoteDescription(
-                        new RTCSessionDescription(
-                            data.answer
-                        )
+                        new RTCSessionDescription(data.answer)
                     );
 
-                    groupCallParticipants.add(
-                        memberId
-                    );
+                    groupCallParticipants.add(memberId);
 
                     callInProgress = true;
 
                     if (callStatus) {
-
                         callStatus.textContent =
                             groupCallParticipants.size +
                             " member" +
-                            (
-                                groupCallParticipants.size === 1
-                                    ? ""
-                                    : "s"
-                            ) +
+                            (groupCallParticipants.size === 1 ? "" : "s") +
                             " connected";
                     }
 
                     if (endCallButton) {
-                        endCallButton.style.display =
-                            "inline-block";
+                        endCallButton.style.display = "inline-block";
                     }
 
                     renderGroupCallParticipants();
 
                 } catch (error) {
-
-                    console.error(
-                        "NEXA group call answer error:",
-                        error
-                    );
-
+                    console.error("NEXA group call answer error:", error);
                 }
 
                 return;
@@ -7230,83 +5499,40 @@ function subscribeToCallSignals() {
                     return;
                 }
 
-                const candidate =
-                    new RTCIceCandidate(
-                        data.candidate
-                    );
+                const candidate = new RTCIceCandidate(data.candidate);
 
-
-                /* =====================================================
-                   GROUP CALL ICE
-                ===================================================== */
+                /* GROUP CALL ICE */
                 if (activeGroupCall) {
 
-                    const senderId =
-                        String(signal.sender_id);
+                    const senderId = String(signal.sender_id);
 
-                    const groupConnection =
-                        groupPeerConnections.get(
-                            senderId
-                        );
+                    const groupConnection = groupPeerConnections.get(senderId);
 
-                    if (
-                        groupConnection &&
-                        groupConnection.remoteDescription
-                    ) {
+                    if (groupConnection && groupConnection.remoteDescription) {
 
                         try {
-
-                            await groupConnection.addIceCandidate(
-                                candidate
-                            );
-
+                            await groupConnection.addIceCandidate(candidate);
                         } catch (error) {
-
-                            console.error(
-                                "NEXA GROUP ICE ERROR:",
-                                senderId,
-                                error
-                            );
+                            console.error("NEXA GROUP ICE ERROR:", senderId, error);
                         }
 
                     } else {
 
-                        if (
-                            !activeGroupCall.pendingCandidates
-                        ) {
-
-                            activeGroupCall.pendingCandidates =
-                                new Map();
+                        if (!activeGroupCall.pendingCandidates) {
+                            activeGroupCall.pendingCandidates = new Map();
                         }
 
-                        if (
-                            !activeGroupCall
-                                .pendingCandidates
-                                .has(senderId)
-                        ) {
-
-                            activeGroupCall
-                                .pendingCandidates
-                                .set(
-                                    senderId,
-                                    []
-                                );
+                        if (!activeGroupCall.pendingCandidates.has(senderId)) {
+                            activeGroupCall.pendingCandidates.set(senderId, []);
                         }
 
-                        activeGroupCall
-                            .pendingCandidates
-                            .get(senderId)
-                            .push(candidate);
+                        activeGroupCall.pendingCandidates.get(senderId).push(candidate);
                     }
 
                     return;
                 }
 
-
-                /* =====================================================
-             NORMAL PRIVATE CALL ICE
-          ===================================================== */
-
+                /* NORMAL PRIVATE CALL ICE */
                 if (!peerConnection) {
                     pendingIceCandidates.push(candidate);
                     return;
@@ -7318,47 +5544,28 @@ function subscribeToCallSignals() {
                 }
 
                 try {
-
-                    await peerConnection.addIceCandidate(
-                        candidate
-                    );
-
+                    await peerConnection.addIceCandidate(candidate);
                 } catch (error) {
-
-                    console.warn(
-                        "NEXA ICE candidate skipped:",
-                        error
-                    );
+                    console.warn("NEXA ICE candidate skipped:", error);
                 }
 
                 return;
             }
 
+
             /* =====================================================
                GROUP CALL DECLINE
             ===================================================== */
 
-            if (
-                signal.signal_type === "group-decline" &&
-                data.groupCall
-            ) {
+            if (signal.signal_type === "group-decline" && data.groupCall) {
 
-                const memberId =
-                    String(signal.sender_id);
+                const memberId = String(signal.sender_id);
 
-                console.log(
-                    "NEXA GROUP CALL DECLINED BY:",
-                    memberId
-                );
+                console.log("NEXA GROUP CALL DECLINED BY:", memberId);
 
-                groupCallParticipants.delete(
-                    memberId
-                );
+                groupCallParticipants.delete(memberId);
 
-                const connection =
-                    groupPeerConnections.get(
-                        memberId
-                    );
+                const connection = groupPeerConnections.get(memberId);
 
                 if (connection) {
 
@@ -7366,32 +5573,22 @@ function subscribeToCallSignals() {
                         connection.close();
                     } catch (_) { }
 
-                    groupPeerConnections.delete(
-                        memberId
-                    );
+                    groupPeerConnections.delete(memberId);
                 }
 
-                groupRemoteStreams.delete(
-                    memberId
-                );
+                groupRemoteStreams.delete(memberId);
 
                 renderGroupCallParticipants();
 
                 if (activeGroupCall) {
 
-                    const connectedCount =
-                        groupCallParticipants.size;
+                    const connectedCount = groupCallParticipants.size;
 
                     if (callStatus) {
-
                         callStatus.textContent =
                             connectedCount +
                             " member" +
-                            (
-                                connectedCount === 1
-                                    ? ""
-                                    : "s"
-                            ) +
+                            (connectedCount === 1 ? "" : "s") +
                             " connected";
                     }
                 }
@@ -7422,175 +5619,16 @@ function subscribeToCallSignals() {
    START VOICE CALL
 ========================================================= */
 
-
 async function startVoiceCall() {
 
-if (selectedGroup) {
-    showNexaComingSoon("Group voice calling");
-    return;
-}
-
+    /* Group calling is not ready yet. */
     if (selectedGroup) {
-
-        resetGroupCallState();
-
-        const members =
-            await loadGroupCallMembers(
-                selectedGroup.id
-            );
-
-        if (!members.length) {
-
-            alert(
-                "This group has no other members available for a call."
-            );
-
-            return;
-        }
-
-        try {
-
-            callInProgress = true;
-            callAnswered = false;
-
-            activeGroupCall = {
-                callId:
-                    "group_" +
-                    Date.now() +
-                    "_" +
-                    Math.random()
-                        .toString(36)
-                        .slice(2, 9),
-
-                groupId:
-                    String(selectedGroup.id),
-
-                callerId:
-                    String(currentUser.id),
-
-                callerName:
-                    currentUser.name,
-
-                callType:
-                    "voice"
-            };
-
-            if (callStatus) {
-
-                callStatus.textContent =
-                    "Calling " +
-                    (selectedGroup.name ||
-                        "NEXA Group") +
-                    "...";
-            }
-
-            localStream =
-                await navigator.mediaDevices
-                    .getUserMedia({
-                        audio: true,
-                        video: false
-                    });
-            await ensureGroupAudioContext();
-
-            /*
-             * Create one WebRTC connection for
-             * every other group member.
-             */
-            for (const member of members) {
-
-                const memberId =
-                    String(member.id);
-
-                const connection =
-                    createPeerConnection(
-                        memberId
-                    );
-
-                groupPeerConnections.set(
-                    memberId,
-                    connection
-                );
-
-                localStream
-                    .getTracks()
-                    .forEach(track => {
-
-                        connection.addTrack(
-                            track,
-                            localStream
-                        );
-                    });
-
-                const offer =
-                    await connection.createOffer();
-
-                await connection
-                    .setLocalDescription(offer);
-
-                const signalSent =
-                    await sendGroupCallSignal(
-                        memberId,
-                        "group-offer",
-                        {
-                            groupId:
-                                String(
-                                    selectedGroup.id
-                                ),
-
-                            callerId:
-                                String(
-                                    currentUser.id
-                                ),
-
-                            callerName:
-                                currentUser.name,
-
-                            callType:
-                                "voice",
-
-                            offer
-                        },
-                        activeGroupCall.callId
-                    );
-
-                if (!signalSent) {
-
-                    throw new Error(
-                        "NEXA could not send the group call signal."
-                    );
-                }
-
-
-            }
-
-            if (endCallButton) {
-                endCallButton.style.display =
-                    "inline-block";
-            }
-
-        } catch (error) {
-
-            console.error(
-                "NEXA group voice call error:",
-                error
-            );
-
-            endCall(false);
-
-            alert(
-                "Could not start the group voice call. Please allow microphone access."
-            );
-        }
-
+        showNexaComingSoon("Group voice calling");
         return;
     }
 
     if (!selectedFriend) {
-
-        alert(
-            "Open a conversation first."
-        );
-
+        alert("Open a conversation first.");
         return;
     }
 
@@ -7649,164 +5687,14 @@ if (selectedGroup) {
 
 async function startVideoCall() {
 
-        if (selectedGroup) {
-        alert("Group video calling is coming soon.");
-        return;
-    }
-
+    /* Group calling is not ready yet. */
     if (selectedGroup) {
-
-        resetGroupCallState();
-
-        const members =
-            await loadGroupCallMembers(
-                selectedGroup.id
-            );
-
-        if (!members.length) {
-
-            alert(
-                "This group has no other members available for a video call."
-            );
-
-            return;
-        }
-
-        try {
-
-            callInProgress = true;
-            callAnswered = false;
-
-            activeGroupCall = {
-                callId:
-                    "group_" +
-                    Date.now() +
-                    "_" +
-                    Math.random()
-                        .toString(36)
-                        .slice(2, 9),
-
-                groupId:
-                    String(selectedGroup.id),
-
-                callerId:
-                    String(currentUser.id),
-
-                callerName:
-                    currentUser.name,
-
-                callType:
-                    "video"
-            };
-
-            if (callStatus) {
-                callStatus.textContent =
-                    "Calling " +
-                    (selectedGroup.name || "NEXA Group") +
-                    "...";
-            }
-
-            localStream =
-                await navigator.mediaDevices
-                    .getUserMedia({
-                        audio: true,
-                        video: true
-                    });
-
-            await ensureGroupAudioContext();
-
-            for (const member of members) {
-
-                const memberId =
-                    String(member.id);
-
-                const connection =
-                    createPeerConnection(
-                        memberId
-                    );
-
-                groupPeerConnections.set(
-                    memberId,
-                    connection
-                );
-
-                localStream
-                    .getTracks()
-                    .forEach(track => {
-
-                        connection.addTrack(
-                            track,
-                            localStream
-                        );
-
-                    });
-
-                const offer =
-                    await connection.createOffer();
-
-                await connection
-                    .setLocalDescription(offer);
-
-                const signalSent =
-                    await sendGroupCallSignal(
-                        memberId,
-                        "group-offer",
-                        {
-                            groupId:
-                                String(selectedGroup.id),
-
-                            callerId:
-                                String(currentUser.id),
-
-                            callerName:
-                                currentUser.name,
-
-                            callType:
-                                "video",
-
-                            offer
-                        },
-                        activeGroupCall.callId
-                    );
-
-                if (!signalSent) {
-
-                    throw new Error(
-                        "Could not send the group video call signal."
-                    );
-                }
-            }
-
-            if (endCallButton) {
-                endCallButton.style.display =
-                    "inline-block";
-            }
-
-            renderGroupCallParticipants();
-
-        } catch (error) {
-
-            console.error(
-                "NEXA group video call error:",
-                error
-            );
-
-            endCall(false);
-
-            alert(
-                "Could not start the group video call. Please allow camera and microphone access."
-            );
-        }
-
+        showNexaComingSoon("Group video calling");
         return;
     }
 
     if (!selectedFriend) {
-
-        alert(
-            "Open a conversation first."
-        );
-
+        alert("Open a conversation first.");
         return;
     }
 
@@ -7863,222 +5751,15 @@ async function startVideoCall() {
    ACCEPT CALL
 ========================================================= */
 
-
 if (acceptCallButton) {
 
-    acceptCallButton.addEventListener(
-        "click",
-        async () => {
+    acceptCallButton.addEventListener("click", async () => {
 
-            /* =================================================
-               GROUP CALL
-            ================================================= */
+        /* =================================================
+           GROUP CALL
+        ================================================= */
 
-            if (
-                activeGroupCall &&
-                activeGroupCall.offer
-            ) {
-
-                stopNexaIncomingRingtone();
-
-                try {
-
-                    callInProgress = true;
-                    callAnswered = true;
-
-                    const isVideo =
-                        activeGroupCall.callType ===
-                        "video";
-
-                    if (callStatus) {
-                        callStatus.textContent =
-                            "Connecting...";
-                    }
-
-                    localStream =
-                        await navigator.mediaDevices
-                            .getUserMedia({
-                                audio: true,
-                                video: isVideo
-                            });
-                    await ensureGroupAudioContext();
-                    const connection =
-                        createPeerConnection(
-                            activeGroupCall.callerId
-                        );
-
-                    groupPeerConnections.set(
-                        String(
-                            activeGroupCall.callerId
-                        ),
-                        connection
-                    );
-
-
-                    localStream
-                        .getTracks()
-                        .forEach(track => {
-
-                            connection.addTrack(
-                                track,
-                                localStream
-                            );
-
-                        });
-
-
-                    await connection
-                        .setRemoteDescription(
-                            new RTCSessionDescription(
-                                activeGroupCall.offer
-                            )
-                        );
-
-
-                    /* =====================================================
-                       ADD WAITING GROUP ICE CANDIDATES
-                    ===================================================== */
-
-                    const waitingCandidates =
-                        activeGroupCall
-                            .pendingCandidates
-                            ?.get(
-                                String(
-                                    activeGroupCall.callerId
-                                )
-                            ) || [];
-
-                    for (
-                        const candidate
-                        of waitingCandidates
-                    ) {
-
-                        try {
-
-                            await connection
-                                .addIceCandidate(
-                                    candidate
-                                );
-
-                        } catch (error) {
-
-                            console.error(
-                                "NEXA GROUP ICE ACCEPT ERROR:",
-                                error
-                            );
-                        }
-                    }
-
-                    if (
-                        activeGroupCall.pendingCandidates
-                    ) {
-
-                        activeGroupCall
-                            .pendingCandidates
-                            .delete(
-                                String(
-                                    activeGroupCall.callerId
-                                )
-                            );
-                    }
-
-
-
-
-
-
-                    const answer =
-                        await connection.createAnswer();
-
-
-                    await connection
-                        .setLocalDescription(
-                            answer
-                        );
-
-                    const sent =
-                        await sendGroupCallSignal(
-                            activeGroupCall.callerId,
-                            "group-answer",
-                            {
-                                groupId:
-                                    activeGroupCall.groupId,
-
-                                callerId:
-                                    String(
-                                        currentUser.id
-                                    ),
-
-                                answer
-                            },
-                            activeGroupCall.callId
-                        );
-
-                    await sendGroupCallSignal(
-                        activeGroupCall.callerId,
-                        "group-join",
-                        {
-                            groupId:
-                                activeGroupCall.groupId,
-
-                            userId:
-                                String(currentUser.id),
-
-                            userName:
-                                currentUser.name
-                        },
-                        activeGroupCall.callId
-                    );
-
-                    if (!sent) {
-                        throw new Error(
-                            "Could not send group call answer."
-                        );
-                    }
-
-
-                    if (incomingCall) {
-                        incomingCall.style.display =
-                            "none";
-                    }
-
-                    if (endCallButton) {
-                        endCallButton.style.display =
-                            "inline-block";
-                    }
-
-                    if (callStatus) {
-                        callStatus.textContent =
-                            "Connected";
-                    }
-
-                    renderGroupCallParticipants();
-
-                } catch (error) {
-
-                    console.error(
-                        "NEXA group call accept error:",
-                        error
-                    );
-
-                    endCall(false);
-
-                }
-
-                return;
-            }
-
-
-            /* =================================================
-               NORMAL PRIVATE CALL
-            ================================================= */
-
-            if (
-                !activeCall ||
-                !activeCall.offer
-            ) {
-                return;
-            }
+        if (activeGroupCall && activeGroupCall.offer) {
 
             stopNexaIncomingRingtone();
 
@@ -8087,107 +5768,182 @@ if (acceptCallButton) {
                 callInProgress = true;
                 callAnswered = true;
 
-                const isVideo =
-                    activeCall.callType ===
-                    "video";
+                const isVideo = activeGroupCall.callType === "video";
 
                 if (callStatus) {
-                    callStatus.textContent =
-                        "Connecting...";
+                    callStatus.textContent = "Connecting...";
                 }
 
-                localStream =
-                    await navigator.mediaDevices
-                        .getUserMedia({
-                            audio: true,
-                            video: isVideo
-                        });
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: isVideo
+                });
+
                 await ensureGroupAudioContext();
-                peerConnection =
-                    createPeerConnection(
-                        activeCall.callerId
-                    );
 
-                localStream
-                    .getTracks()
-                    .forEach(track => {
+                const connection = createPeerConnection(activeGroupCall.callerId);
 
-                        peerConnection.addTrack(
-                            track,
-                            localStream
-                        );
+                groupPeerConnections.set(String(activeGroupCall.callerId), connection);
 
-                    });
+                localStream.getTracks().forEach(track => {
+                    connection.addTrack(track, localStream);
+                });
 
-                await peerConnection
-                    .setRemoteDescription(
-                        new RTCSessionDescription(
-                            activeCall.offer
-                        )
-                    );
+                await connection.setRemoteDescription(
+                    new RTCSessionDescription(activeGroupCall.offer)
+                );
 
-                for (
-                    const candidate
-                    of pendingIceCandidates
-                ) {
+                /* ADD WAITING GROUP ICE CANDIDATES */
+                const waitingCandidates =
+                    activeGroupCall.pendingCandidates?.get(
+                        String(activeGroupCall.callerId)
+                    ) || [];
+
+                for (const candidate of waitingCandidates) {
 
                     try {
-
-                        await peerConnection
-                            .addIceCandidate(
-                                candidate
-                            );
-
+                        await connection.addIceCandidate(candidate);
                     } catch (error) {
-
-                        console.error(
-                            "NEXA ICE error:",
-                            error
-                        );
+                        console.error("NEXA GROUP ICE ACCEPT ERROR:", error);
                     }
                 }
 
-                pendingIceCandidates = [];
-
-                const answer =
-                    await peerConnection
-                        .createAnswer();
-
-                await peerConnection
-                    .setLocalDescription(
-                        answer
+                if (activeGroupCall.pendingCandidates) {
+                    activeGroupCall.pendingCandidates.delete(
+                        String(activeGroupCall.callerId)
                     );
+                }
 
-                await sendCallSignal(
-                    activeCall.callerId,
-                    "answer",
+                const answer = await connection.createAnswer();
+
+                await connection.setLocalDescription(answer);
+
+                const sent = await sendGroupCallSignal(
+                    activeGroupCall.callerId,
+                    "group-answer",
                     {
-                        answer: answer
+                        groupId: activeGroupCall.groupId,
+                        callerId: String(currentUser.id),
+                        answer
                     },
-                    activeCall.callId
+                    activeGroupCall.callId
                 );
 
+                await sendGroupCallSignal(
+                    activeGroupCall.callerId,
+                    "group-join",
+                    {
+                        groupId: activeGroupCall.groupId,
+                        userId: String(currentUser.id),
+                        userName: currentUser.name
+                    },
+                    activeGroupCall.callId
+                );
+
+                if (!sent) {
+                    throw new Error("Could not send group call answer.");
+                }
+
                 if (incomingCall) {
-                    incomingCall.style.display =
-                        "none";
+                    incomingCall.style.display = "none";
                 }
 
                 if (endCallButton) {
-                    endCallButton.style.display =
-                        "inline-block";
+                    endCallButton.style.display = "inline-block";
                 }
+
+                if (callStatus) {
+                    callStatus.textContent = "Connected";
+                }
+
+                renderGroupCallParticipants();
 
             } catch (error) {
 
-                console.error(
-                    "NEXA accept call error:",
-                    error
-                );
+                console.error("NEXA group call accept error:", error);
 
                 endCall(false);
             }
+
+            return;
         }
-    );
+
+
+        /* =================================================
+           NORMAL PRIVATE CALL
+        ================================================= */
+
+        if (!activeCall || !activeCall.offer) {
+            return;
+        }
+
+        stopNexaIncomingRingtone();
+
+        try {
+
+            callInProgress = true;
+            callAnswered = true;
+
+            const isVideo = activeCall.callType === "video";
+
+            if (callStatus) {
+                callStatus.textContent = "Connecting...";
+            }
+
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: isVideo
+            });
+
+            await ensureGroupAudioContext();
+
+            peerConnection = createPeerConnection(activeCall.callerId);
+
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+
+            await peerConnection.setRemoteDescription(
+                new RTCSessionDescription(activeCall.offer)
+            );
+
+            for (const candidate of pendingIceCandidates) {
+
+                try {
+                    await peerConnection.addIceCandidate(candidate);
+                } catch (error) {
+                    console.error("NEXA ICE error:", error);
+                }
+            }
+
+            pendingIceCandidates = [];
+
+            const answer = await peerConnection.createAnswer();
+
+            await peerConnection.setLocalDescription(answer);
+
+            await sendCallSignal(
+                activeCall.callerId,
+                "answer",
+                { answer: answer },
+                activeCall.callId
+            );
+
+            if (incomingCall) {
+                incomingCall.style.display = "none";
+            }
+
+            if (endCallButton) {
+                endCallButton.style.display = "inline-block";
+            }
+
+        } catch (error) {
+
+            console.error("NEXA accept call error:", error);
+
+            endCall(false);
+        }
+    });
 }
 
 
@@ -8197,89 +5953,65 @@ if (acceptCallButton) {
 
 if (declineCallButton) {
 
-    declineCallButton.addEventListener(
-        "click",
-        async () => {
+    declineCallButton.addEventListener("click", async () => {
 
-            stopNexaIncomingRingtone();
+        stopNexaIncomingRingtone();
 
-            /* =================================================
-               GROUP CALL
-            ================================================= */
+        /* GROUP CALL */
+        if (activeGroupCall) {
 
-            if (activeGroupCall) {
+            const callerId = String(activeGroupCall.callerId);
 
-                const callerId =
-                    String(
-                        activeGroupCall.callerId
-                    );
+            const groupCallId = activeGroupCall.callId;
 
-                const groupCallId =
-                    activeGroupCall.callId;
-
-                await sendGroupCallSignal(
-                    callerId,
-                    "group-decline",
-                    {
-                        groupId:
-                            activeGroupCall.groupId,
-
-                        callerId:
-                            String(
-                                currentUser.id
-                            )
-                    },
-                    groupCallId
-                );
-
-                if (incomingCall) {
-                    incomingCall.style.display =
-                        "none";
-                }
-
-                activeGroupCall = null;
-                callAnswered = false;
-
-                if (callStatus) {
-                    callStatus.textContent =
-                        "Group call declined.";
-                }
-
-                return;
-            }
-
-
-            /* =================================================
-               NORMAL PRIVATE CALL
-            ================================================= */
-
-            if (!activeCall) {
-                return;
-            }
-
-            await sendCallSignal(
-                activeCall.callerId,
-                "decline",
-                {},
-                activeCall.callId
+            await sendGroupCallSignal(
+                callerId,
+                "group-decline",
+                {
+                    groupId: activeGroupCall.groupId,
+                    callerId: String(currentUser.id)
+                },
+                groupCallId
             );
 
             if (incomingCall) {
-                incomingCall.style.display =
-                    "none";
+                incomingCall.style.display = "none";
             }
 
-            activeCall = null;
+            activeGroupCall = null;
             callAnswered = false;
 
             if (callStatus) {
-                callStatus.textContent =
-                    "Call declined.";
+                callStatus.textContent = "Group call declined.";
             }
-        }
-    );
-}
 
+            return;
+        }
+
+        /* NORMAL PRIVATE CALL */
+        if (!activeCall) {
+            return;
+        }
+
+        await sendCallSignal(
+            activeCall.callerId,
+            "decline",
+            {},
+            activeCall.callId
+        );
+
+        if (incomingCall) {
+            incomingCall.style.display = "none";
+        }
+
+        activeCall = null;
+        callAnswered = false;
+
+        if (callStatus) {
+            callStatus.textContent = "Call declined.";
+        }
+    });
+}
 
 
 /* =========================================================
@@ -8290,11 +6022,7 @@ async function saveMissedCallMessage(call) {
 
     if (!call) return false;
 
-    /*
-     * Only the person who started the call creates the
-     * missed-call event. This prevents both devices from
-     * creating duplicate messages.
-     */
+    /* Only the caller creates the missed-call event. */
     if (String(call.callerId) !== String(currentUser.id)) {
         return false;
     }
@@ -8316,76 +6044,53 @@ async function saveMissedCallMessage(call) {
         const missedCallMessage = {
             id: createMessageId(),
 
-            conversationId:
-                createConversationId(
-                    currentUser,
-                    selectedFriend || {
-                        id: call.receiverId
-                    }
-                ),
+            conversationId: createConversationId(
+                currentUser,
+                selectedFriend || { id: call.receiverId }
+            ),
 
-            senderId:
-                String(call.callerId),
+            senderId: String(call.callerId),
 
-            receiverId:
-                String(call.receiverId),
+            receiverId: String(call.receiverId),
 
-            text:
-                isVideo
-                    ? "📹 Missed video call"
-                    : "📞 Missed voice call",
+            text: isVideo
+                ? "📹 Missed video call"
+                : "📞 Missed voice call",
 
             media: null,
 
-            mediaType:
-                isVideo
-                    ? "call_missed_video"
-                    : "call_missed_voice",
+            mediaType: isVideo
+                ? "call_missed_video"
+                : "call_missed_voice",
 
             latitude: null,
             longitude: null,
 
-            timestamp:
-                new Date().toISOString(),
+            timestamp: new Date().toISOString(),
 
             read: false
         };
 
-        const saved =
-            await sendMessageToServer(
-                missedCallMessage
-            );
+        const saved = await sendMessageToServer(missedCallMessage);
 
         if (!saved) {
-            console.error(
-                "NEXA missed call could not be saved."
-            );
-
+            console.error("NEXA missed call could not be saved.");
             return false;
         }
 
-        /*
-         * Add locally so the caller also gets an instant
-         * call-history event if the conversation is open.
-         */
         addMessage(missedCallMessage);
 
         if (selectedFriend) {
             renderCurrentConversation(true);
         }
 
-        displayConversations(
-            getConversationSearchValue()
-        );
+        displayConversations(getConversationSearchValue());
 
         return true;
 
     } catch (error) {
 
-        console.error(
-            "NEXA missed call error:",
-            error
-        );
+        console.error("NEXA missed call error:", error);
 
         return false;
 
@@ -8399,27 +6104,14 @@ async function saveMissedCallMessage(call) {
 /* =========================================================
    END CALL
 ========================================================= */
-if (groupRemoteAudio) {
 
-    try {
-        groupRemoteAudio.pause();
-    } catch (_) { }
-
-    groupRemoteAudio.srcObject = null;
-}
 function endCall(notifyServer = true) {
 
     stopNexaIncomingRingtone();
 
-    const endingCall = activeCall
-        ? { ...activeCall }
-        : null;
+    const endingCall = activeCall ? { ...activeCall } : null;
 
-    /*
-     * If the current user started the call and the other
-     * person never answered, save a persistent missed-call
-     * message for them.
-     */
+    /* If the caller never got an answer, save a missed-call message. */
     if (
         endingCall &&
         String(endingCall.callerId) === String(currentUser.id) &&
@@ -8433,8 +6125,7 @@ function endCall(notifyServer = true) {
 
     if (notifyServer && endingCall) {
 
-        const currentId =
-            String(currentUser.id);
+        const currentId = String(currentUser.id);
 
         const otherUserId =
             String(endingCall.callerId) === currentId
@@ -8442,39 +6133,23 @@ function endCall(notifyServer = true) {
                 : String(endingCall.callerId);
 
         if (otherUserId) {
-            sendCallSignal(
-                otherUserId,
-                "end",
-                {},
-                endingCall.callId
-            );
+            sendCallSignal(otherUserId, "end", {}, endingCall.callId);
         }
     }
-
-    stopCallTimer();
-    stopRemoteSpeakingVisualizer();
-
 
     if (peerConnection) {
         try { peerConnection.close(); } catch (_) { }
         peerConnection = null;
     }
 
-    /* =========================================================
-       CLEAN UP GROUP CALL CONNECTIONS
-    ========================================================= */
-
+    /* CLEAN UP GROUP CALL CONNECTIONS */
     if (groupPeerConnections.size) {
 
-        groupPeerConnections.forEach(
-            connection => {
-
-                try {
-                    connection.close();
-                } catch (_) { }
-
-            }
-        );
+        groupPeerConnections.forEach(connection => {
+            try {
+                connection.close();
+            } catch (_) { }
+        });
 
         groupPeerConnections.clear();
     }
@@ -8482,38 +6157,36 @@ function endCall(notifyServer = true) {
     groupRemoteStreams.clear();
     groupCallParticipants.clear();
 
-    document
-        .querySelectorAll(
-            'audio[id^="nexa-group-audio-"]'
-        )
-        .forEach(audio => {
+    if (groupRemoteAudio) {
 
+        try {
+            groupRemoteAudio.pause();
+        } catch (_) { }
+
+        groupRemoteAudio.srcObject = null;
+    }
+
+    document
+        .querySelectorAll('audio[id^="nexa-group-audio-"]')
+        .forEach(audio => {
             try {
                 audio.pause();
             } catch (_) { }
-
             audio.srcObject = null;
-
             audio.remove();
         });
 
     document
-        .querySelectorAll(
-            'video[id^="nexa-group-video-"]'
-        )
+        .querySelectorAll('video[id^="nexa-group-video-"]')
         .forEach(video => {
-
             try {
                 video.pause();
             } catch (_) { }
-
             video.srcObject = null;
-
             video.remove();
         });
 
     activeGroupCall = null;
-
 
     if (localStream) {
         localStream.getTracks().forEach(track => {
@@ -8532,10 +6205,8 @@ function endCall(notifyServer = true) {
     if (incomingCall) incomingCall.style.display = "none";
     if (endCallButton) endCallButton.style.display = "none";
     if (callStatus) callStatus.textContent = "";
-    const activeScreen =
-        document.getElementById(
-            "nexaActiveCallScreen"
-        );
+
+    const activeScreen = document.getElementById("nexaActiveCallScreen");
 
     if (activeScreen) {
         activeScreen.style.display = "none";
@@ -8545,7 +6216,6 @@ function endCall(notifyServer = true) {
     activeCall = null;
     callInProgress = false;
 }
-
 
 if (voiceCallButton) voiceCallButton.addEventListener("click", startVoiceCall);
 if (videoCallButton) videoCallButton.addEventListener("click", startVideoCall);
@@ -8605,8 +6275,10 @@ function closeCurrentChat() {
     }
 
     selectedFriend = null;
+    selectedGroup = null;
 
     localStorage.removeItem("nexaActiveConversation");
+    localStorage.removeItem("nexaActiveGroup");
 
     if (chatSection) chatSection.style.display = "none";
 
@@ -8640,11 +6312,6 @@ async function restoreSavedConversation() {
 
 /* =========================================================
    INITIALIZE
-   1. Load friends
-   2. Render friends
-   3. Load lightweight message metadata
-   4. Refresh conversation previews
-   5. Start realtime
 ========================================================= */
 
 async function initializeNEXA() {
@@ -8676,42 +6343,23 @@ async function initializeNEXA() {
     console.log("NEXA Messages initialized.");
 }
 
+
 /* =========================================================
    NEXA GROUP CREATION
 ========================================================= */
 
-const createGroupModal =
-    document.getElementById("createGroupModal");
-
-const closeCreateGroupButton =
-    document.getElementById("closeCreateGroupButton");
-
-const cancelCreateGroupButton =
-    document.getElementById("cancelCreateGroupButton");
-
-const createGroupButton =
-    document.getElementById("createGroupButton");
-
-const groupNameInput =
-    document.getElementById("groupNameInput");
-
-const groupDescriptionInput =
-    document.getElementById("groupDescriptionInput");
-
-const groupFriendsList =
-    document.getElementById("groupFriendsList");
-
-const selectedGroupFriendsCount =
-    document.getElementById("selectedGroupFriendsCount");
-
-const groupPictureInput =
-    document.getElementById("groupPictureInput");
-
-const groupPicturePreview =
-    document.getElementById("groupPicturePreview");
+const createGroupModal = document.getElementById("createGroupModal");
+const closeCreateGroupButton = document.getElementById("closeCreateGroupButton");
+const cancelCreateGroupButton = document.getElementById("cancelCreateGroupButton");
+const createGroupButton = document.getElementById("createGroupButton");
+const groupNameInput = document.getElementById("groupNameInput");
+const groupDescriptionInput = document.getElementById("groupDescriptionInput");
+const groupFriendsList = document.getElementById("groupFriendsList");
+const selectedGroupFriendsCount = document.getElementById("selectedGroupFriendsCount");
+const groupPictureInput = document.getElementById("groupPictureInput");
+const groupPicturePreview = document.getElementById("groupPicturePreview");
 
 let selectedGroupFriendIds = [];
-
 let selectedGroupPicture = "";
 
 
@@ -8723,27 +6371,21 @@ function loadNexaChatWallpaper() {
 
     try {
 
-        const savedSettings =
-            localStorage.getItem("nexaSettings");
+        const savedSettings = localStorage.getItem("nexaSettings");
 
         if (!savedSettings) {
             return;
         }
 
-        const settings =
-            JSON.parse(savedSettings);
+        const settings = JSON.parse(savedSettings);
 
-        const wallpaper =
-            settings.chat_wallpaper;
+        const wallpaper = settings.chat_wallpaper;
 
         if (!wallpaper) {
-            document.body.classList.remove(
-                "has-nexa-wallpaper"
-            );
 
-            document.body.style.removeProperty(
-                "--nexa-wallpaper"
-            );
+            document.body.classList.remove("has-nexa-wallpaper");
+
+            document.body.style.removeProperty("--nexa-wallpaper");
 
             return;
         }
@@ -8753,16 +6395,10 @@ function loadNexaChatWallpaper() {
             `url("${wallpaper}")`
         );
 
-        document.body.classList.add(
-            "has-nexa-wallpaper"
-        );
+        document.body.classList.add("has-nexa-wallpaper");
 
     } catch (error) {
-
-        console.error(
-            "NEXA wallpaper load error:",
-            error
-        );
+        console.error("NEXA wallpaper load error:", error);
     }
 }
 
@@ -8869,46 +6505,29 @@ async function renderGroupFriends() {
 
         friends.forEach(friend => {
 
-            const friendId =
-                String(friend.id);
+            const friendId = String(friend.id);
 
-            const selected =
-                selectedGroupFriendIds.includes(friendId);
+            const selected = selectedGroupFriendIds.includes(friendId);
 
             const picture =
                 friend.profile_picture ||
                 friend.profilePicture ||
                 "";
 
-            const row =
-                document.createElement("button");
+            const row = document.createElement("button");
 
             row.type = "button";
 
             row.className =
-                "group-friend-row" +
-                (selected ? " selected" : "");
+                "group-friend-row" + (selected ? " selected" : "");
 
-            row.dataset.userId =
-                friendId;
+            row.dataset.userId = friendId;
 
             const avatarHTML = picture
-                ? `
-                    <img
-                        src="${escapeHTML(picture)}"
-                        alt="${escapeHTML(friend.name || "Friend")}"
-                    >
-                  `
-                : `
-                    <span class="group-friend-letter">
-                        ${escapeHTML(
-                    String(friend.name || "U")
-                        .trim()
-                        .charAt(0)
-                        .toUpperCase()
-                )}
-                    </span>
-                  `;
+                ? `<img src="${escapeHTML(picture)}" alt="${escapeHTML(friend.name || "Friend")}">`
+                : `<span class="group-friend-letter">${escapeHTML(
+                    String(friend.name || "U").trim().charAt(0).toUpperCase()
+                )}</span>`;
 
             row.innerHTML = `
 
@@ -8918,19 +6537,13 @@ async function renderGroupFriends() {
 
                 <span class="group-friend-info">
 
-                    <strong>
-                        ${escapeHTML(
-                friend.name || "NEXA Member"
-            )}
-                    </strong>
+                    <strong>${escapeHTML(friend.name || "NEXA Member")}</strong>
 
-                    <small>
-                        ${escapeHTML(
-                friend.username
-                    ? "@" + friend.username
-                    : "NEXA Member"
-            )}
-                    </small>
+                    <small>${escapeHTML(
+                        friend.username
+                            ? "@" + friend.username
+                            : "NEXA Member"
+                    )}</small>
 
                 </span>
 
@@ -8939,10 +6552,7 @@ async function renderGroupFriends() {
                 </span>
             `;
 
-            row.addEventListener(
-                "click",
-                () => toggleGroupFriend(friendId)
-            );
+            row.addEventListener("click", () => toggleGroupFriend(friendId));
 
             groupFriendsList.appendChild(row);
         });
@@ -8951,10 +6561,7 @@ async function renderGroupFriends() {
 
     } catch (error) {
 
-        console.error(
-            "NEXA group friends error:",
-            error
-        );
+        console.error("NEXA group friends error:", error);
 
         groupFriendsList.innerHTML = `
             <div class="group-friends-empty">
@@ -8973,21 +6580,12 @@ function toggleGroupFriend(friendId) {
 
     friendId = String(friendId);
 
-    const index =
-        selectedGroupFriendIds.indexOf(friendId);
+    const index = selectedGroupFriendIds.indexOf(friendId);
 
     if (index >= 0) {
-
-        selectedGroupFriendIds.splice(
-            index,
-            1
-        );
-
+        selectedGroupFriendIds.splice(index, 1);
     } else {
-
-        selectedGroupFriendIds.push(
-            friendId
-        );
+        selectedGroupFriendIds.push(friendId);
     }
 
     renderGroupFriends();
@@ -9002,13 +6600,10 @@ function updateSelectedGroupFriendsCount() {
 
     if (!selectedGroupFriendsCount) return;
 
-    const count =
-        selectedGroupFriendIds.length;
+    const count = selectedGroupFriendIds.length;
 
     selectedGroupFriendsCount.textContent =
-        count === 1
-            ? "1 selected"
-            : `${count} selected`;
+        count === 1 ? "1 selected" : `${count} selected`;
 }
 
 
@@ -9018,52 +6613,42 @@ function updateSelectedGroupFriendsCount() {
 
 if (groupPictureInput) {
 
-    groupPictureInput.addEventListener(
-        "change",
-        event => {
+    groupPictureInput.addEventListener("change", event => {
 
-            const file =
-                event.target.files?.[0];
+        const file = event.target.files?.[0];
 
-            if (!file) return;
+        if (!file) return;
 
-            if (!file.type.startsWith("image/")) {
+        if (!file.type.startsWith("image/")) {
 
-                alert(
-                    "Please choose an image."
-                );
+            alert("Please choose an image.");
 
-                groupPictureInput.value = "";
+            groupPictureInput.value = "";
 
-                return;
-            }
-
-            const reader =
-                new FileReader();
-
-            reader.onload = () => {
-
-                selectedGroupPicture =
-                    reader.result;
-
-                if (groupPicturePreview) {
-
-                    groupPicturePreview.innerHTML = "";
-
-                    groupPicturePreview.style.backgroundImage =
-                        `url("${selectedGroupPicture}")`;
-
-                    groupPicturePreview.style.backgroundSize =
-                        "cover";
-
-                    groupPicturePreview.style.backgroundPosition =
-                        "center";
-                }
-            };
-
-            reader.readAsDataURL(file);
+            return;
         }
-    );
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+
+            selectedGroupPicture = reader.result;
+
+            if (groupPicturePreview) {
+
+                groupPicturePreview.innerHTML = "";
+
+                groupPicturePreview.style.backgroundImage =
+                    `url("${selectedGroupPicture}")`;
+
+                groupPicturePreview.style.backgroundSize = "cover";
+
+                groupPicturePreview.style.backgroundPosition = "center";
+            }
+        };
+
+        reader.readAsDataURL(file);
+    });
 }
 
 
@@ -9074,18 +6659,11 @@ if (groupPictureInput) {
 async function createNexaGroup() {
 
     if (!currentUser) {
-
-        alert(
-            "You must be logged in first."
-        );
-
+        alert("You must be logged in first.");
         return;
     }
 
-    const groupName =
-        groupNameInput
-            ? groupNameInput.value.trim()
-            : "";
+    const groupName = groupNameInput ? groupNameInput.value.trim() : "";
 
     const description =
         groupDescriptionInput
@@ -9094,9 +6672,7 @@ async function createNexaGroup() {
 
     if (!groupName) {
 
-        alert(
-            "Please enter a group name."
-        );
+        alert("Please enter a group name.");
 
         if (groupNameInput) {
             groupNameInput.focus();
@@ -9106,161 +6682,90 @@ async function createNexaGroup() {
     }
 
     if (!selectedGroupFriendIds.length) {
-
-        alert(
-            "Choose at least one friend."
-        );
-
+        alert("Choose at least one friend.");
         return;
     }
 
     if (createGroupButton) {
 
-        createGroupButton.disabled =
-            true;
+        createGroupButton.disabled = true;
 
-        createGroupButton.innerHTML = `
-            <span>
-                Creating...
-            </span>
-        `;
+        createGroupButton.innerHTML = `<span>Creating...</span>`;
     }
 
     try {
 
-        /*
-         * Use a string ID so it works with the current
-         * NEXA user ID architecture.
-         */
         const groupId =
             "group_" +
             Date.now() +
             "_" +
-            Math.random()
-                .toString(36)
-                .slice(2, 9);
+            Math.random().toString(36).slice(2, 9);
 
-
-        /* -----------------------------------------------------
-           CREATE GROUP
-        ----------------------------------------------------- */
-
-        const { data: group, error: groupError } =
-            await nexaSupabase
-                .from("groups")
-                .insert({
-
-                    id: groupId,
-
-                    name: groupName,
-
-                    description:
-                        description,
-
-                    group_picture:
-                        selectedGroupPicture,
-
-                    created_by:
-                        String(currentUser.id)
-
-                })
-                .select()
-                .single();
+        /* CREATE GROUP */
+        const { data: group, error: groupError } = await nexaSupabase
+            .from("groups")
+            .insert({
+                id: groupId,
+                name: groupName,
+                description: description,
+                group_picture: selectedGroupPicture,
+                created_by: String(currentUser.id)
+            })
+            .select()
+            .single();
 
         if (groupError) {
             throw groupError;
         }
 
-
-        /* -----------------------------------------------------
-           ADD CREATOR + SELECTED FRIENDS
-        ----------------------------------------------------- */
-
+        /* ADD CREATOR + SELECTED FRIENDS */
         const members = [
 
             {
                 group_id: groupId,
-
-                user_id:
-                    String(currentUser.id),
-
+                user_id: String(currentUser.id),
                 role: "admin"
             },
 
-            ...selectedGroupFriendIds.map(
-                friendId => ({
-
-                    group_id: groupId,
-
-                    user_id:
-                        String(friendId),
-
-                    role: "member"
-                })
-            )
-
+            ...selectedGroupFriendIds.map(friendId => ({
+                group_id: groupId,
+                user_id: String(friendId),
+                role: "member"
+            }))
         ];
 
-
-        const { error: membersError } =
-            await nexaSupabase
-                .from("group_members")
-                .insert(members);
+        const { error: membersError } = await nexaSupabase
+            .from("group_members")
+            .insert(members);
 
         if (membersError) {
             throw membersError;
         }
 
-
-        /* -----------------------------------------------------
-           SUCCESS
-        ----------------------------------------------------- */
-
+        /* SUCCESS */
         closeCreateGroupModal();
 
-        alert(
-            `"${groupName}" was created successfully.`
-        );
+        alert(`"${groupName}" was created successfully.`);
 
-        /*
-         * Refresh the conversation list.
-         * Group rendering will be added in the next step.
-         */
-        await displayConversations(
-            getConversationSearchValue()
-        );
+        await displayConversations(getConversationSearchValue());
 
-        console.log(
-            "NEXA group created:",
-            group
-        );
+        console.log("NEXA group created:", group);
 
     } catch (error) {
 
-        console.error(
-            "NEXA create group error:",
-            error
-        );
+        console.error("NEXA create group error:", error);
 
-        alert(
-            "Could not create the group. Please try again."
-        );
+        alert("Could not create the group. Please try again.");
 
     } finally {
 
         if (createGroupButton) {
 
-            createGroupButton.disabled =
-                false;
+            createGroupButton.disabled = false;
 
             createGroupButton.innerHTML = `
-                <span>
-                    Create Group
-                </span>
-
-                <span>
-                    ➤
-                </span>
+                <span>Create Group</span>
+                <span>➤</span>
             `;
         }
     }
@@ -9272,68 +6777,34 @@ async function createNexaGroup() {
 ========================================================= */
 
 if (newMessageButton) {
-
-    newMessageButton.addEventListener(
-        "click",
-        openCreateGroupModal
-    );
+    newMessageButton.addEventListener("click", openCreateGroupModal);
 }
-
 
 if (emptyNewMessageButton) {
-
-    emptyNewMessageButton.addEventListener(
-        "click",
-        openCreateGroupModal
-    );
+    emptyNewMessageButton.addEventListener("click", openCreateGroupModal);
 }
-
 
 if (closeCreateGroupButton) {
-
-    closeCreateGroupButton.addEventListener(
-        "click",
-        closeCreateGroupModal
-    );
+    closeCreateGroupButton.addEventListener("click", closeCreateGroupModal);
 }
-
 
 if (cancelCreateGroupButton) {
-
-    cancelCreateGroupButton.addEventListener(
-        "click",
-        closeCreateGroupModal
-    );
+    cancelCreateGroupButton.addEventListener("click", closeCreateGroupModal);
 }
-
 
 if (createGroupButton) {
-
-    createGroupButton.addEventListener(
-        "click",
-        createNexaGroup
-    );
+    createGroupButton.addEventListener("click", createNexaGroup);
 }
 
-
-/* =========================================================
-   CLOSE MODAL BY CLICKING OUTSIDE
-========================================================= */
-
+/* CLOSE MODAL BY CLICKING OUTSIDE */
 if (createGroupModal) {
 
-    createGroupModal.addEventListener(
-        "click",
-        event => {
+    createGroupModal.addEventListener("click", event => {
 
-            if (
-                event.target ===
-                createGroupModal
-            ) {
-                closeCreateGroupModal();
-            }
+        if (event.target === createGroupModal) {
+            closeCreateGroupModal();
         }
-    );
+    });
 }
 
 
@@ -9343,35 +6814,26 @@ if (createGroupModal) {
 
 function showNexaComingSoon(type = "Group calling") {
 
-    let popup =
-        document.getElementById("nexaComingSoonPopup");
+    let popup = document.getElementById("nexaComingSoonPopup");
 
     if (!popup) {
 
         popup = document.createElement("div");
 
-        popup.id =
-            "nexaComingSoonPopup";
+        popup.id = "nexaComingSoonPopup";
 
-        popup.className =
-            "nexa-coming-soon-popup";
+        popup.className = "nexa-coming-soon-popup";
 
         popup.innerHTML = `
             <div class="nexa-coming-soon-card">
 
-                <div class="nexa-coming-soon-icon">
-                    ✨
-                </div>
+                <div class="nexa-coming-soon-icon">✨</div>
 
                 <div class="nexa-coming-soon-content">
 
-                    <div class="nexa-coming-soon-label">
-                        NEXA
-                    </div>
+                    <div class="nexa-coming-soon-label">NEXA</div>
 
-                    <h3>
-                        Coming Soon
-                    </h3>
+                    <h3>Coming Soon</h3>
 
                     <p id="nexaComingSoonText">
                         Group calling is being prepared.
@@ -9392,46 +6854,26 @@ function showNexaComingSoon(type = "Group calling") {
 
         document.body.appendChild(popup);
 
-        const closeButton =
-            popup.querySelector(
-                ".nexa-coming-soon-close"
-            );
+        const closeButton = popup.querySelector(".nexa-coming-soon-close");
 
         if (closeButton) {
-            closeButton.addEventListener(
-                "click",
-                () => {
-                    popup.classList.remove("show");
-                }
-            );
+            closeButton.addEventListener("click", () => {
+                popup.classList.remove("show");
+            });
         }
 
-        popup.addEventListener(
-            "click",
-            event => {
+        popup.addEventListener("click", event => {
 
-                if (
-                    event.target === popup
-                ) {
-                    popup.classList.remove(
-                        "show"
-                    );
-                }
-
+            if (event.target === popup) {
+                popup.classList.remove("show");
             }
-        );
+        });
     }
 
-    const text =
-        document.getElementById(
-            "nexaComingSoonText"
-        );
+    const text = document.getElementById("nexaComingSoonText");
 
     if (text) {
-
-        text.textContent =
-            type +
-            " is coming soon.";
+        text.textContent = type + " is coming soon.";
     }
 
     popup.classList.remove("show");
@@ -9440,25 +6882,20 @@ function showNexaComingSoon(type = "Group calling") {
         popup.classList.add("show");
     });
 
-    clearTimeout(
-        popup._hideTimer
-    );
+    clearTimeout(popup._hideTimer);
 
-    popup._hideTimer =
-        setTimeout(() => {
-
-            popup.classList.remove(
-                "show"
-            );
-
-        }, 4500);
+    popup._hideTimer = setTimeout(() => {
+        popup.classList.remove("show");
+    }, 4500);
 }
+
 window.addEventListener("pageshow", async event => {
     if (event.persisted) {
         await getUsers();
         displayConversations(getConversationSearchValue());
     }
 });
+
 
 /* =========================================================
    START
