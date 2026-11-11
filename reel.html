@@ -791,7 +791,7 @@ button {
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const reelsContainer = document.getElementById("reelsContainer");
 const uploadModal = document.getElementById("uploadModal");
@@ -801,23 +801,7 @@ const captionInput = document.getElementById("reelCaption");
 const tagsInput = document.getElementById("reelTags");
 const publishButton = document.getElementById("publishButton");
 
-let reels = [
-    {
-        id: "demo-1",
-        username: "NEXA Creator",
-        handle: "@nexa",
-        avatar: "N",
-        caption: "Welcome to NEXA Reels. Your next great moment starts here.",
-        tags: "#NEXA #NEXACommunity",
-        video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-        likes: 0,
-        comments: [],
-        liked: false,
-        saved: false,
-        following: false,
-        demo: true
-    }
-];
+let reels = [];
 
 let activeIndex = 0;
 let savedOnly = false;
@@ -1069,6 +1053,36 @@ function openUpload() {
 function closeUpload() {
     uploadModal.classList.remove("open");
 }
+    async function loadReels() {
+  const { data, error } = await supabaseClient
+    .from("reels")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load reels:", error);
+    showToast("Could not load reels.");
+    return;
+  }
+
+  reels = data.map(row => ({
+    id: row.id,
+    username: row.username,
+    handle: row.handle,
+    avatar: row.avatar,
+    caption: row.caption,
+    tags: row.tags,
+    video: row.video_url,
+    likes: 0,
+    comments: [],
+    liked: false,
+    saved: false,
+    following: false,
+    demo: false
+  }));
+
+  renderReels();
+}
 
 document.getElementById("openUpload").addEventListener("click", openUpload);
 document.getElementById("rightUpload").addEventListener("click", openUpload);
@@ -1090,8 +1104,74 @@ document.getElementById("savedFilter").addEventListener("click", () => {
     renderReels();
 });
 
-uploadForm.addEventListener("submit", event => {
-    event.preventDefault();
+uploadForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const file = fileInput.files[0];
+
+  if (!file || !file.type.startsWith("video/")) {
+    showToast("Please choose a video file.");
+    return;
+  }
+
+  publishButton.disabled = true;
+  publishButton.textContent = "Uploading...";
+
+  try {
+    const {
+      data: { user },
+      error: authError
+    } = await supabaseClient.auth.getUser();
+
+    if (authError || !user) {
+      showToast("Please sign in before publishing a reel.");
+      return;
+    }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const filePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from("reels")
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabaseClient.storage
+      .from("reels")
+      .getPublicUrl(filePath);
+
+    const { error: insertError } = await supabaseClient
+      .from("reels")
+      .insert({
+        user_id: user.id,
+        username: user.user_metadata?.username || "NEXA Creator",
+        handle: user.user_metadata?.handle || "@creator",
+        avatar: user.user_metadata?.username?.[0]?.toUpperCase() || "N",
+        caption: captionInput.value.trim() || "A new moment on NEXA.",
+        tags: tagsInput.value.trim(),
+        video_url: publicUrlData.publicUrl
+      });
+
+    if (insertError) throw insertError;
+
+    uploadForm.reset();
+    closeUpload();
+    savedOnly = false;
+    await loadReels();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast("Reel published!");
+  } catch (error) {
+    console.error("Upload failed:", error);
+    showToast(error.message || "Could not publish the reel.");
+  } finally {
+    publishButton.disabled = false;
+    publishButton.textContent = "Publish Reel";
+  }
+});
 
     const file = fileInput.files[0];
     if (!file) {
