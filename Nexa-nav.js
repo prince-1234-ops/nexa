@@ -149,9 +149,15 @@
             align-self: start;
         }
 
-        .nexa-conv-avatar {
+        #conversationsList .conversationButton > .nexa-conv-avatar {
             position: relative;
             grid-area: avatar;
+            align-self: center;
+            justify-self: start;
+            flex: 0 0 auto;
+            padding: 0;
+            white-space: normal;
+            text-overflow: clip;
             display: grid;
             width: 48px;
             height: 48px;
