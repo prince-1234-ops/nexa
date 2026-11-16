@@ -170,6 +170,13 @@
             font-family: "Space Grotesk", sans-serif;
             font-size: 18px;
             font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        #conversationsList .conversationButton > .nexa-conv-avatar:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 3px rgba(128, 207, 255, 0.28), 0 0 22px rgba(70, 179, 255, 0.45);
         }
 
         .nexa-conv-avatar img {
@@ -223,6 +230,7 @@
 
         avatar.className = "nexa-conv-avatar";
         avatar.dataset.userId = String(userId);
+        avatar.title = "View " + name + "'s profile";
 
         if (picture) {
 
@@ -279,5 +287,24 @@
     });
 
     decorateConversations();
+
+    /* ---------- click the PHOTO -> that person's profile ---------- */
+
+    conversationsList.addEventListener("click", function (event) {
+
+        const avatar = event.target.closest(".nexa-conv-avatar");
+
+        if (!avatar) {
+            return;
+        }
+
+        /* stop the box from opening the chat */
+        event.preventDefault();
+        event.stopPropagation();
+
+        window.location.href =
+            "profile.html?user=" + encodeURIComponent(avatar.dataset.userId);
+
+    }, true);
 
 })();
