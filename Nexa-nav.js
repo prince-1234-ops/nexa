@@ -3,7 +3,9 @@
 
    1. Red unread-messages badge on the Messages menu item
    2. Messages page: every friend shows their circular profile
-      photo + name. Click the box to chat as normal.
+      photo + name. Click the photo = profile, box = chat.
+   3. Home page: reel viewer fixes (clicking a reel plays it
+      properly, live blue progress bar, smooth scrolling).
 ========================================================= */
 
 (function () {
@@ -306,5 +308,236 @@
             "profile.html?user=" + encodeURIComponent(avatar.dataset.userId);
 
     }, true);
+
+})();
+
+
+/* =========================================================
+   HOME PAGE — REEL VIEWER FIXES
+   Runs after home.js has loaded (DOMContentLoaded), and
+   replaces only the parts of the viewer that misbehaved.
+========================================================= */
+
+(function () {
+
+    function installReelFixes() {
+
+        const viewer = document.getElementById("reelViewer");
+        const video = document.getElementById("reelViewerVideo");
+
+        if (!viewer || !video || typeof loadViewerPost !== "function") {
+            return;
+        }
+
+        const bar = viewer.querySelector(".reel-viewer-progress span");
+
+        /* ---------- styles ---------- */
+
+        const style = document.createElement("style");
+
+        style.textContent = `
+            /* The old invisible ▶ button sat on top of the reel and
+               swallowed your click, so the viewer never opened. */
+            .reel-play-button { display: none !important; }
+
+            .reel-viewer-progress span { transition: none; }
+        `;
+
+        document.head.appendChild(style);
+
+        /* no native controls: they fought with tap-to-pause */
+        video.controls = false;
+        video.removeAttribute("controls");
+
+        /* ---------- live blue progress bar ---------- */
+
+        let frame = null;
+
+        function updateProgress() {
+
+            if (!bar) {
+                return;
+            }
+
+            const duration = video.duration;
+
+            const percent =
+                duration && isFinite(duration)
+                    ? Math.min(100, (video.currentTime / duration) * 100)
+                    : 0;
+
+            bar.style.width = percent + "%";
+        }
+
+        function startProgress() {
+
+            if (frame !== null) {
+                return;
+            }
+
+            const tick = function () {
+                updateProgress();
+                frame = requestAnimationFrame(tick);
+            };
+
+            frame = requestAnimationFrame(tick);
+        }
+
+        function stopProgress() {
+
+            if (frame !== null) {
+                cancelAnimationFrame(frame);
+                frame = null;
+            }
+
+            updateProgress();
+        }
+
+        video.addEventListener("play", startProgress);
+        video.addEventListener("playing", startProgress);
+        video.addEventListener("pause", stopProgress);
+        video.addEventListener("ended", stopProgress);
+        video.addEventListener("loadedmetadata", updateProgress);
+        video.addEventListener("seeked", updateProgress);
+
+        video.addEventListener("emptied", function () {
+            stopProgress();
+            if (bar) {
+                bar.style.width = "0%";
+            }
+        });
+
+        /* ---------- reliable playback ---------- */
+
+        function startPlayback() {
+
+            if (!viewerIsOpen) {
+                return;
+            }
+
+            video.muted = false;
+            video.volume = 1;
+
+            const attempt = video.play();
+
+            if (attempt && attempt.catch) {
+
+                attempt.catch(function () {
+
+                    /* browser blocked sound: play silently instead of freezing */
+                    video.muted = true;
+                    video.play().catch(function () { });
+                });
+            }
+        }
+
+        const originalLoadViewerPost = loadViewerPost;
+
+        loadViewerPost = function (post) {
+
+            originalLoadViewerPost(post);
+
+            const type = String((post && post.mediaType) || "").toLowerCase();
+
+            if (type !== "reel" && type !== "video") {
+                return;
+            }
+
+            video.controls = false;
+
+            if (bar) {
+                bar.style.width = "0%";
+            }
+
+            /* play right away (inside your click), and again when data arrives */
+            startPlayback();
+
+            video.onloadeddata = function () {
+
+                if (
+                    viewerIsOpen &&
+                    String(selectedViewerPostId) === String(post.id)
+                ) {
+                    startPlayback();
+                }
+            };
+        };
+
+        /* ---------- closing the viewer: resume the feed ---------- */
+
+        const originalCloseViewer = closeViewer;
+
+        closeViewer = function () {
+
+            originalCloseViewer();
+
+            stopProgress();
+
+            if (typeof attachFeedVideoObservers === "function") {
+                attachFeedVideoObservers();
+            }
+        };
+
+        /* ---------- scrolling: one swipe = one reel ---------- */
+
+        let wheelLock = 0;
+
+        document.addEventListener("wheel", function (event) {
+
+            if (!viewerIsOpen || !viewer.contains(event.target)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const now = Date.now();
+
+            /* trackpad momentum keeps firing: stay locked while it does */
+            if (now < wheelLock) {
+                wheelLock = Math.max(wheelLock, now + 160);
+                return;
+            }
+
+            if (Math.abs(event.deltaY) < 30) {
+                return;
+            }
+
+            wheelLock = now + 500;
+
+            if (event.deltaY > 0) {
+                showNextViewerPost();
+            } else {
+                showPreviousViewerPost();
+            }
+
+        }, { passive: false, capture: true });
+
+        /* ---------- space bar = play / pause ---------- */
+
+        document.addEventListener("keydown", function (event) {
+
+            if (!viewerIsOpen) {
+                return;
+            }
+
+            if (event.key === " " || event.code === "Space") {
+
+                event.preventDefault();
+
+                if (video.paused) {
+                    video.play().catch(function () { });
+                } else {
+                    video.pause();
+                }
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", installReelFixes);
+    } else {
+        installReelFixes();
+    }
 
 })();
