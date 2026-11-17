@@ -2,770 +2,287 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#06101b">
     <title>NEXA Profile</title>
-
     <link rel="icon" type="image/jpeg" href="images/hub.jpg">
 
-    <!-- =====================================================
-         NEXA PROFILE CSS
-    ====================================================== -->
-    <link
-        rel="stylesheet"
-        href="profile.css"
-    >
-
-    <!-- =====================================================
-         FONT AWESOME
-    ====================================================== -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
-
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="profile-extra.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
-
 
 <body>
 
+<div class="nexa-background">
+    <div class="nexa-background-orb orb-one"></div>
+    <div class="nexa-background-orb orb-two"></div>
+    <div class="nexa-background-orb orb-three"></div>
+</div>
 
-    <!-- =====================================================
-         NEXA BACKGROUND
-    ====================================================== -->
+<main class="profile-page">
 
-    <div class="nexa-background">
+    <!-- TOP BAR -->
 
-        <div class="nexa-background-orb orb-one"></div>
-        <div class="nexa-background-orb orb-two"></div>
-        <div class="nexa-background-orb orb-three"></div>
+    <header class="profile-topbar">
 
-    </div>
-
-
-    <!-- =====================================================
-         MAIN PROFILE PAGE
-    ====================================================== -->
-
-    <main class="profile-page">
-
-
-        <!-- =================================================
-             TOP NAVIGATION
-        ================================================== -->
-
-        <header class="profile-topbar">
-
-            <button
-                type="button"
-                class="profile-nav-button"
-                id="profileBackButton"
-                aria-label="Go back"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-
-
-            <div class="profile-top-title">
-
-                <span
-                    id="profileUsernameTitle"
-                >
-                    NEXA
-                </span>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="profile-nav-button"
-                id="profileMenuButton"
-                aria-label="Profile menu"
-            >
-                <i class="fa-solid fa-ellipsis"></i>
-            </button>
-
-        </header>
-
-
-        <!-- =================================================
-             PROFILE HEADER
-        ================================================== -->
-
-        <section
-            class="profile-header"
-            id="profileHeader"
-        >
-
-
-            <!-- =============================================
-                 PROFILE PHOTO + WHAT'S NEW
-            ============================================== -->
-
-            <div class="profile-photo-zone">
-
-
-                <!-- =========================================
-                     PROFILE PHOTO
-                ========================================== -->
-
-                <button
-                    type="button"
-                    class="profile-photo-button"
-                    id="profilePhotoButton"
-                    aria-label="Profile picture"
-                >
-
-                    <div
-                        class="profile-photo-wrapper"
-                        id="profilePhotoWrapper"
-                    >
-
-                        <img
-                            id="profilePhoto"
-                            class="profile-photo"
-                            src=""
-                            alt="Profile picture"
-                        >
-
-                        <div
-                            id="profilePhotoFallback"
-                            class="profile-photo-fallback"
-                        >
-                            N
-                        </div>
-
-                    </div>
-
-                </button>
-
-
-                <!-- =========================================
-                     WHAT'S NEW CLOUD
-                ========================================== -->
-
-                <button
-                    type="button"
-                    class="profile-status-cloud"
-                    id="profileStatusCloud"
-                    aria-label="What's new"
-                >
-
-                    <span class="status-cloud-icon">
-                        <i class="fa-solid fa-comment"></i>
-                    </span>
-
-                    <span class="status-cloud-content">
-
-                        <strong>
-                            What's new?
-                        </strong>
-
-                        <small
-                            id="profileStatusPreview"
-                        >
-                            Share an update
-                        </small>
-
-                    </span>
-
-                </button>
-
-            </div>
-
-
-            <!-- =============================================
-                 PROFILE NAME
-            ============================================== -->
-
-            <div class="profile-identity">
-
-                <h1
-                    id="profileName"
-                    class="profile-name"
-                >
-                    NEXA Member
-                </h1>
-
-
-                <p
-                    id="profileUsername"
-                    class="profile-username"
-                >
-                    @nexa
-                </p>
-
-
-                <p
-                    id="profileBio"
-                    class="profile-bio"
-                >
-                    Welcome to NEXA.
-                </p>
-
-            </div>
-
-
-            <!-- =============================================
-                 PROFILE STATS
-            ============================================== -->
-
-            <div class="profile-stats">
-
-
-                <button
-                    type="button"
-                    class="profile-stat"
-                    id="profilePostsStat"
-                >
-
-                    <strong
-                        id="profilePostsCount"
-                    >
-                        0
-                    </strong>
-
-                    <span>
-                        Posts
-                    </span>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="profile-stat"
-                    id="profileFriendsStat"
-                >
-
-                    <strong
-                        id="profileFriendsCount"
-                    >
-                        0
-                    </strong>
-
-                    <span>
-                        Friends
-                    </span>
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="profile-stat"
-                    id="profileLikesStat"
-                >
-
-                    <strong
-                        id="profileLikesCount"
-                    >
-                        0
-                    </strong>
-
-                    <span>
-                        Likes
-                    </span>
-
-                </button>
-
-            </div>
-
-
-            <!-- =============================================
-                 PROFILE ACTIONS
-            ============================================== -->
-
-            <div
-                class="profile-actions"
-                id="profileActions"
-            >
-
-                <!-- Shown on own profile -->
-
-                <button
-                    type="button"
-                    class="profile-action-button primary"
-                    id="editProfileButton"
-                >
-                    <i class="fa-solid fa-pen"></i>
-                    <span>Edit Profile</span>
-                </button>
-
-
-                <!-- Shown on another user's profile -->
-
-                <button
-                    type="button"
-                    class="profile-action-button primary"
-                    id="addFriendProfileButton"
-                    hidden
-                >
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Add Friend</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    class="profile-action-button secondary"
-                    id="messageProfileButton"
-                    hidden
-                >
-                    <i class="fa-solid fa-message"></i>
-                    <span>Message</span>
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             STORIES
-        ================================================== -->
-
-        <section
-            class="profile-stories-section"
-            id="profileStoriesSection"
-        >
-
-            <div class="profile-section-header">
-
-                <div>
-
-                    <span class="profile-section-kicker">
-                        STORIES
-                    </span>
-
-                    <h2>
-                        Recent stories
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="profile-stories"
-                id="profileStories"
-            >
-
-                <div
-                    class="profile-stories-loading"
-                    id="profileStoriesLoading"
-                >
-                    Loading stories...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             POSTS
-        ================================================== -->
-
-        <section
-            class="profile-posts-section"
-            id="profilePostsSection"
-        >
-
-            <div class="profile-section-header">
-
-                <div>
-
-                    <span class="profile-section-kicker">
-                        POSTS
-                    </span>
-
-                    <h2>
-                        Posts
-                    </h2>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="profile-posts-view-button"
-                    id="profilePostsViewButton"
-                    aria-label="Change posts view"
-                >
-                    <i class="fa-solid fa-grip"></i>
-                </button>
-
-            </div>
-
-
-            <!-- =============================================
-                 POSTS GRID
-            ============================================== -->
-
-            <div
-                class="profile-posts-grid"
-                id="profilePostsGrid"
-            >
-
-                <div
-                    class="profile-posts-loading"
-                    id="profilePostsLoading"
-                >
-
-                    <span>
-                        Loading posts...
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- =============================================
-                 EMPTY POSTS
-            ============================================== -->
-
-            <div
-                class="profile-empty-posts"
-                id="profileEmptyPosts"
-                hidden
-            >
-
-                <div class="profile-empty-posts-icon">
-                    <i class="fa-regular fa-images"></i>
-                </div>
-
-                <h3>
-                    No posts yet
-                </h3>
-
-                <p>
-                    Posts you create will appear here.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             PROFILE LOADING STATE
-        ================================================== -->
-
-        <div
-            class="profile-page-loading"
-            id="profilePageLoading"
-        >
-
-            <div class="profile-loader-ring"></div>
-
-            <p>
-                Loading NEXA profile...
-            </p>
-
-        </div>
-
-
-    </main>
-
-
-    <!-- =====================================================
-         WHAT'S NEW MODAL
-    ====================================================== -->
-
-    <div
-        class="nexa-modal"
-        id="profileStatusModal"
-        hidden
-    >
-
-        <div
-            class="nexa-modal-backdrop"
-            data-close-modal="profileStatusModal"
-        ></div>
-
-
-        <div class="nexa-modal-card">
-
-
-            <div class="nexa-modal-header">
-
-                <div>
-
-                    <span class="nexa-modal-kicker">
-                        24 HOURS
-                    </span>
-
-                    <h2>
-                        What's new?
-                    </h2>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="nexa-modal-close"
-                    data-close-modal="profileStatusModal"
-                    aria-label="Close"
-                >
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-            </div>
-
-
-            <textarea
-                id="profileStatusInput"
-                class="profile-status-input"
-                maxlength="180"
-                placeholder="Tell everyone what's new..."
-            ></textarea>
-
-
-            <div class="profile-status-footer">
-
-                <span
-                    id="profileStatusCharacters"
-                >
-                    0 / 180
-                </span>
-
-
-                <button
-                    type="button"
-                    class="profile-save-button"
-                    id="saveProfileStatusButton"
-                >
-                    <i class="fa-solid fa-paper-plane"></i>
-                    Post update
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         EDIT PROFILE MODAL
-    ====================================================== -->
-
-    <div
-        class="nexa-modal"
-        id="editProfileModal"
-        hidden
-    >
-
-        <div
-            class="nexa-modal-backdrop"
-            data-close-modal="editProfileModal"
-        ></div>
-
-
-        <div class="nexa-modal-card">
-
-
-            <div class="nexa-modal-header">
-
-                <div>
-
-                    <span class="nexa-modal-kicker">
-                        PROFILE
-                    </span>
-
-                    <h2>
-                        Edit Profile
-                    </h2>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="nexa-modal-close"
-                    data-close-modal="editProfileModal"
-                    aria-label="Close"
-                >
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-            </div>
-
-
-            <!-- =============================================
-                 PROFILE IMAGE INPUT
-            ============================================== -->
-
-            <div class="edit-profile-photo">
-
-                <div
-                    class="edit-profile-photo-preview"
-                    id="editProfilePhotoPreview"
-                >
-
-                    <span>
-                        N
-                    </span>
-
-                </div>
-
-
-                <label
-                    for="profilePictureInput"
-                    class="profile-change-photo-button"
-                >
-                    <i class="fa-solid fa-camera"></i>
-                    Change picture
-                </label>
-
-
-                <input
-                    type="file"
-                    id="profilePictureInput"
-                    accept="image/*"
-                    hidden
-                >
-
-            </div>
-
-
-            <!-- =============================================
-                 NAME
-            ============================================== -->
-
-            <label class="profile-form-field">
-
-                <span>
-                    Name
-                </span>
-
-                <input
-                    type="text"
-                    id="editProfileName"
-                    maxlength="80"
-                    autocomplete="name"
-                    placeholder="Your name"
-                >
-
-            </label>
-
-
-            <!-- =============================================
-                 USERNAME
-            ============================================== -->
-
-            <label class="profile-form-field">
-
-                <span>
-                    Username
-                </span>
-
-                <input
-                    type="text"
-                    id="editProfileUsername"
-                    maxlength="30"
-                    autocomplete="username"
-                    placeholder="username"
-                >
-
-            </label>
-
-
-            <!-- =============================================
-                 BIO
-            ============================================== -->
-
-            <label class="profile-form-field">
-
-                <span>
-                    Bio
-                </span>
-
-                <textarea
-                    id="editProfileBio"
-                    maxlength="160"
-                    placeholder="Tell people about yourself..."
-                ></textarea>
-
-            </label>
-
-
-            <button
-                type="button"
-                class="profile-save-button full"
-                id="saveProfileButton"
-            >
-                <i class="fa-solid fa-check"></i>
-                Save Profile
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         POST VIEWER
-    ====================================================== -->
-
-    <div
-        class="nexa-post-viewer"
-        id="profilePostViewer"
-        hidden
-    >
-
-        <button
-            type="button"
-            class="post-viewer-close"
-            id="closeProfilePostViewer"
-            aria-label="Close post"
-        >
-            <i class="fa-solid fa-xmark"></i>
+        <button type="button" class="profile-nav-button" id="profileBackButton" aria-label="Go back">
+            <i class="fa-solid fa-arrow-left"></i>
         </button>
 
+        <div class="profile-top-title"><span id="profileUsernameTitle">NEXA</span></div>
 
-        <div
-            class="post-viewer-content"
-            id="profilePostViewerContent"
-        >
+        <button type="button" class="profile-nav-button" id="profileMenuButton" aria-label="Profile menu">
+            <i class="fa-solid fa-ellipsis"></i>
+        </button>
 
-            <!-- JavaScript inserts the selected post here -->
+    </header>
 
+
+    <!-- HEADER -->
+
+    <section class="profile-header" id="profileHeader">
+
+        <div class="profile-photo-zone">
+
+            <button type="button" class="profile-photo-button" id="profilePhotoButton" aria-label="Profile picture">
+                <div class="profile-photo-wrapper" id="profilePhotoWrapper">
+                    <img id="profilePhoto" class="profile-photo" src="" alt="Profile picture">
+                    <div id="profilePhotoFallback" class="profile-photo-fallback">N</div>
+                </div>
+            </button>
+
+            <button type="button" class="profile-status-cloud" id="profileStatusCloud" aria-label="What's new">
+                <span class="status-cloud-icon"><i class="fa-solid fa-comment"></i></span>
+                <span class="status-cloud-content">
+                    <strong>What's new?</strong>
+                    <small id="profileStatusPreview">Share an update</small>
+                </span>
+            </button>
+
+        </div>
+
+        <div class="profile-identity">
+            <h1 id="profileName" class="profile-name">NEXA Member</h1>
+            <p id="profileUsername" class="profile-username">@nexa</p>
+            <p id="profileBio" class="profile-bio">Welcome to NEXA.</p>
+        </div>
+
+        <div class="profile-stats">
+
+            <button type="button" class="profile-stat" id="profilePostsStat">
+                <strong id="profilePostsCount">0</strong><span>Posts</span>
+            </button>
+
+            <button type="button" class="profile-stat" id="profileFriendsStat">
+                <strong id="profileFriendsCount">0</strong><span>Friends</span>
+            </button>
+
+            <button type="button" class="profile-stat" id="profileLikesStat">
+                <strong id="profileLikesCount">0</strong><span>Likes</span>
+            </button>
+
+        </div>
+
+        <div class="profile-actions" id="profileActions">
+
+            <button type="button" class="profile-action-button primary" id="editProfileButton">
+                <i class="fa-solid fa-pen"></i><span>Edit Profile</span>
+            </button>
+
+            <button type="button" class="profile-action-button primary" id="addFriendProfileButton" hidden>
+                <i class="fa-solid fa-user-plus"></i><span>Add Friend</span>
+            </button>
+
+            <button type="button" class="profile-action-button secondary" id="messageProfileButton" hidden>
+                <i class="fa-solid fa-message"></i><span>Message</span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- STORIES -->
+
+    <section class="profile-stories-section" id="profileStoriesSection">
+
+        <div class="profile-section-header">
+            <div>
+                <span class="profile-section-kicker">STORIES</span>
+                <h2>Recent stories</h2>
+            </div>
+        </div>
+
+        <div class="profile-stories" id="profileStories">
+            <div class="profile-stories-loading" id="profileStoriesLoading">Loading stories...</div>
+        </div>
+
+    </section>
+
+
+    <!-- POSTS -->
+
+    <section class="profile-posts-section" id="profilePostsSection">
+
+        <div class="profile-section-header">
+            <div>
+                <span class="profile-section-kicker">POSTS</span>
+                <h2>Posts</h2>
+            </div>
+
+            <button type="button" class="profile-posts-view-button" id="profilePostsViewButton" aria-label="Change posts view">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+        </div>
+
+        <div class="profile-filters" id="profileFilters">
+            <button type="button" class="profile-filter active" data-filter="all">All</button>
+            <button type="button" class="profile-filter" data-filter="photo">Photos</button>
+            <button type="button" class="profile-filter" data-filter="video">Videos</button>
+            <button type="button" class="profile-filter" data-filter="reel">Reels</button>
+        </div>
+
+        <div class="profile-posts-grid" id="profilePostsGrid">
+            <div class="profile-posts-loading" id="profilePostsLoading"><span>Loading posts...</span></div>
+        </div>
+
+        <div class="profile-empty-posts" id="profileEmptyPosts" hidden>
+            <div class="profile-empty-posts-icon"><i class="fa-regular fa-images"></i></div>
+            <h3>No posts yet</h3>
+            <p>Posts you create will appear here.</p>
+        </div>
+
+    </section>
+
+    <div class="profile-page-loading" id="profilePageLoading">
+        <div class="profile-loader-ring"></div>
+        <p>Loading NEXA profile...</p>
+    </div>
+
+</main>
+
+
+<!-- WHAT'S NEW MODAL -->
+
+<div class="nexa-modal" id="profileStatusModal" hidden>
+
+    <div class="nexa-modal-backdrop" data-close-modal="profileStatusModal"></div>
+
+    <div class="nexa-modal-card">
+
+        <div class="nexa-modal-header">
+            <div>
+                <span class="nexa-modal-kicker">24 HOURS</span>
+                <h2>What's new?</h2>
+            </div>
+            <button type="button" class="nexa-modal-close" data-close-modal="profileStatusModal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <textarea id="profileStatusInput" class="profile-status-input" maxlength="180" placeholder="Tell everyone what's new..."></textarea>
+
+        <div class="profile-status-footer">
+            <span id="profileStatusCharacters">0 / 180</span>
+            <button type="button" class="profile-save-button" id="saveProfileStatusButton">
+                <i class="fa-solid fa-paper-plane"></i> Post update
+            </button>
         </div>
 
     </div>
 
+</div>
 
- <!-- =====================================================
-     SUPABASE LIBRARY
-====================================================== -->
+
+<!-- EDIT PROFILE MODAL -->
+
+<div class="nexa-modal" id="editProfileModal" hidden>
+
+    <div class="nexa-modal-backdrop" data-close-modal="editProfileModal"></div>
+
+    <div class="nexa-modal-card">
+
+        <div class="nexa-modal-header">
+            <div>
+                <span class="nexa-modal-kicker">PROFILE</span>
+                <h2>Edit Profile</h2>
+            </div>
+            <button type="button" class="nexa-modal-close" data-close-modal="editProfileModal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="edit-profile-photo">
+            <div class="edit-profile-photo-preview" id="editProfilePhotoPreview"><span>N</span></div>
+
+            <label for="profilePictureInput" class="profile-change-photo-button">
+                <i class="fa-solid fa-camera"></i> Change picture
+            </label>
+
+            <input type="file" id="profilePictureInput" accept="image/*" hidden>
+        </div>
+
+        <label class="profile-form-field">
+            <span>Name</span>
+            <input type="text" id="editProfileName" maxlength="80" autocomplete="name" placeholder="Your name">
+        </label>
+
+        <label class="profile-form-field">
+            <span>Username</span>
+            <input type="text" id="editProfileUsername" maxlength="30" autocomplete="username" placeholder="username">
+        </label>
+
+        <label class="profile-form-field">
+            <span>Bio</span>
+            <textarea id="editProfileBio" maxlength="160" placeholder="Tell people about yourself..."></textarea>
+        </label>
+
+        <button type="button" class="profile-save-button full" id="saveProfileButton">
+            <i class="fa-solid fa-check"></i> Save Profile
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- POST VIEWER: focused, scrollable, like / comment / share / download -->
+
+<div class="pv" id="postViewer" hidden aria-hidden="true">
+
+    <button type="button" class="pv-close" id="postViewerClose" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="pv-scroller" id="postViewerScroller"></div>
+
+    <div class="pv-comments" id="pvComments" hidden>
+        <div class="pv-comments-box">
+
+            <div class="pv-comments-head">
+                <strong>Comments</strong>
+                <button type="button" id="pvCommentsClose" aria-label="Close comments">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="pv-comments-list" id="pvCommentsList"></div>
+
+            <form class="pv-comments-form" id="pvCommentsForm">
+                <input type="text" id="pvCommentInput" placeholder="Write a comment..." maxlength="500" autocomplete="off">
+                <button type="submit">Post</button>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<!-- =====================================================
-     NEXA SUPABASE CONFIGURATION
-====================================================== -->
-
 <script src="supabase.js"></script>
-
-
-<!-- =====================================================
-     NEXA PROFILE
-====================================================== -->
-
 <script src="profile.js"></script>
 
 </body>
