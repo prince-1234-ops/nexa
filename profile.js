@@ -1,12 +1,9 @@
 /* =========================================================
    NEXA PROFILE
-   Supabase + Public Profiles + Posts + Likes + Friends
-   (corrected version)
-========================================================= */
-
-
-/* =========================================================
-   SUPABASE + LOGIN CHECK
+   Organized profile: header, stories row, posts grid.
+   Click a post -> focused viewer you can scroll through,
+   with like / comment / share / download.
+   Changing your profile picture never creates a post.
 ========================================================= */
 
 if (typeof nexaSupabase === "undefined") {
@@ -34,9 +31,15 @@ if (!storedUser) {
 let currentUser = storedUser;
 let profileUser = null;
 let isOwnProfile = true;
+let isFriend = false;
+let allPosts = [];
 let profilePosts = [];
 let profileStories = [];
-let profileLikesCount = 0;
+let activeFilter = "all";
+
+let viewerPosts = [];
+let viewerCurrentId = null;
+let viewerObserver = null;
 
 
 /* =========================================================
@@ -60,6 +63,8 @@ const profileStoriesLoading = $("profileStoriesLoading");
 const profilePostsGrid = $("profilePostsGrid");
 const profilePostsLoading = $("profilePostsLoading");
 const profileEmptyPosts = $("profileEmptyPosts");
+const profilePostsViewButton = $("profilePostsViewButton");
+const profileFilters = $("profileFilters");
 const editProfileButton = $("editProfileButton");
 const addFriendProfileButton = $("addFriendProfileButton");
 const messageProfileButton = $("messageProfileButton");
@@ -78,9 +83,15 @@ const editProfileName = $("editProfileName");
 const editProfileUsername = $("editProfileUsername");
 const editProfileBio = $("editProfileBio");
 const saveProfileButton = $("saveProfileButton");
-const profilePostViewer = $("profilePostViewer");
-const profilePostViewerContent = $("profilePostViewerContent");
-const closeProfilePostViewer = $("closeProfilePostViewer");
+
+const postViewer = $("postViewer");
+const postViewerScroller = $("postViewerScroller");
+const postViewerClose = $("postViewerClose");
+const pvComments = $("pvComments");
+const pvCommentsList = $("pvCommentsList");
+const pvCommentsForm = $("pvCommentsForm");
+const pvCommentInput = $("pvCommentInput");
+const pvCommentsClose = $("pvCommentsClose");
 
 
 /* =========================================================
@@ -101,46 +112,8 @@ function getDisplayName(user) {
     return user?.name || user?.username || "NEXA Member";
 }
 
-function normalizeFriends(value) {
-
-    if (Array.isArray(value)) {
-        return value;
-    }
-
-    if (typeof value === "string") {
-
-        const trimmed = value.trim();
-
-        if (!trimmed) {
-            return [];
-        }
-
-        try {
-            const parsed = JSON.parse(trimmed);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (_) {
-            return trimmed
-                .split(",")
-                .map(id => id.trim())
-                .filter(Boolean);
-        }
-    }
-
-    return [];
-}
-
-function getFriendIds(user) {
-
-    return normalizeFriends(user?.friends)
-        .map(friend =>
-            typeof friend === "object" ? friend?.id : friend
-        )
-        .filter(id =>
-            id !== undefined &&
-            id !== null &&
-            String(id).trim()
-        )
-        .map(id => String(id));
+function saveCurrentUser() {
+    localStorage.setItem("nexaCurrentUser", JSON.stringify(currentUser));
 }
 
 function showLoading(visible) {
@@ -153,26 +126,22 @@ function showLoading(visible) {
     profilePageLoading.style.display = visible ? "" : "none";
 }
 
-function formatEngagementCount(number) {
+function formatCount(number) {
 
     const value = Number(number || 0);
 
     if (value >= 1000000) {
-        return (value / 1000000).toFixed(
-            value % 1000000 === 0 ? 0 : 1
-        ) + "M";
+        return (value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1) + "M";
     }
 
     if (value >= 1000) {
-        return (value / 1000).toFixed(
-            value % 1000 === 0 ? 0 : 1
-        ) + "K";
+        return (value / 1000).toFixed(value % 1000 === 0 ? 0 : 1) + "K";
     }
 
     return String(value);
 }
 
-function timeAgoProfile(timestamp) {
+function timeAgo(timestamp) {
 
     if (!timestamp) {
         return "Just now";
@@ -184,9 +153,7 @@ function timeAgoProfile(timestamp) {
         return "Just now";
     }
 
-    const seconds = Math.floor(
-        Math.max(0, Date.now() - date.getTime()) / 1000
-    );
+    const seconds = Math.floor(Math.max(0, Date.now() - date.getTime()) / 1000);
 
     if (seconds < 60) {
         return "Just now";
@@ -195,32 +162,22 @@ function timeAgoProfile(timestamp) {
     const minutes = Math.floor(seconds / 60);
 
     if (minutes < 60) {
-        return `${minutes}m`;
+        return minutes + "m";
     }
 
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-        return `${hours}h`;
+        return hours + "h";
     }
 
     const days = Math.floor(hours / 24);
 
     if (days < 7) {
-        return `${days}d`;
+        return days + "d";
     }
 
-    return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric"
-    });
-}
-
-function saveCurrentUser() {
-    localStorage.setItem(
-        "nexaCurrentUser",
-        JSON.stringify(currentUser)
-    );
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 
@@ -241,76 +198,89 @@ function getPostMedia(post) {
     );
 }
 
-function getPostMediaType(post) {
+/* returns: "reel", "video", "photo" or "text" */
 
-    const explicit = String(
-        post?.media_type || post?.mediaType || ""
-    ).toLowerCase();
-
-    if (explicit) {
-        return explicit;
-    }
+function getPostKind(post) {
 
     const media = String(getPostMedia(post));
 
-    if (media.startsWith("data:video/")) {
+    if (!media) {
+        return "text";
+    }
+
+    const explicit = String(post?.media_type || post?.mediaType || "").toLowerCase();
+
+    if (explicit === "reel") {
+        return "reel";
+    }
+
+    if (explicit.startsWith("video") || explicit === "video") {
         return "video";
     }
 
-    if (/\.(mp4|webm|ogg)(\?|$)/i.test(media)) {
+    if (media.startsWith("data:video/") || /\.(mp4|webm|ogg|mov)(\?|$)/i.test(media)) {
         return "video";
     }
 
-    return "image";
+    return "photo";
 }
 
-function postLikeCount(post) {
-
-    const real = Array.isArray(post.likes) ? post.likes.length : 0;
-
-    return real + Number(post.demo_likes || 0);
+function isVideoKind(kind) {
+    return kind === "reel" || kind === "video";
 }
 
-function postCommentCount(post) {
+/* A profile-picture change must never show up as a post. */
 
-    const real = Array.isArray(post.comments) ? post.comments.length : 0;
+function isProfilePictureOnlyPost(post) {
 
-    return real + Number(post.demo_comments || 0);
+    const type = String(post?.media_type || post?.mediaType || "").toLowerCase();
+
+    const avatarTypes = [
+        "profile", "avatar", "profile_picture", "profile-picture",
+        "profilepicture", "profile_photo", "profile-photo"
+    ];
+
+    if (avatarTypes.includes(type) || post?.is_profile_picture === true) {
+        return true;
+    }
+
+    const media = getPostMedia(post);
+    const picture = getProfilePicture(profileUser);
+
+    return Boolean(media) && Boolean(picture) && String(media) === String(picture);
 }
 
-function postShareCount(post) {
+function likeCount(post) {
+    return (Array.isArray(post.likes) ? post.likes.length : 0) + Number(post.demo_likes || 0);
+}
 
+function commentCount(post) {
+    return (Array.isArray(post.comments) ? post.comments.length : 0) + Number(post.demo_comments || 0);
+}
+
+function shareCount(post) {
     return Number(post.shares || 0) + Number(post.demo_shares || 0);
 }
 
-function isPostLikedByMe(post) {
-
-    return (
-        Array.isArray(post.likes) &&
-        post.likes.some(id => String(id) === String(currentUser.id))
-    );
+function isLikedByMe(post) {
+    return Array.isArray(post.likes) && post.likes.some(id => String(id) === String(currentUser.id));
 }
 
-
-/* =========================================================
-   PROFILE USER ID
-========================================================= */
-
-function getRequestedProfileId() {
-
-    const params = new URLSearchParams(window.location.search);
-
-    return (
-        params.get("user") ||
-        params.get("id") ||
-        String(currentUser.id)
-    );
+function findPost(id) {
+    return allPosts.find(post => String(post.id) === String(id));
 }
 
 
 /* =========================================================
    LOAD PROFILE
 ========================================================= */
+
+function getRequestedProfileId() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    return params.get("user") || params.get("id") || String(currentUser.id);
+}
 
 async function loadProfile() {
 
@@ -322,15 +292,7 @@ async function loadProfile() {
 
         const { data, error } = await nexaSupabase
             .from("profiles")
-            .select(`
-                id,
-                name,
-                username,
-                profile_picture,
-                bio,
-                friends,
-                created_at
-            `)
+            .select("id, name, username, profile_picture, bio, created_at")
             .eq("id", String(requestedId))
             .maybeSingle();
 
@@ -344,39 +306,15 @@ async function loadProfile() {
 
         profileUser = data;
 
-        /* Keep the logged-in user's local identity synchronized. */
-
         if (isOwnProfile) {
 
             currentUser.name = data.name ?? currentUser.name;
             currentUser.username = data.username ?? currentUser.username;
-            currentUser.profilePicture =
-                data.profile_picture || currentUser.profilePicture || "";
-            currentUser.profile_picture =
-                data.profile_picture || currentUser.profile_picture || "";
+            currentUser.profilePicture = data.profile_picture || "";
+            currentUser.profile_picture = data.profile_picture || "";
             currentUser.bio = data.bio ?? currentUser.bio;
-            currentUser.friends = getFriendIds(data);
 
             saveCurrentUser();
-
-        } else {
-
-            /* Also refresh my own friends list so the Add Friend button is accurate. */
-
-            try {
-
-                const { data: me } = await nexaSupabase
-                    .from("profiles")
-                    .select("friends")
-                    .eq("id", String(currentUser.id))
-                    .maybeSingle();
-
-                if (me) {
-                    currentUser.friends = getFriendIds(me);
-                    saveCurrentUser();
-                }
-
-            } catch (_) { }
         }
 
         renderProfileHeader();
@@ -385,29 +323,19 @@ async function loadProfile() {
 
         console.error("NEXA profile loading error:", error);
 
-        renderProfileError("Could not load this profile.");
+        if (profileName) {
+            profileName.textContent = "Could not load this profile.";
+        }
+
+        if (profileUsername) {
+            profileUsername.textContent = "";
+        }
+
+        if (profileBio) {
+            profileBio.textContent = "";
+        }
     }
 }
-
-function renderProfileError(message) {
-
-    if (profileName) {
-        profileName.textContent = message;
-    }
-
-    if (profileUsername) {
-        profileUsername.textContent = "";
-    }
-
-    if (profileBio) {
-        profileBio.textContent = "";
-    }
-}
-
-
-/* =========================================================
-   PROFILE HEADER
-========================================================= */
 
 function renderProfileHeader() {
 
@@ -416,17 +344,10 @@ function renderProfileHeader() {
     }
 
     const name = getDisplayName(profileUser);
-
-    const username = profileUser.username
-        ? "@" + profileUser.username
-        : "@nexa";
-
     const picture = getProfilePicture(profileUser);
 
     if (profileUsernameTitle) {
-        profileUsernameTitle.textContent = profileUser.username
-            ? "@" + profileUser.username
-            : name;
+        profileUsernameTitle.textContent = profileUser.username ? "@" + profileUser.username : name;
     }
 
     if (profileName) {
@@ -434,7 +355,7 @@ function renderProfileHeader() {
     }
 
     if (profileUsername) {
-        profileUsername.textContent = username;
+        profileUsername.textContent = profileUser.username ? "@" + profileUser.username : "@nexa";
     }
 
     if (profileBio) {
@@ -454,10 +375,7 @@ function renderProfileHeader() {
     }
 
     if (profilePhotoFallback) {
-
-        profilePhotoFallback.textContent =
-            name.trim().charAt(0).toUpperCase() || "N";
-
+        profilePhotoFallback.textContent = name.trim().charAt(0).toUpperCase() || "N";
         profilePhotoFallback.style.display = picture ? "none" : "flex";
     }
 
@@ -465,51 +383,134 @@ function renderProfileHeader() {
         editProfileButton.hidden = !isOwnProfile;
     }
 
-    if (addFriendProfileButton) {
-
-        addFriendProfileButton.hidden = isOwnProfile;
-
-        if (!isOwnProfile) {
-
-            const alreadyFriends = getFriendIds(currentUser)
-                .includes(String(profileUser.id));
-
-            addFriendProfileButton.disabled = alreadyFriends;
-
-            addFriendProfileButton.innerHTML = alreadyFriends
-                ? `<i class="fa-solid fa-check"></i><span>Friends</span>`
-                : `<i class="fa-solid fa-user-plus"></i><span>Add Friend</span>`;
-        }
-    }
-
     if (messageProfileButton) {
         messageProfileButton.hidden = isOwnProfile;
     }
+
+    renderFriendButton();
+}
+
+function renderFriendButton() {
+
+    if (!addFriendProfileButton) {
+        return;
+    }
+
+    addFriendProfileButton.hidden = isOwnProfile;
+
+    if (isOwnProfile) {
+        return;
+    }
+
+    addFriendProfileButton.disabled = isFriend;
+
+    addFriendProfileButton.innerHTML = isFriend
+        ? `<i class="fa-solid fa-check"></i><span>Friends</span>`
+        : `<i class="fa-solid fa-user-plus"></i><span>Add Friend</span>`;
 }
 
 
 /* =========================================================
-   FRIEND COUNT
+   FRIENDS (nexa_friends table — same as People + Messages)
 ========================================================= */
 
-async function loadFriendCount() {
+async function loadFriendInfo() {
 
     if (!profileUser) {
-        return 0;
+        return;
     }
 
-    const friendIds = getFriendIds(profileUser);
+    try {
 
-    if (profileFriendsCount) {
-        profileFriendsCount.textContent = String(friendIds.length);
+        const { count, error } = await nexaSupabase
+            .from("nexa_friends")
+            .select("user_id", { count: "exact", head: true })
+            .eq("user_id", String(profileUser.id));
+
+        if (error) {
+            throw error;
+        }
+
+        if (profileFriendsCount) {
+            profileFriendsCount.textContent = String(count || 0);
+        }
+
+        if (!isOwnProfile) {
+
+            const { data, error: friendError } = await nexaSupabase
+                .from("nexa_friends")
+                .select("user_id")
+                .eq("user_id", String(currentUser.id))
+                .eq("friend_id", String(profileUser.id))
+                .limit(1);
+
+            if (friendError) {
+                throw friendError;
+            }
+
+            isFriend = Array.isArray(data) && data.length > 0;
+
+            renderFriendButton();
+        }
+
+    } catch (error) {
+        console.error("NEXA profile friends error:", error);
+    }
+}
+
+async function addFriendFromProfile() {
+
+    if (!profileUser || isOwnProfile || isFriend) {
+        return;
     }
 
-    return friendIds.length;
+    const me = String(currentUser.id);
+    const other = String(profileUser.id);
+
+    try {
+
+        const { error } = await nexaSupabase
+            .from("nexa_friends")
+            .insert({ user_id: me, friend_id: other });
+
+        /* 23505 = already friends */
+        if (error && error.code !== "23505") {
+            throw error;
+        }
+
+        /* two-way friendship; ignore if it already exists or is not allowed */
+        try {
+            await nexaSupabase
+                .from("nexa_friends")
+                .insert({ user_id: other, friend_id: me });
+        } catch (_) { }
+
+        isFriend = true;
+
+        renderFriendButton();
+
+        await loadFriendInfo();
+
+    } catch (error) {
+
+        console.error("NEXA add friend error:", error);
+
+        alert("Could not add this friend.");
+    }
+}
+
+function messageProfile() {
+
+    if (!profileUser || isOwnProfile) {
+        return;
+    }
+
+    window.location.href = "messages.html?user=" + encodeURIComponent(String(profileUser.id));
 }
 
 
 /* =========================================================
-   LOAD POSTS
+   LOAD POSTS + LIKES
 ========================================================= */
 
 async function loadProfilePosts() {
@@ -530,55 +531,42 @@ async function loadProfilePosts() {
             throw error;
         }
 
-        profilePosts = Array.isArray(data) ? data : [];
+        allPosts = (Array.isArray(data) ? data : []).filter(
+            post => !isProfilePictureOnlyPost(post)
+        );
 
-        if (profilePostsCount) {
-            profilePostsCount.textContent = String(profilePosts.length);
-        }
-
-        await loadProfileLikeCount();
-
-        renderProfilePosts();
+        await loadLikes();
 
     } catch (error) {
 
         console.error("NEXA profile posts error:", error);
 
-        profilePosts = [];
-
-        if (profilePostsCount) {
-            profilePostsCount.textContent = "0";
-        }
-
-        renderProfilePosts();
+        allPosts = [];
     }
+
+    if (profilePostsCount) {
+        profilePostsCount.textContent = String(allPosts.length);
+    }
+
+    refreshTotalLikes();
+
+    renderPosts();
 }
 
+async function loadLikes() {
 
-/* =========================================================
-   LOAD LIKES
-   Reads the "likes" table, fills post.likes with the
-   user ids who liked each post, and totals the likes.
-========================================================= */
-
-async function loadProfileLikeCount() {
-
-    profileLikesCount = 0;
+    const likesByPost = {};
 
     try {
 
-        const postIds = profilePosts
-            .map(post => post.id)
-            .filter(Boolean);
+        const ids = allPosts.map(post => post.id).filter(Boolean);
 
-        const likesByPost = {};
-
-        if (postIds.length) {
+        if (ids.length) {
 
             const { data, error } = await nexaSupabase
                 .from("likes")
-                .select("id, post_id, user_id")
-                .in("post_id", postIds);
+                .select("post_id, user_id")
+                .in("post_id", ids);
 
             if (error) {
                 throw error;
@@ -596,84 +584,58 @@ async function loadProfileLikeCount() {
             });
         }
 
-        profilePosts.forEach(post => {
-            post.likes = likesByPost[String(post.id)] || [];
-        });
-
-        profileLikesCount = profilePosts.reduce(
-            (total, post) => total + postLikeCount(post),
-            0
-        );
-
     } catch (error) {
-
         console.error("NEXA profile likes error:", error);
-
-        profilePosts.forEach(post => {
-            if (!Array.isArray(post.likes)) {
-                post.likes = [];
-            }
-        });
-
-        profileLikesCount = profilePosts.reduce(
-            (total, post) => total + postLikeCount(post),
-            0
-        );
     }
 
-    if (profileLikesCountElement) {
-        profileLikesCountElement.textContent =
-            formatEngagementCount(profileLikesCount);
-    }
+    allPosts.forEach(post => {
+        post.likes = likesByPost[String(post.id)] || [];
+    });
 }
 
 function refreshTotalLikes() {
 
-    profileLikesCount = profilePosts.reduce(
-        (total, post) => total + postLikeCount(post),
-        0
-    );
+    const total = allPosts.reduce((sum, post) => sum + likeCount(post), 0);
 
     if (profileLikesCountElement) {
-        profileLikesCountElement.textContent =
-            formatEngagementCount(profileLikesCount);
+        profileLikesCountElement.textContent = formatCount(total);
     }
 }
 
 
 /* =========================================================
-   RENDER POSTS
+   POSTS GRID (clean, uniform tiles)
 ========================================================= */
 
-function renderProfileAvatarHTML() {
+function applyFilter() {
 
-    const picture = getProfilePicture(profileUser);
+    profilePosts = allPosts.filter(post => {
 
-    if (picture) {
-        return `
-            <img
-                src="${escapeHTML(picture)}"
-                alt="${escapeHTML(
-                    profileUser?.username ||
-                    profileUser?.name ||
-                    "NEXA User"
-                )}"
-            >
-        `;
-    }
+        const kind = getPostKind(post);
 
-    return escapeHTML(
-        (
-            profileUser?.username ||
-            profileUser?.name ||
-            "N"
-        )
-            .charAt(0)
-            .toUpperCase()
-    );
+        if (activeFilter === "all") {
+            return true;
+        }
+
+        if (activeFilter === "photo") {
+            return kind === "photo";
+        }
+
+        if (activeFilter === "video") {
+            return kind === "video";
+        }
+
+        if (activeFilter === "reel") {
+            return kind === "reel";
+        }
+
+        return true;
+    });
 }
 
-function renderProfilePosts() {
+function renderPosts() {
+
+    applyFilter();
 
     if (profilePostsLoading) {
         profilePostsLoading.style.display = "none";
@@ -700,626 +662,758 @@ function renderProfilePosts() {
         profileEmptyPosts.hidden = true;
     }
 
-    profilePostsGrid.style.display = "grid";
+    profilePostsGrid.style.display = "";
 
     profilePosts.forEach(post => {
 
+        const kind = getPostKind(post);
         const media = getPostMedia(post);
 
-        const mediaType = String(
-            post.media_type || post.mediaType || ""
-        ).toLowerCase();
+        const tile = document.createElement("button");
 
-
-        /* =====================================================
-           REEL
-        ===================================================== */
-
-        if (mediaType === "reel") {
-
-            const reel = document.createElement("article");
-
-            reel.className = "profile-reel-card";
-            reel.dataset.postId = String(post.id);
-
-            const liked = isPostLikedByMe(post);
-
-            reel.innerHTML = `
-
-                <div class="profile-reel-media">
-
-                    <video
-                        src="${escapeHTML(media)}"
-                        class="profile-reel-video"
-                        muted
-                        loop
-                        playsinline
-                        preload="metadata"
-                    ></video>
-
-                    <div class="profile-reel-gradient"></div>
-
-                    <div class="profile-reel-author">
-
-                        <div class="profile-reel-avatar">
-                            ${renderProfileAvatarHTML()}
-                        </div>
-
-                        <div>
-                            <strong>
-                                ${escapeHTML(
-                                    post.author_name ||
-                                    profileUser?.username ||
-                                    profileUser?.name ||
-                                    "NEXA User"
-                                )}
-                            </strong>
-
-                            <span>
-                                ${escapeHTML(timeAgoProfile(post.created_at))}
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <div class="profile-reel-actions">
-
-                        <button
-                            type="button"
-                            class="profile-reel-action ${liked ? "liked" : ""}"
-                            data-profile-action="like"
-                            data-id="${escapeHTML(post.id)}"
-                        >
-                            <span class="profile-reel-action-icon"
-                                  style="${liked ? "color:#ff3040;" : ""}">
-                                ${liked ? "♥" : "♡"}
-                            </span>
-                            <span>${formatEngagementCount(postLikeCount(post))}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="profile-reel-action"
-                            data-profile-action="comment"
-                            data-id="${escapeHTML(post.id)}"
-                        >
-                            <span class="profile-reel-action-icon">💬</span>
-                            <span>${formatEngagementCount(postCommentCount(post))}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="profile-reel-action"
-                            data-profile-action="share"
-                            data-id="${escapeHTML(post.id)}"
-                        >
-                            <span class="profile-reel-action-icon">↗</span>
-                            <span>${formatEngagementCount(postShareCount(post))}</span>
-                        </button>
-
-                    </div>
-
-                    ${post.text
-                        ? `
-                            <div class="profile-reel-caption">
-                                ${escapeHTML(post.text)}
-                            </div>
-                          `
-                        : ""
-                    }
-
-                </div>
-            `;
-
-            const video = reel.querySelector(".profile-reel-video");
-
-            reel.addEventListener("click", event => {
-
-                if (event.target.closest("[data-profile-action]")) {
-                    return;
-                }
-
-                openProfileReelViewer(post);
-            });
-
-            if (video) {
-
-                const observer = new IntersectionObserver(
-                    entries => {
-
-                        entries.forEach(entry => {
-
-                            if (
-                                entry.isIntersecting &&
-                                entry.intersectionRatio >= 0.65
-                            ) {
-                                video.play().catch(() => { });
-                            } else {
-                                video.pause();
-                            }
-                        });
-                    },
-                    { threshold: [0, 0.65, 1] }
-                );
-
-                observer.observe(video);
-            }
-
-            profilePostsGrid.appendChild(reel);
-
-            return;
-        }
-
-
-        /* =====================================================
-           NORMAL POST
-        ===================================================== */
-
-        const card = document.createElement("button");
-
-        card.type = "button";
-        card.className = "profile-post";
-        card.dataset.postId = String(post.id);
+        tile.type = "button";
+        tile.className = "profile-post";
+        tile.dataset.postId = String(post.id);
 
         let mediaHTML = "";
+        let badge = "";
 
-        if (media) {
+        if (kind === "photo") {
 
-            mediaHTML = mediaType.startsWith("video")
-                ? `
-                    <video
-                        src="${escapeHTML(media)}"
-                        muted
-                        playsinline
-                        preload="metadata"
-                    ></video>
-                  `
-                : `
-                    <img
-                        src="${escapeHTML(media)}"
-                        alt="NEXA post"
-                        loading="lazy"
-                    >
-                  `;
+            mediaHTML = `<img src="${escapeHTML(media)}" alt="NEXA post" loading="lazy">`;
+
+        } else if (isVideoKind(kind)) {
+
+            mediaHTML = `<video src="${escapeHTML(media)}#t=0.1" muted playsinline preload="metadata"></video>`;
+
+            badge = `
+                <span class="profile-post-badge">
+                    <i class="fa-solid ${kind === "reel" ? "fa-clapperboard" : "fa-play"}"></i>
+                </span>
+            `;
+
+        } else {
+
+            mediaHTML = `<span class="profile-post-text">${escapeHTML(post.text || "")}</span>`;
         }
 
-        card.innerHTML = `
-
+        tile.innerHTML = `
             ${mediaHTML}
-
+            ${badge}
             <span class="profile-post-overlay">
-
-                <span>
-                    <i class="fa-solid fa-heart"></i>
-                    ${formatEngagementCount(postLikeCount(post))}
-                </span>
-
-                <span>
-                    <i class="fa-regular fa-comment"></i>
-                    ${formatEngagementCount(postCommentCount(post))}
-                </span>
-
+                <span><i class="fa-solid fa-heart"></i> ${formatCount(likeCount(post))}</span>
+                <span><i class="fa-regular fa-comment"></i> ${formatCount(commentCount(post))}</span>
             </span>
         `;
 
-        card.addEventListener("click", () => {
-            openPostViewer(post);
-        });
+        tile.addEventListener("click", () => openViewer(post.id));
 
-        profilePostsGrid.appendChild(card);
+        profilePostsGrid.appendChild(tile);
     });
 }
 
+profileFilters?.addEventListener("click", event => {
 
-/* =========================================================
-   PROFILE REEL VIEWER
-========================================================= */
+    const button = event.target.closest("[data-filter]");
 
-let profileViewerPosts = [];
-let profileViewerIndex = 0;
-let profileViewer = null;
-
-function getProfileReels() {
-
-    return profilePosts.filter(post =>
-        String(
-            post.media_type || post.mediaType || ""
-        ).toLowerCase() === "reel" &&
-        getPostMedia(post)
-    );
-}
-
-function openProfileReelViewer(post) {
-
-    profileViewerPosts = getProfileReels();
-
-    profileViewerIndex = profileViewerPosts.findIndex(
-        item => String(item.id) === String(post.id)
-    );
-
-    if (profileViewerIndex < 0) {
+    if (!button) {
         return;
     }
 
-    if (profileViewer) {
-        profileViewer.remove();
+    activeFilter = button.dataset.filter;
+
+    profileFilters.querySelectorAll(".profile-filter").forEach(item => {
+        item.classList.toggle("active", item === button);
+    });
+
+    renderPosts();
+});
+
+profilePostsViewButton?.addEventListener("click", () => {
+
+    const list = profilePostsGrid.classList.toggle("list-view");
+
+    profilePostsViewButton.innerHTML = list
+        ? `<i class="fa-solid fa-table-cells-large"></i>`
+        : `<i class="fa-solid fa-grip"></i>`;
+});
+
+
+/* =========================================================
+   POST VIEWER
+   Everything else dims; scroll down for the next post.
+========================================================= */
+
+function slideHTML(post) {
+
+    const kind = getPostKind(post);
+    const media = getPostMedia(post);
+    const name = post.author_name || getDisplayName(profileUser);
+    const picture = getProfilePicture(profileUser);
+    const liked = isLikedByMe(post);
+
+    let mediaHTML;
+
+    if (isVideoKind(kind)) {
+        mediaHTML = `<video src="${escapeHTML(media)}" loop playsinline preload="metadata"></video>`;
+    } else if (kind === "photo") {
+        mediaHTML = `<img src="${escapeHTML(media)}" alt="NEXA post">`;
+    } else {
+        mediaHTML = `<div class="pv-text">${escapeHTML(post.text || "")}</div>`;
     }
 
-    profileViewer = document.createElement("div");
-    profileViewer.className = "profile-reel-viewer";
+    const avatar = picture
+        ? `<img src="${escapeHTML(picture)}" alt="${escapeHTML(name)}">`
+        : escapeHTML(name.trim().charAt(0).toUpperCase() || "N");
 
-    document.body.appendChild(profileViewer);
+    const caption = kind !== "text" && post.text
+        ? `<p>${escapeHTML(post.text)}</p>`
+        : "";
+
+    return `
+        <section class="pv-slide" data-id="${escapeHTML(post.id)}">
+
+            <div class="pv-stage">
+
+                <div class="pv-media" data-kind="${kind}">${mediaHTML}</div>
+
+                <div class="pv-progress"><span></span></div>
+
+                <div class="pv-gradient"></div>
+
+                <div class="pv-info">
+                    <div class="pv-user">
+                        <div class="pv-avatar">${avatar}</div>
+                        <div>
+                            <strong>${escapeHTML(name)}</strong>
+                            <span>${escapeHTML(timeAgo(post.created_at))}</span>
+                        </div>
+                    </div>
+                    ${caption}
+                </div>
+
+                <div class="pv-actions">
+
+                    <button type="button" class="pv-action ${liked ? "liked" : ""}" data-act="like" aria-label="Like">
+                        <span class="pv-action-icon"><i class="${liked ? "fa-solid" : "fa-regular"} fa-heart"></i></span>
+                        <small data-count="like">${formatCount(likeCount(post))}</small>
+                    </button>
+
+                    <button type="button" class="pv-action" data-act="comment" aria-label="Comment">
+                        <span class="pv-action-icon"><i class="fa-regular fa-comment"></i></span>
+                        <small data-count="comment">${formatCount(commentCount(post))}</small>
+                    </button>
+
+                    <button type="button" class="pv-action" data-act="share" aria-label="Share">
+                        <span class="pv-action-icon"><i class="fa-solid fa-share"></i></span>
+                        <small data-count="share">${formatCount(shareCount(post))}</small>
+                    </button>
+
+                    <button type="button" class="pv-action" data-act="download" aria-label="Download">
+                        <span class="pv-action-icon"><i class="fa-solid fa-download"></i></span>
+                        <small>Save</small>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+    `;
+}
+
+function playVideo(video) {
+
+    video.muted = false;
+    video.volume = 1;
+
+    const attempt = video.play();
+
+    if (attempt && attempt.catch) {
+
+        attempt.catch(() => {
+
+            /* sound blocked by the browser: play silently instead of freezing */
+            video.muted = true;
+            video.play().catch(() => { });
+        });
+    }
+}
+
+function openViewer(postId) {
+
+    viewerPosts = profilePosts.slice();
+
+    const startIndex = viewerPosts.findIndex(post => String(post.id) === String(postId));
+
+    if (startIndex < 0 || !postViewer || !postViewerScroller) {
+        return;
+    }
+
+    postViewerScroller.innerHTML = viewerPosts.map(slideHTML).join("");
+
+    postViewer.hidden = false;
+    postViewer.setAttribute("aria-hidden", "false");
+
     document.body.style.overflow = "hidden";
 
-    renderProfileViewerReel();
+    /* live blue progress bar on every video */
 
-    /* Mouse wheel */
+    postViewerScroller.querySelectorAll(".pv-slide").forEach(slide => {
 
-    profileViewer.addEventListener(
-        "wheel",
-        event => {
+        const video = slide.querySelector("video");
+        const bar = slide.querySelector(".pv-progress span");
 
-            event.preventDefault();
+        if (!video || !bar) {
+            return;
+        }
 
-            if (Math.abs(event.deltaY) < 35) {
-                return;
-            }
+        video.addEventListener("timeupdate", () => {
 
-            if (event.deltaY > 0) {
-                showNextProfileViewerReel();
-            } else {
-                showPreviousProfileViewerReel();
-            }
-        },
-        { passive: false }
-    );
+            const duration = video.duration;
 
-    /* Touch swipe */
-
-    let startY = 0;
-
-    profileViewer.addEventListener(
-        "touchstart",
-        event => {
-
-            const touch = event.touches[0];
-
-            if (touch) {
-                startY = touch.clientY;
-            }
-        },
-        { passive: true }
-    );
-
-    profileViewer.addEventListener(
-        "touchend",
-        event => {
-
-            const touch = event.changedTouches[0];
-
-            if (!touch) {
-                return;
-            }
-
-            const difference = startY - touch.clientY;
-
-            if (Math.abs(difference) < 60) {
-                return;
-            }
-
-            if (difference > 0) {
-                showNextProfileViewerReel();
-            } else {
-                showPreviousProfileViewerReel();
-            }
-        },
-        { passive: true }
-    );
-
-    /* Keyboard */
-
-    document.removeEventListener("keydown", profileViewerKeyboardHandler);
-    document.addEventListener("keydown", profileViewerKeyboardHandler);
-}
-
-function renderProfileViewerReel() {
-
-    if (!profileViewer || !profileViewerPosts.length) {
-        return;
-    }
-
-    const post = profileViewerPosts[profileViewerIndex];
-
-    const media = getPostMedia(post);
-
-    const liked = isPostLikedByMe(post);
-
-    profileViewer.innerHTML = `
-
-        <button type="button" class="profile-reel-viewer-close">
-            ×
-        </button>
-
-        <div class="profile-reel-viewer-media">
-
-            <video
-                src="${escapeHTML(media)}"
-                autoplay
-                controls
-                loop
-                playsinline
-                preload="metadata"
-            ></video>
-
-            <div class="profile-reel-viewer-actions">
-
-                <button
-                    type="button"
-                    data-viewer-action="like"
-                    class="${liked ? "liked" : ""}"
-                >
-                    <span style="${liked ? "color:#ff3040;" : ""}">
-                        ${liked ? "♥" : "♡"}
-                    </span>
-                    <small>${formatEngagementCount(postLikeCount(post))}</small>
-                </button>
-
-                <button type="button" data-viewer-action="comment">
-                    <span>💬</span>
-                    <small>${formatEngagementCount(postCommentCount(post))}</small>
-                </button>
-
-                <button type="button" data-viewer-action="share">
-                    <span>↗</span>
-                    <small>${formatEngagementCount(postShareCount(post))}</small>
-                </button>
-
-            </div>
-
-            <div class="profile-reel-viewer-info">
-
-                <strong>
-                    ${escapeHTML(
-                        post.author_name ||
-                        profileUser?.username ||
-                        profileUser?.name ||
-                        "NEXA User"
-                    )}
-                </strong>
-
-                <span>
-                    ${escapeHTML(timeAgoProfile(post.created_at))}
-                </span>
-
-                ${post.text
-                    ? `<p>${escapeHTML(post.text)}</p>`
-                    : ""
-                }
-
-            </div>
-
-        </div>
-    `;
-
-    profileViewer
-        .querySelector(".profile-reel-viewer-close")
-        ?.addEventListener("click", closeProfileReelViewer);
-
-    profileViewer
-        .querySelectorAll("[data-viewer-action]")
-        .forEach(button => {
-
-            button.addEventListener("click", async event => {
-
-                event.preventDefault();
-                event.stopPropagation();
-
-                const action = button.dataset.viewerAction;
-
-                const video = profileViewer.querySelector("video");
-                const wasPaused = video?.paused;
-                const currentTime = video?.currentTime || 0;
-
-                if (action === "like") {
-                    await toggleProfileReelLike(post.id);
-                } else if (action === "comment") {
-                    await openProfileReelComments(post.id);
-                } else if (action === "share") {
-                    await shareProfileReel(post.id);
-                }
-
-                renderProfileViewerReel();
-
-                /* Restore playback position after re-render. */
-
-                const newVideo = profileViewer?.querySelector("video");
-
-                if (newVideo) {
-
-                    try {
-                        newVideo.currentTime = currentTime;
-                    } catch (_) { }
-
-                    if (wasPaused) {
-                        newVideo.pause();
-                    }
-                }
-            });
+            bar.style.width =
+                duration && isFinite(duration)
+                    ? Math.min(100, (video.currentTime / duration) * 100) + "%"
+                    : "0%";
         });
+    });
+
+    /* jump to the clicked post */
+
+    postViewerScroller.scrollTop = startIndex * postViewerScroller.clientHeight;
+
+    viewerCurrentId = String(viewerPosts[startIndex].id);
+
+    watchSlides();
 }
 
-function showNextProfileViewerReel() {
+function watchSlides() {
 
-    if (!profileViewerPosts.length) {
-        return;
+    if (viewerObserver) {
+        viewerObserver.disconnect();
     }
 
-    profileViewerIndex++;
+    viewerObserver = new IntersectionObserver(entries => {
 
-    if (profileViewerIndex >= profileViewerPosts.length) {
-        profileViewerIndex = 0;
-    }
+        entries.forEach(entry => {
 
-    renderProfileViewerReel();
+            const slide = entry.target;
+            const video = slide.querySelector("video");
+
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+
+                viewerCurrentId = slide.dataset.id;
+
+                if (pvComments && !pvComments.hidden) {
+                    renderComments();
+                }
+
+                if (video) {
+                    playVideo(video);
+                }
+
+            } else if (video) {
+
+                video.pause();
+            }
+        });
+
+    }, { root: postViewerScroller, threshold: [0, 0.6, 1] });
+
+    postViewerScroller
+        .querySelectorAll(".pv-slide")
+        .forEach(slide => viewerObserver.observe(slide));
 }
 
-function showPreviousProfileViewerReel() {
+function closeViewer() {
 
-    if (!profileViewerPosts.length) {
+    if (!postViewer || postViewer.hidden) {
         return;
     }
 
-    profileViewerIndex--;
-
-    if (profileViewerIndex < 0) {
-        profileViewerIndex = profileViewerPosts.length - 1;
+    if (viewerObserver) {
+        viewerObserver.disconnect();
+        viewerObserver = null;
     }
 
-    renderProfileViewerReel();
+    postViewerScroller.querySelectorAll("video").forEach(video => {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+    });
+
+    postViewerScroller.innerHTML = "";
+
+    closeComments();
+
+    postViewer.hidden = true;
+    postViewer.setAttribute("aria-hidden", "true");
+
+    viewerCurrentId = null;
+
+    unlockPageIfNothingOpen();
+
+    /* refresh the grid counts after likes / comments */
+
+    renderPosts();
 }
 
-function profileViewerKeyboardHandler(event) {
+function stepViewer(direction) {
 
-    if (!profileViewer) {
+    if (!postViewerScroller) {
         return;
     }
 
-    if (event.key === "ArrowDown") {
-        event.preventDefault();
-        showNextProfileViewerReel();
-        return;
-    }
-
-    if (event.key === "ArrowUp") {
-        event.preventDefault();
-        showPreviousProfileViewerReel();
-        return;
-    }
-
-    if (event.key === "Escape") {
-        event.preventDefault();
-        closeProfileReelViewer();
-    }
+    postViewerScroller.scrollBy({
+        top: direction * postViewerScroller.clientHeight,
+        behavior: "smooth"
+    });
 }
 
-function closeProfileReelViewer() {
+function refreshSlide(post) {
 
-    if (profileViewer) {
-        profileViewer.remove();
-        profileViewer = null;
-    }
+    const slide = postViewerScroller?.querySelector(
+        `.pv-slide[data-id="${CSS.escape(String(post.id))}"]`
+    );
 
-    document.removeEventListener("keydown", profileViewerKeyboardHandler);
-
-    document.body.style.overflow = "";
-
-    renderProfilePosts();
-}
-
-
-/* =========================================================
-   POST VIEWER (normal posts)
-========================================================= */
-
-function openPostViewer(post) {
-
-    if (!profilePostViewer || !profilePostViewerContent) {
+    if (!slide) {
         return;
     }
 
-    const media = getPostMedia(post);
-    const mediaType = getPostMediaType(post);
+    const liked = isLikedByMe(post);
+    const likeButton = slide.querySelector('[data-act="like"]');
 
-    const caption = post.caption || post.content || post.text || "";
+    if (likeButton) {
+        likeButton.classList.toggle("liked", liked);
+        likeButton.querySelector("i").className =
+            (liked ? "fa-solid" : "fa-regular") + " fa-heart";
+    }
 
-    let mediaHTML = "";
+    const set = (name, value) => {
+        const element = slide.querySelector(`[data-count="${name}"]`);
+        if (element) {
+            element.textContent = formatCount(value);
+        }
+    };
+
+    set("like", likeCount(post));
+    set("comment", commentCount(post));
+    set("share", shareCount(post));
+
+    refreshTotalLikes();
+}
+
+
+/* ---------- viewer clicks ---------- */
+
+postViewerScroller?.addEventListener("click", async event => {
+
+    const button = event.target.closest("[data-act]");
+
+    if (button) {
+
+        const slide = button.closest(".pv-slide");
+        const post = findPost(slide?.dataset.id);
+
+        if (!post) {
+            return;
+        }
+
+        const act = button.dataset.act;
+
+        if (act === "like") {
+            await toggleLike(post);
+        } else if (act === "comment") {
+            viewerCurrentId = String(post.id);
+            openComments();
+        } else if (act === "share") {
+            await sharePost(post);
+        } else if (act === "download") {
+            await downloadPost(post);
+        }
+
+        return;
+    }
+
+    /* tap a video = play / pause */
+
+    const media = event.target.closest(".pv-media");
 
     if (media) {
 
-        mediaHTML = (
-            mediaType === "reel" ||
-            mediaType.startsWith("video")
-        )
-            ? `
-                <video
-                    src="${escapeHTML(media)}"
-                    controls
-                    autoplay
-                    playsinline
-                ></video>
-              `
-            : `
-                <img
-                    src="${escapeHTML(media)}"
-                    alt="NEXA post"
-                >
-              `;
+        const video = media.querySelector("video");
+
+        if (video) {
+            if (video.paused) {
+                playVideo(video);
+            } else {
+                video.pause();
+            }
+        }
+
+        return;
     }
 
-    profilePostViewerContent.innerHTML = `
+    /* tap the dark area around the post = close */
 
-        <div class="profile-post-viewer-card">
+    if (event.target.classList.contains("pv-slide")) {
+        closeViewer();
+    }
+});
 
-            ${mediaHTML}
+postViewerClose?.addEventListener("click", closeViewer);
 
-            <div
-                class="profile-post-viewer-info"
-                style="
-                    margin-top:18px;
-                    padding:18px;
-                    border:1px solid rgba(212,175,55,0.18);
-                    border-radius:18px;
-                    background:rgba(15,15,15,0.92);
-                "
-            >
 
-                <div
-                    style="
-                        color:#d4af37;
-                        font-size:12px;
-                        margin-bottom:8px;
-                    "
-                >
-                    <i class="fa-solid fa-heart"></i>
-                    ${formatEngagementCount(postLikeCount(post))} likes
-                </div>
+/* ---------- like ---------- */
 
-                ${caption
-                    ? `
-                        <p
-                            style="
-                                color:#d7d1c1;
-                                font-size:13px;
-                                line-height:1.7;
-                            "
-                        >
-                            ${escapeHTML(caption)}
-                        </p>
-                      `
-                    : ""
-                }
+async function toggleLike(post) {
 
-            </div>
+    const userId = String(currentUser.id);
 
-        </div>
-    `;
+    try {
 
-    profilePostViewer.hidden = false;
+        const { data: existing, error: checkError } = await nexaSupabase
+            .from("likes")
+            .select("id")
+            .eq("post_id", post.id)
+            .eq("user_id", userId)
+            .limit(1)
+            .maybeSingle();
 
-    document.body.style.overflow = "hidden";
+        if (checkError) {
+            throw checkError;
+        }
+
+        if (!Array.isArray(post.likes)) {
+            post.likes = [];
+        }
+
+        if (existing) {
+
+            const { error } = await nexaSupabase.from("likes").delete().eq("id", existing.id);
+
+            if (error) {
+                throw error;
+            }
+
+            post.likes = post.likes.filter(id => String(id) !== userId);
+
+        } else {
+
+            const { error } = await nexaSupabase
+                .from("likes")
+                .insert({ post_id: post.id, user_id: userId });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!post.likes.some(id => String(id) === userId)) {
+                post.likes.push(userId);
+            }
+        }
+
+        refreshSlide(post);
+
+    } catch (error) {
+        console.error("NEXA profile like error:", error);
+    }
 }
 
-function closePostViewer() {
 
-    if (profilePostViewer) {
-        profilePostViewer.hidden = true;
+/* ---------- share ---------- */
+
+async function sharePost(post) {
+
+    const url =
+        window.location.origin +
+        window.location.pathname +
+        "?user=" + encodeURIComponent(String(profileUser.id));
+
+    try {
+
+        if (navigator.share) {
+
+            await navigator.share({
+                title: "NEXA",
+                text: post.text || "Check out this post on NEXA.",
+                url
+            });
+
+        } else if (navigator.clipboard) {
+
+            await navigator.clipboard.writeText(url);
+
+            toast("Link copied.");
+        }
+
+    } catch (error) {
+
+        if (error && error.name === "AbortError") {
+            return;
+        }
+
+        console.error("NEXA profile share error:", error);
+
+        return;
     }
 
-    if (profilePostViewerContent) {
-        profilePostViewerContent.innerHTML = "";
+    try {
+
+        const newShares = Number(post.shares || 0) + 1;
+
+        const { data, error } = await nexaSupabase
+            .from("posts")
+            .update({ shares: newShares })
+            .eq("id", post.id)
+            .select("shares")
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        post.shares = Number(data.shares || newShares);
+
+        refreshSlide(post);
+
+    } catch (error) {
+        console.error("NEXA profile share count error:", error);
+    }
+}
+
+
+/* ---------- download ---------- */
+
+async function downloadPost(post) {
+
+    const url = getPostMedia(post);
+
+    if (!url) {
+        toast("This post has no photo or video to download.");
+        return;
     }
 
-    document.body.style.overflow = "";
+    try {
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Download failed.");
+        }
+
+        const blob = await response.blob();
+
+        const extension =
+            (blob.type.split("/")[1] || "").split(";")[0] ||
+            (String(url).split("?")[0].split(".").pop() || "file");
+
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.download = "nexa-" + post.id + "." + extension;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+
+        toast("Download started.");
+
+    } catch (error) {
+
+        console.error("NEXA profile download error:", error);
+
+        /* fallback: open the file so it can be saved manually */
+        window.open(url, "_blank", "noopener");
+    }
+}
+
+
+/* ---------- comments ---------- */
+
+function renderComments() {
+
+    const post = findPost(viewerCurrentId);
+
+    if (!post || !pvCommentsList) {
+        return;
+    }
+
+    const comments = Array.isArray(post.comments) ? post.comments : [];
+
+    if (!comments.length) {
+        pvCommentsList.innerHTML = `<div class="pv-comments-empty">No comments yet. Be the first.</div>`;
+        return;
+    }
+
+    pvCommentsList.innerHTML = comments.map(comment => `
+        <div class="pv-comment">
+            <strong>${escapeHTML(comment.username || comment.userName || "NEXA User")}</strong>
+            <p>${escapeHTML(comment.text || "")}</p>
+        </div>
+    `).join("");
+
+    pvCommentsList.scrollTop = pvCommentsList.scrollHeight;
+}
+
+function openComments() {
+
+    if (!pvComments) {
+        return;
+    }
+
+    renderComments();
+
+    pvComments.hidden = false;
+
+    setTimeout(() => pvCommentInput?.focus(), 80);
+}
+
+function closeComments() {
+
+    if (pvComments) {
+        pvComments.hidden = true;
+    }
+
+    if (pvCommentInput) {
+        pvCommentInput.value = "";
+    }
+}
+
+pvCommentsClose?.addEventListener("click", closeComments);
+
+pvCommentsForm?.addEventListener("submit", async event => {
+
+    event.preventDefault();
+
+    const text = pvCommentInput ? pvCommentInput.value.trim() : "";
+    const post = findPost(viewerCurrentId);
+
+    if (!text || !post) {
+        return;
+    }
+
+    const comments = Array.isArray(post.comments) ? [...post.comments] : [];
+
+    comments.push({
+        id: Date.now(),
+        userId: String(currentUser.id),
+        username: currentUser.username || currentUser.name || "NEXA User",
+        text,
+        createdAt: new Date().toISOString()
+    });
+
+    try {
+
+        const { data, error } = await nexaSupabase
+            .from("posts")
+            .update({ comments })
+            .eq("id", post.id)
+            .select("comments")
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        post.comments = Array.isArray(data.comments) ? data.comments : comments;
+
+        pvCommentInput.value = "";
+
+        renderComments();
+        refreshSlide(post);
+
+    } catch (error) {
+
+        console.error("NEXA profile comment error:", error);
+
+        toast("Could not save your comment.");
+    }
+});
+
+
+/* ---------- keyboard ---------- */
+
+document.addEventListener("keydown", event => {
+
+    if (!postViewer || postViewer.hidden) {
+        return;
+    }
+
+    const typing = document.activeElement === pvCommentInput;
+
+    if (event.key === "Escape") {
+
+        event.preventDefault();
+
+        if (pvComments && !pvComments.hidden) {
+            closeComments();
+        } else {
+            closeViewer();
+        }
+
+        return;
+    }
+
+    if (typing) {
+        return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "PageDown") {
+        event.preventDefault();
+        stepViewer(1);
+        return;
+    }
+
+    if (event.key === "ArrowUp" || event.key === "PageUp") {
+        event.preventDefault();
+        stepViewer(-1);
+        return;
+    }
+
+    if (event.key === " ") {
+
+        event.preventDefault();
+
+        const slide = postViewerScroller.querySelector(
+            `.pv-slide[data-id="${CSS.escape(String(viewerCurrentId))}"]`
+        );
+
+        const video = slide?.querySelector("video");
+
+        if (video) {
+            if (video.paused) {
+                playVideo(video);
+            } else {
+                video.pause();
+            }
+        }
+    }
+});
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(message) {
+
+    const element = document.createElement("div");
+
+    element.className = "pv-toast";
+    element.textContent = message;
+
+    document.body.appendChild(element);
+
+    setTimeout(() => element.classList.add("show"), 10);
+
+    setTimeout(() => {
+        element.classList.remove("show");
+        setTimeout(() => element.remove(), 300);
+    }, 2200);
 }
 
 
@@ -1346,40 +1440,21 @@ async function loadProfileStories() {
         }
 
         profileStories = (data || []).map(story => ({
-
             id: story.id,
-            userId: story.user_id,
-
-            username:
-                story.username ||
-                profileUser.username ||
-                profileUser.name ||
-                "NEXA User",
-
-            authorAvatar:
-                story.author_avatar ||
-                getProfilePicture(profileUser) ||
-                "",
-
+            username: story.username || getDisplayName(profileUser),
             media: story.media || "",
             mediaType: story.media_type || "image",
-            createdAt: story.created_at,
-
-            likes: Array.isArray(story.likes) ? story.likes : [],
-            comments: Array.isArray(story.comments) ? story.comments : [],
-            shares: Number(story.shares || 0)
+            createdAt: story.created_at
         }));
-
-        renderProfileStories();
 
     } catch (error) {
 
         console.error("NEXA profile stories error:", error);
 
         profileStories = [];
-
-        renderProfileStories();
     }
+
+    renderProfileStories();
 }
 
 function renderProfileStories() {
@@ -1413,139 +1488,73 @@ function renderProfileStories() {
         button.type = "button";
         button.className = "profile-story";
 
-        const media = story.media || "";
-
-        const isVideo = String(story.mediaType || "")
-            .toLowerCase()
-            .startsWith("video");
+        const isVideo = String(story.mediaType).toLowerCase().startsWith("video");
 
         const mediaHTML = isVideo
-            ? `
-                <video
-                    src="${escapeHTML(media)}"
-                    muted
-                    playsinline
-                    preload="metadata"
-                ></video>
-              `
-            : `
-                <img
-                    src="${escapeHTML(media)}"
-                    alt="Story"
-                    loading="lazy"
-                >
-              `;
+            ? `<video src="${escapeHTML(story.media)}#t=0.1" muted playsinline preload="metadata"></video>`
+            : `<img src="${escapeHTML(story.media)}" alt="Story" loading="lazy">`;
 
         button.innerHTML = `
-            <div class="profile-story-ring">
-                ${mediaHTML}
-            </div>
-
-            <span class="profile-story-name">
-                ${escapeHTML(story.username || "Story")}
-            </span>
+            <div class="profile-story-ring">${mediaHTML}</div>
+            <span class="profile-story-name">${escapeHTML(timeAgo(story.createdAt))}</span>
         `;
 
-        button.addEventListener("click", () => {
-            openProfileStoryViewer(story);
-        });
+        button.addEventListener("click", () => openStoryViewer(story));
 
         profileStoriesElement.appendChild(button);
     });
 }
 
-function openProfileStoryViewer(story) {
+function openStoryViewer(story) {
 
-    if (!story) {
-        return;
-    }
-
-    const media = story.media || "";
-
-    const isVideo = String(story.mediaType || "")
-        .toLowerCase()
-        .startsWith("video");
+    const isVideo = String(story.mediaType).toLowerCase().startsWith("video");
 
     const viewer = document.createElement("div");
 
-    viewer.className = "profile-story-viewer";
+    viewer.className = "ps-viewer";
 
     viewer.innerHTML = `
-
-        <button type="button" class="profile-story-viewer-close">
-            ×
+        <button type="button" class="pv-close ps-close" aria-label="Close story">
+            <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <div class="profile-story-viewer-content">
-
+        <div class="ps-stage">
             ${isVideo
-                ? `
-                    <video
-                        src="${escapeHTML(media)}"
-                        controls
-                        autoplay
-                        playsinline
-                    ></video>
-                  `
-                : `
-                    <img
-                        src="${escapeHTML(media)}"
-                        alt="Story"
-                    >
-                  `
-            }
-
-        </div>
-
-        <div class="profile-story-viewer-actions">
-
-            <button type="button" class="profile-story-like">
-                ♥
-                <span>${Array.isArray(story.likes) ? story.likes.length : 0}</span>
-            </button>
-
-            <button type="button" class="profile-story-comment">
-                💬
-                <span>${Array.isArray(story.comments) ? story.comments.length : 0}</span>
-            </button>
-
-            <button type="button" class="profile-story-share">
-                ↗
-                <span>${Number(story.shares || 0)}</span>
-            </button>
-
+                ? `<video src="${escapeHTML(story.media)}" controls autoplay playsinline></video>`
+                : `<img src="${escapeHTML(story.media)}" alt="Story">`}
         </div>
     `;
 
     document.body.appendChild(viewer);
-
     document.body.style.overflow = "hidden";
 
-    function closeStoryViewer() {
-
+    function close() {
         viewer.remove();
-
-        document.removeEventListener("keydown", storyEscape);
-
-        document.body.style.overflow = "";
+        document.removeEventListener("keydown", onKey);
+        unlockPageIfNothingOpen();
     }
 
-    function storyEscape(event) {
+    function onKey(event) {
         if (event.key === "Escape") {
-            closeStoryViewer();
+            close();
         }
     }
 
-    document.addEventListener("keydown", storyEscape);
+    document.addEventListener("keydown", onKey);
 
-    viewer
-        .querySelector(".profile-story-viewer-close")
-        ?.addEventListener("click", closeStoryViewer);
+    viewer.querySelector(".ps-close").addEventListener("click", close);
+
+    viewer.addEventListener("click", event => {
+        if (event.target === viewer) {
+            close();
+        }
+    });
 }
 
 
 /* =========================================================
    EDIT PROFILE
+   Saving only updates the profile. It never creates a post.
 ========================================================= */
 
 function openEditProfileModal() {
@@ -1554,17 +1563,9 @@ function openEditProfileModal() {
         return;
     }
 
-    if (editProfileName) {
-        editProfileName.value = profileUser.name || "";
-    }
-
-    if (editProfileUsername) {
-        editProfileUsername.value = profileUser.username || "";
-    }
-
-    if (editProfileBio) {
-        editProfileBio.value = profileUser.bio || "";
-    }
+    editProfileName.value = profileUser.name || "";
+    editProfileUsername.value = profileUser.username || "";
+    editProfileBio.value = profileUser.bio || "";
 
     renderEditProfilePicture(getProfilePicture(profileUser));
 
@@ -1579,28 +1580,9 @@ function renderEditProfilePicture(picture) {
         return;
     }
 
-    if (picture) {
-
-        editProfilePhotoPreview.innerHTML = `
-            <img
-                src="${escapeHTML(picture)}"
-                alt="Profile preview"
-            >
-        `;
-
-    } else {
-
-        editProfilePhotoPreview.innerHTML = `
-            <span>
-                ${escapeHTML(
-                    getDisplayName(profileUser)
-                        .trim()
-                        .charAt(0)
-                        .toUpperCase() || "N"
-                )}
-            </span>
-        `;
-    }
+    editProfilePhotoPreview.innerHTML = picture
+        ? `<img src="${escapeHTML(picture)}" alt="Profile preview">`
+        : `<span>${escapeHTML(getDisplayName(profileUser).trim().charAt(0).toUpperCase() || "N")}</span>`;
 }
 
 function compressProfileImage(file) {
@@ -1621,12 +1603,9 @@ function compressProfileImage(file) {
                 let height = image.height;
 
                 if (width > height && width > maxSize) {
-
                     height = Math.round(height * (maxSize / width));
                     width = maxSize;
-
                 } else if (height > maxSize) {
-
                     width = Math.round(width * (maxSize / height));
                     height = maxSize;
                 }
@@ -1636,28 +1615,19 @@ function compressProfileImage(file) {
                 canvas.width = width;
                 canvas.height = height;
 
-                canvas
-                    .getContext("2d")
-                    .drawImage(image, 0, 0, width, height);
+                canvas.getContext("2d").drawImage(image, 0, 0, width, height);
 
                 resolve(canvas.toDataURL("image/jpeg", 0.82));
             };
 
             image.onerror = reject;
-
             image.src = reader.result;
         };
 
         reader.onerror = reject;
-
         reader.readAsDataURL(file);
     });
 }
-
-
-/* =========================================================
-   SAVE PROFILE
-========================================================= */
 
 async function saveProfile() {
 
@@ -1665,64 +1635,36 @@ async function saveProfile() {
         return;
     }
 
-    const name = editProfileName
-        ? editProfileName.value.trim()
-        : "";
+    const name = editProfileName.value.trim();
 
-    const username = editProfileUsername
-        ? editProfileUsername.value
-            .trim()
-            .replace(/^@/, "")
-            .toLowerCase()
-        : "";
+    const username = editProfileUsername.value
+        .trim()
+        .replace(/^@/, "")
+        .toLowerCase();
 
-    const bio = editProfileBio
-        ? editProfileBio.value.trim()
-        : "";
+    const bio = editProfileBio.value.trim();
 
     if (!name) {
         alert("Please enter your name.");
         return;
     }
 
-    if (saveProfileButton) {
-
-        saveProfileButton.disabled = true;
-
-        saveProfileButton.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Saving...
-        `;
-    }
+    saveProfileButton.disabled = true;
+    saveProfileButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
 
     try {
 
-        let profilePicture = getProfilePicture(profileUser);
+        let picture = getProfilePicture(profileUser);
 
         if (profilePictureInput?.files?.[0]) {
-            profilePicture = await compressProfileImage(
-                profilePictureInput.files[0]
-            );
+            picture = await compressProfileImage(profilePictureInput.files[0]);
         }
 
         const { data, error } = await nexaSupabase
             .from("profiles")
-            .update({
-                name,
-                username,
-                bio,
-                profile_picture: profilePicture
-            })
+            .update({ name, username, bio, profile_picture: picture })
             .eq("id", String(currentUser.id))
-            .select(`
-                id,
-                name,
-                username,
-                profile_picture,
-                bio,
-                friends,
-                created_at
-            `)
+            .select("id, name, username, profile_picture, bio, created_at")
             .single();
 
         if (error) {
@@ -1736,7 +1678,6 @@ async function saveProfile() {
         currentUser.profilePicture = data.profile_picture || "";
         currentUser.profile_picture = data.profile_picture || "";
         currentUser.bio = data.bio || "";
-        currentUser.friends = getFriendIds(data);
 
         saveCurrentUser();
 
@@ -1744,16 +1685,11 @@ async function saveProfile() {
 
         closeModal(editProfileModal);
 
-        if (profilePictureInput) {
-            profilePictureInput.value = "";
-        }
+        profilePictureInput.value = "";
 
-        await loadFriendCount();
-        await loadProfilePosts();
+        /* posts are NOT reloaded or created: the picture only changes the header */
 
-        window.dispatchEvent(
-            new CustomEvent("nexaProfileUpdated", { detail: data })
-        );
+        window.dispatchEvent(new CustomEvent("nexaProfileUpdated", { detail: data }));
 
     } catch (error) {
 
@@ -1763,15 +1699,8 @@ async function saveProfile() {
 
     } finally {
 
-        if (saveProfileButton) {
-
-            saveProfileButton.disabled = false;
-
-            saveProfileButton.innerHTML = `
-                <i class="fa-solid fa-check"></i>
-                Save Profile
-            `;
-        }
+        saveProfileButton.disabled = false;
+        saveProfileButton.innerHTML = `<i class="fa-solid fa-check"></i> Save Profile`;
     }
 }
 
@@ -1780,19 +1709,15 @@ async function saveProfile() {
    WHAT'S NEW (STATUS)
 ========================================================= */
 
-function getStatusStorageKey() {
-
-    return (
-        "nexaProfileStatus_" +
-        String(profileUser?.id || currentUser.id)
-    );
+function getStatusKey() {
+    return "nexaProfileStatus_" + String(profileUser?.id || currentUser.id);
 }
 
 function getSavedStatus() {
 
     try {
 
-        const raw = localStorage.getItem(getStatusStorageKey());
+        const raw = localStorage.getItem(getStatusKey());
 
         if (!raw) {
             return null;
@@ -1800,58 +1725,39 @@ function getSavedStatus() {
 
         const status = JSON.parse(raw);
 
-        if (!status || !status.expiresAt) {
-            return null;
-        }
-
-        if (Date.now() >= Number(status.expiresAt)) {
-            localStorage.removeItem(getStatusStorageKey());
+        if (!status || Date.now() >= Number(status.expiresAt)) {
+            localStorage.removeItem(getStatusKey());
             return null;
         }
 
         return status;
 
     } catch (_) {
-
         return null;
     }
 }
 
 function renderStatus() {
 
-    if (!profileStatusPreview) {
-        return;
+    if (profileStatusPreview) {
+        profileStatusPreview.textContent = getSavedStatus()?.text || "Share an update";
     }
-
-    profileStatusPreview.textContent =
-        getSavedStatus()?.text || "Share an update";
 }
 
 function updateStatusCharacters() {
 
-    if (!profileStatusCharacters || !profileStatusInput) {
-        return;
+    if (profileStatusCharacters && profileStatusInput) {
+        profileStatusCharacters.textContent = profileStatusInput.value.length + " / 180";
     }
-
-    profileStatusCharacters.textContent =
-        profileStatusInput.value.length + " / 180";
 }
 
 function openStatusModal() {
 
-    if (!profileStatusModal) {
+    if (!profileStatusModal || !isOwnProfile) {
         return;
     }
 
-    /* Only the owner can post an update. */
-
-    if (!isOwnProfile) {
-        return;
-    }
-
-    if (profileStatusInput) {
-        profileStatusInput.value = getSavedStatus()?.text || "";
-    }
+    profileStatusInput.value = getSavedStatus()?.text || "";
 
     updateStatusCharacters();
 
@@ -1859,9 +1765,7 @@ function openStatusModal() {
 
     document.body.style.overflow = "hidden";
 
-    setTimeout(() => {
-        profileStatusInput?.focus();
-    }, 50);
+    setTimeout(() => profileStatusInput.focus(), 50);
 }
 
 function saveStatus() {
@@ -1873,129 +1777,37 @@ function saveStatus() {
     const text = profileStatusInput.value.trim();
 
     if (!text) {
-
-        localStorage.removeItem(getStatusStorageKey());
-
-        renderStatus();
-
-        closeModal(profileStatusModal);
-
-        return;
+        localStorage.removeItem(getStatusKey());
+    } else {
+        localStorage.setItem(getStatusKey(), JSON.stringify({
+            text,
+            createdAt: new Date().toISOString(),
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000
+        }));
     }
-
-    const status = {
-        text,
-        createdAt: new Date().toISOString(),
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000
-    };
-
-    localStorage.setItem(
-        getStatusStorageKey(),
-        JSON.stringify(status)
-    );
 
     renderStatus();
 
     closeModal(profileStatusModal);
-
-    window.dispatchEvent(
-        new CustomEvent("nexaStatusUpdated", { detail: status })
-    );
 }
 
 
 /* =========================================================
-   ADD FRIEND
+   MODALS
 ========================================================= */
 
-async function addFriendFromProfile() {
+function unlockPageIfNothingOpen() {
 
-    if (!profileUser || isOwnProfile) {
-        return;
-    }
+    const open =
+        (editProfileModal && !editProfileModal.hidden) ||
+        (profileStatusModal && !profileStatusModal.hidden) ||
+        (postViewer && !postViewer.hidden) ||
+        document.querySelector(".ps-viewer");
 
-    try {
-
-        const friendId = String(profileUser.id);
-
-        /* Always start from the latest friends list in the database. */
-
-        const { data: me, error: meError } = await nexaSupabase
-            .from("profiles")
-            .select("friends")
-            .eq("id", String(currentUser.id))
-            .maybeSingle();
-
-        if (meError) {
-            throw meError;
-        }
-
-        const currentIds = getFriendIds(me || currentUser);
-
-        if (currentIds.includes(friendId)) {
-            alert("You are already friends.");
-            return;
-        }
-
-        currentIds.push(friendId);
-
-        const { data, error } = await nexaSupabase
-            .from("profiles")
-            .update({ friends: currentIds })
-            .eq("id", String(currentUser.id))
-            .select("id, friends")
-            .single();
-
-        if (error) {
-            throw error;
-        }
-
-        currentUser.friends = currentIds;
-
-        saveCurrentUser();
-
-        if (addFriendProfileButton) {
-
-            addFriendProfileButton.innerHTML = `
-                <i class="fa-solid fa-check"></i>
-                <span>Friends</span>
-            `;
-
-            addFriendProfileButton.disabled = true;
-        }
-
-        window.dispatchEvent(
-            new CustomEvent("nexaFriendsUpdated", { detail: data })
-        );
-
-    } catch (error) {
-
-        console.error("NEXA add friend error:", error);
-
-        alert("Could not add this friend.");
+    if (!open) {
+        document.body.style.overflow = "";
     }
 }
-
-
-/* =========================================================
-   MESSAGE PROFILE
-========================================================= */
-
-function messageProfile() {
-
-    if (!profileUser || isOwnProfile) {
-        return;
-    }
-
-    window.location.href =
-        "messages.html?user=" +
-        encodeURIComponent(String(profileUser.id));
-}
-
-
-/* =========================================================
-   MODAL HELPERS
-========================================================= */
 
 function closeModal(modal) {
 
@@ -2005,338 +1817,36 @@ function closeModal(modal) {
 
     modal.hidden = true;
 
-    /* Only unlock the page when nothing else is open. */
-
-    const editOpen = editProfileModal && !editProfileModal.hidden;
-    const statusOpen = profileStatusModal && !profileStatusModal.hidden;
-    const viewerOpen = profilePostViewer && !profilePostViewer.hidden;
-    const reelOpen = !!profileViewer;
-
-    if (!editOpen && !statusOpen && !viewerOpen && !reelOpen) {
-        document.body.style.overflow = "";
-    }
+    unlockPageIfNothingOpen();
 }
 
 document.addEventListener("click", event => {
 
-    const closeTarget = event.target.closest("[data-close-modal]");
+    const target = event.target.closest("[data-close-modal]");
 
-    if (!closeTarget) {
+    if (!target) {
         return;
     }
 
-    const modalId = closeTarget.dataset.closeModal;
+    closeModal($(target.dataset.closeModal));
+});
 
-    if (modalId === "editProfileModal") {
-        closeModal(editProfileModal);
+document.addEventListener("keydown", event => {
+
+    if (event.key !== "Escape" || (postViewer && !postViewer.hidden)) {
+        return;
     }
 
-    if (modalId === "profileStatusModal") {
+    if (editProfileModal && !editProfileModal.hidden) {
+        closeModal(editProfileModal);
+    } else if (profileStatusModal && !profileStatusModal.hidden) {
         closeModal(profileStatusModal);
     }
 });
 
 
 /* =========================================================
-   REEL ACTIONS: LIKE / SHARE / COMMENT
-========================================================= */
-
-async function toggleProfileReelLike(postId) {
-
-    const post = profilePosts.find(
-        item => String(item.id) === String(postId)
-    );
-
-    if (!post) {
-        return false;
-    }
-
-    const userId = String(currentUser.id);
-
-    try {
-
-        const { data: existing, error: checkError } = await nexaSupabase
-            .from("likes")
-            .select("id")
-            .eq("post_id", post.id)
-            .eq("user_id", userId)
-            .maybeSingle();
-
-        if (checkError) {
-            throw checkError;
-        }
-
-        if (!Array.isArray(post.likes)) {
-            post.likes = [];
-        }
-
-        let liked;
-
-        if (existing) {
-
-            const { error } = await nexaSupabase
-                .from("likes")
-                .delete()
-                .eq("id", existing.id);
-
-            if (error) {
-                throw error;
-            }
-
-            liked = false;
-
-            post.likes = post.likes.filter(
-                id => String(id) !== userId
-            );
-
-        } else {
-
-            const { error } = await nexaSupabase
-                .from("likes")
-                .insert({
-                    post_id: post.id,
-                    user_id: userId
-                });
-
-            if (error) {
-                throw error;
-            }
-
-            liked = true;
-
-            if (!post.likes.some(id => String(id) === userId)) {
-                post.likes.push(userId);
-            }
-        }
-
-        refreshTotalLikes();
-
-        /* Refresh the grid when the fullscreen viewer is not open.
-           (When it is open, the viewer re-renders itself.) */
-
-        if (!profileViewer) {
-            renderProfilePosts();
-        }
-
-        return liked;
-
-    } catch (error) {
-
-        console.error("NEXA profile Reel like error:", error);
-
-        return false;
-    }
-}
-
-async function shareProfileReel(postId) {
-
-    const post = profilePosts.find(
-        item => String(item.id) === String(postId)
-    );
-
-    if (!post) {
-        return;
-    }
-
-    try {
-
-        if (navigator.share) {
-
-            await navigator.share({
-                title: "NEXA Reel",
-                text: post.text || "Check out this Reel on NEXA.",
-                url: window.location.href
-            });
-
-        } else if (navigator.clipboard) {
-
-            await navigator.clipboard.writeText(window.location.href);
-        }
-
-        const newShares = Number(post.shares || 0) + 1;
-
-        const { data, error } = await nexaSupabase
-            .from("posts")
-            .update({ shares: newShares })
-            .eq("id", post.id)
-            .select("shares")
-            .single();
-
-        if (error) {
-            throw error;
-        }
-
-        post.shares = Number(data.shares || 0);
-
-        if (!profileViewer) {
-            renderProfilePosts();
-        }
-
-    } catch (error) {
-
-        /* The user closing the share sheet throws AbortError — ignore it. */
-
-        if (error?.name !== "AbortError") {
-            console.error("NEXA profile reel share error:", error);
-        }
-    }
-}
-
-async function openProfileReelComments(postId) {
-
-    const post = profilePosts.find(
-        item => String(item.id) === String(postId)
-    );
-
-    if (!post) {
-        return;
-    }
-
-    const text = prompt("Write a comment:");
-
-    if (!text?.trim()) {
-        return;
-    }
-
-    const comments = Array.isArray(post.comments)
-        ? [...post.comments]
-        : [];
-
-    comments.push({
-        id: Date.now(),
-        userId: String(currentUser.id),
-        username: currentUser.username || currentUser.name || "NEXA User",
-        text: text.trim(),
-        createdAt: new Date().toISOString()
-    });
-
-    const { data, error } = await nexaSupabase
-        .from("posts")
-        .update({ comments })
-        .eq("id", post.id)
-        .select("comments")
-        .single();
-
-    if (error) {
-
-        console.error("NEXA profile reel comment error:", error);
-
-        return;
-    }
-
-    post.comments = Array.isArray(data.comments)
-        ? data.comments
-        : comments;
-
-    if (!profileViewer) {
-        renderProfilePosts();
-    }
-}
-
-if (profilePostsGrid) {
-
-    profilePostsGrid.addEventListener("click", async event => {
-
-        const button = event.target.closest("[data-profile-action]");
-
-        if (!button) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const action = button.dataset.profileAction;
-        const postId = button.dataset.id;
-
-        if (action === "like") {
-            await toggleProfileReelLike(postId);
-            return;
-        }
-
-        if (action === "comment") {
-            await openProfileReelComments(postId);
-            return;
-        }
-
-        if (action === "share") {
-            await shareProfileReel(postId);
-        }
-    });
-}
-
-
-/* =========================================================
-   PROFILE POSTS SCROLLING
-========================================================= */
-
-function initializeProfileReelScrolling() {
-
-    if (!profilePostsGrid) {
-        return;
-    }
-
-    profilePostsGrid.style.overflowY = "auto";
-    profilePostsGrid.style.overflowX = "hidden";
-    profilePostsGrid.style.webkitOverflowScrolling = "touch";
-    profilePostsGrid.style.touchAction = "pan-y";
-
-    profilePostsGrid.addEventListener("dragstart", event => {
-        event.preventDefault();
-    });
-
-    profilePostsGrid.setAttribute("tabindex", "0");
-
-    /* Keyboard: arrow keys / page keys jump between posts. */
-
-    profilePostsGrid.addEventListener("keydown", event => {
-
-        const keys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp"];
-
-        if (!keys.includes(event.key)) {
-            return;
-        }
-
-        const posts = Array.from(profilePostsGrid.children);
-
-        if (!posts.length) {
-            return;
-        }
-
-        event.preventDefault();
-
-        const scrollTop = profilePostsGrid.scrollTop;
-
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-
-        posts.forEach((post, index) => {
-
-            const distance = Math.abs(post.offsetTop - scrollTop);
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = index;
-            }
-        });
-
-        const goingDown =
-            event.key === "ArrowDown" || event.key === "PageDown";
-
-        const nextIndex = goingDown
-            ? Math.min(posts.length - 1, closestIndex + 1)
-            : Math.max(0, closestIndex - 1);
-
-        posts[nextIndex]?.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-    });
-}
-
-
-/* =========================================================
-   BUTTONS + INPUT EVENTS
+   BUTTONS + INPUTS
 ========================================================= */
 
 profilePictureInput?.addEventListener("change", async event => {
@@ -2348,20 +1858,14 @@ profilePictureInput?.addEventListener("change", async event => {
     }
 
     if (!file.type.startsWith("image/")) {
-
         alert("Please choose an image.");
-
         profilePictureInput.value = "";
-
         return;
     }
 
     try {
-
         renderEditProfilePicture(await compressProfileImage(file));
-
     } catch (error) {
-
         console.error("NEXA profile preview error:", error);
     }
 });
@@ -2374,7 +1878,6 @@ addFriendProfileButton?.addEventListener("click", addFriendFromProfile);
 messageProfileButton?.addEventListener("click", messageProfile);
 profileStatusCloud?.addEventListener("click", openStatusModal);
 saveProfileStatusButton?.addEventListener("click", saveStatus);
-closeProfilePostViewer?.addEventListener("click", closePostViewer);
 
 profileBackButton?.addEventListener("click", () => {
 
@@ -2394,48 +1897,13 @@ profileMenuButton?.addEventListener("click", () => {
     }
 });
 
-/* Escape closes the post viewer and modals. */
-
-document.addEventListener("keydown", event => {
-
-    if (event.key !== "Escape" || profileViewer) {
-        return;
-    }
-
-    if (profilePostViewer && !profilePostViewer.hidden) {
-        closePostViewer();
-        return;
-    }
-
-    if (editProfileModal && !editProfileModal.hidden) {
-        closeModal(editProfileModal);
-        return;
-    }
-
-    if (profileStatusModal && !profileStatusModal.hidden) {
-        closeModal(profileStatusModal);
-    }
-});
-
-/* Profile data refresh event */
-
-window.addEventListener("nexaProfileUpdated", event => {
-
-    if (!event.detail) {
-        return;
-    }
-
-    if (String(event.detail.id) === String(profileUser?.id)) {
-
-        profileUser = { ...profileUser, ...event.detail };
-
-        renderProfileHeader();
-    }
+$("profilePostsStat")?.addEventListener("click", () => {
+    $("profilePostsSection")?.scrollIntoView({ behavior: "smooth" });
 });
 
 
 /* =========================================================
-   PAGE INITIALIZATION
+   INITIALIZE
 ========================================================= */
 
 async function initializeProfile() {
@@ -2447,14 +1915,12 @@ async function initializeProfile() {
         await loadProfile();
 
         await Promise.all([
-            loadFriendCount(),
+            loadFriendInfo(),
             loadProfilePosts(),
             loadProfileStories()
         ]);
 
         renderStatus();
-
-        initializeProfileReelScrolling();
 
     } catch (error) {
 
