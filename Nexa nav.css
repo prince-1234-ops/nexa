@@ -157,3 +157,12 @@ body .people-main { margin-left: var(--nexa-nav-width); }
 
 /* the shared sidebar already shows the NEXA logo on tablets/desktops */
 @media (min-width: 651px) { .mobile-brand { display: none !important; } }
+
+
+/* ---------- ANY OTHER PAGE: add class="nexa-shell" to <body> ---------- */
+
+body.nexa-shell { padding-left: var(--nexa-nav-width); }
+
+@media (max-width: 650px) {
+    body.nexa-shell { padding-bottom: 70px; }
+}
