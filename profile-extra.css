@@ -626,3 +626,14 @@ body > .pv[hidden] {
         max-height: 78vh;
     }
 }
+
+
+/* ---------- keep modals and viewers above the shared sidebar ---------- */
+
+.nexa-modal { z-index: 5200; }
+.pv { z-index: 6000; }
+.pv-close { z-index: 6100; }
+.pv-comments { z-index: 6200; }
+.ps-viewer { z-index: 6000; }
+.profile-page-loading { z-index: 7000; }
+.pv-toast { z-index: 7100; }
