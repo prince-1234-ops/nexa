@@ -4,334 +4,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover and connect with people on NEXA.">
     <meta name="theme-color" content="#06101b">
-    <title>NEXA — People</title>
+    <title>NEXA Profile</title>
     <link rel="icon" type="image/jpeg" href="images/hub.jpg">
 
-    <link rel="stylesheet" href="people.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="profile-extra.css">
     <link rel="stylesheet" href="Nexa nav.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
-<body>
+<body class="nexa-shell">
 
-<div class="people-page">
+<!-- ================= SHARED SIDEBAR (same as Home, Messages, Reels, People) ================= -->
 
-    <!-- ================= SHARED SIDEBAR (same as Home, Messages, Reels) ================= -->
+<aside class="sidebar" aria-label="Main navigation">
 
-    <aside class="sidebar" aria-label="Main navigation">
-
-        <div class="sidebar-brand">
-            <a href="home.html" class="logo">NEXA</a>
-            <span class="brand-status">SOCIAL</span>
-        </div>
-
-        <nav class="main-nav">
-
-            <a href="home.html" class="nav-item">
-                <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
-            </a>
-
-            <a href="people.html" class="nav-item active" aria-current="page">
-                <span class="nav-icon">◉</span><span class="nav-label">People</span>
-            </a>
-
-            <a href="messages.html" class="nav-item">
-                <span class="nav-icon">✉</span><span class="nav-label">Messages</span>
-                <span class="nav-badge" data-unread-badge hidden>0</span>
-            </a>
-
-            <a href="reels.html" class="nav-item">
-                <span class="nav-icon">📽️</span><span class="nav-label">Reels</span>
-            </a>
-
-            <a href="profile.html" class="nav-item">
-                <span class="nav-icon">●</span><span class="nav-label">Profile</span>
-            </a>
-
-            <a href="games.html" class="nav-item">
-                <span class="nav-icon">🎮</span><span class="nav-label">Games</span>
-            </a>
-
-            <a href="settings.html" class="nav-item">
-                <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
-            </a>
-
-            <div class="nav-divider"></div>
-
-            <a href="about.html" class="nav-item">
-                <span class="nav-icon">ⓘ</span><span class="nav-label">About</span>
-            </a>
-
-            <a href="contact.html" class="nav-item">
-                <span class="nav-icon">☏</span><span class="nav-label">Contact</span>
-            </a>
-
-        </nav>
-
-        <div class="sidebar-bottom">
-
-            <div class="sidebar-promo">
-                <span class="promo-icon">✦</span>
-                <div>
-                    <strong>Welcome to NEXA</strong>
-                    <small>Connect. Share. Discover.</small>
-                </div>
-            </div>
-
-            <button id="logoutButton" class="logout-btn" type="button">
-                <span class="logout-icon">↪</span><span>Logout</span>
-            </button>
-
-        </div>
-
-    </aside>
-
-
-    <!-- Hidden placeholders: people.js still looks these up by id -->
-
-    <div hidden aria-hidden="true">
-        <div id="sidebarAvatar">N</div>
-        <strong id="sidebarUserName">NEXA User</strong>
-        <span id="sidebarUsername">@nexauser</span>
-        <span id="mobileProfileAvatar">N</span>
+    <div class="sidebar-brand">
+        <a href="home.html" class="logo">NEXA</a>
+        <span class="brand-status">SOCIAL</span>
     </div>
 
+    <nav class="main-nav">
 
-    <!-- ================= MAIN ================= -->
-
-    <main class="people-main">
-
-        <header class="people-topbar">
-
-            <a href="home.html" class="mobile-brand">
-                <span class="mobile-brand-symbol">N</span>
-                <span>NEXA</span>
-            </a>
-
-            <div class="search-box">
-
-                <span class="search-icon">⌕</span>
-
-                <input id="searchInput" type="search" placeholder="Search people..." autocomplete="off" spellcheck="false">
-
-                <button id="searchPeopleButton" class="search-people-button" type="button">Search</button>
-
-                <button id="clearSearchButton" class="clear-search" type="button" hidden aria-label="Clear search">×</button>
-
-            </div>
-
-            <div class="top-actions">
-
-                <a href="messages.html" class="top-action" title="Messages">
-                    ✉
-                    <span class="topbar-badge" data-unread-badge hidden>0</span>
-                </a>
-
-                <div id="miniAvatar" class="mini-avatar">N</div>
-
-            </div>
-
-        </header>
-
-
-        <section class="people-content">
-
-            <!-- HERO -->
-
-            <section class="people-hero">
-
-                <div class="hero-glow hero-glow-one"></div>
-                <div class="hero-glow hero-glow-two"></div>
-
-                <div class="hero-content">
-
-                    <span class="hero-eyebrow">THE NEXA COMMUNITY</span>
-
-                    <h1>Find people<br>worth knowing.</h1>
-
-                    <p>
-                        Discover new people, reconnect with friends and start
-                        meaningful conversations across NEXA.
-                    </p>
-
-                    <div class="hero-line"></div>
-
-                </div>
-
-                <div class="hero-art">
-
-                    <div class="hero-orbit orbit-one"></div>
-                    <div class="hero-orbit orbit-two"></div>
-                    <div class="hero-orbit orbit-three"></div>
-
-                    <div class="hero-center">
-                        <div class="hero-center-letter">N</div>
-                    </div>
-
-                    <div class="floating-avatar floating-avatar-one">A</div>
-                    <div class="floating-avatar floating-avatar-two">M</div>
-                    <div class="floating-avatar floating-avatar-three">J</div>
-
-                </div>
-
-            </section>
-
-
-            <!-- YOUR PROFILE -->
-
-            <section class="my-profile-card">
-
-                <div class="profile-card-decoration"></div>
-
-                <div class="my-profile-avatar-wrap">
-                    <div id="myProfileAvatar" class="my-profile-avatar">N</div>
-                    <span class="my-profile-online"></span>
-                </div>
-
-                <div class="my-profile-info">
-
-                    <span class="profile-label">YOUR PROFILE</span>
-
-                    <h2 id="myProfileName">NEXA User</h2>
-
-                    <span id="myProfileUsername" class="my-profile-username">@nexauser</span>
-
-                    <p id="myProfileBio" class="my-profile-bio">No bio yet.</p>
-
-                </div>
-
-                <div class="profile-card-actions">
-                    <a href="profile.html" class="view-profile-button">View Profile</a>
-                </div>
-
-            </section>
-
-
-            <!-- DISCOVERY -->
-
-            <section id="peopleSection" class="discovery-section">
-
-                <div class="discovery-header">
-
-                    <div>
-                        <span class="section-label">DISCOVER</span>
-                        <h2>People</h2>
-                        <p>Meet people and grow your NEXA circle.</p>
-                    </div>
-
-                    <div class="people-total">
-                        <span>COMMUNITY</span>
-                        <strong id="peopleCount">0 people</strong>
-                    </div>
-
-                </div>
-
-                <div id="searchStatus" class="search-status"></div>
-
-                <div class="people-toolbar">
-
-                    <div class="toolbar-title">
-                        <span class="toolbar-dot"></span>
-                        <span>NEXA MEMBERS</span>
-                    </div>
-
-                    <div class="toolbar-note">Discover your next connection</div>
-
-                </div>
-
-                <section id="usersList" class="users-list"></section>
-
-                <section id="emptyPeople" class="empty-people" hidden>
-
-                    <div class="empty-icon">⌕</div>
-
-                    <span class="empty-label">NO MATCHES</span>
-
-                    <h3>Nobody found</h3>
-
-                    <p>Try searching with another name, username or keyword.</p>
-
-                </section>
-
-                <div id="peopleLoading" class="people-loading" hidden>
-
-                    <div class="gold-loader"></div>
-
-                    <div>
-                        <strong>Discovering people</strong>
-                        <span>Loading the NEXA community...</span>
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- FOOTER -->
-
-            <footer class="people-footer">
-
-                <div class="footer-brand">
-
-                    <div class="footer-logo">N</div>
-
-                    <div>
-                        <strong>NEXA</strong>
-                        <span>Connect. Discover. Belong.</span>
-                    </div>
-
-                </div>
-
-                <div class="footer-links">
-                    <a href="home.html">Home</a>
-                    <a href="people.html">People</a>
-                    <a href="messages.html">Messages</a>
-                    <a href="profile.html">Profile</a>
-                    <a href="settings.html">Settings</a>
-                </div>
-
-                <div class="footer-copy">© 2026 NEXA</div>
-
-            </footer>
-
-        </section>
-
-    </main>
-
-
-    <!-- ================= SHARED MOBILE BAR (same as Home, Messages, Reels) ================= -->
-
-    <nav class="mobile-nav" aria-label="Mobile navigation">
-
-        <a href="home.html" class="mobile-nav-item">
-            <span>⌂</span><small>Home</small>
+        <a href="home.html" class="nav-item">
+            <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
         </a>
 
-        <a href="people.html" class="mobile-nav-item active" aria-current="page">
-            <span>◉</span><small>People</small>
+        <a href="people.html" class="nav-item">
+            <span class="nav-icon">◉</span><span class="nav-label">People</span>
         </a>
 
-        <a href="messages.html" class="mobile-nav-item">
-            <span>✉</span><small>Messages</small>
-            <span class="mobile-nav-badge" data-unread-badge hidden>0</span>
+        <a href="messages.html" class="nav-item">
+            <span class="nav-icon">✉</span><span class="nav-label">Messages</span>
+            <span class="nav-badge" data-unread-badge hidden>0</span>
         </a>
 
-        <a href="profile.html" class="mobile-nav-item">
-            <span>●</span><small>Profile</small>
+        <a href="reels.html" class="nav-item">
+            <span class="nav-icon">📽️</span><span class="nav-label">Reels</span>
+        </a>
+
+        <a href="profile.html" class="nav-item active" aria-current="page">
+            <span class="nav-icon">●</span><span class="nav-label">Profile</span>
+        </a>
+
+        <a href="games.html" class="nav-item">
+            <span class="nav-icon">🎮</span><span class="nav-label">Games</span>
+        </a>
+
+        <a href="settings.html" class="nav-item">
+            <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a href="about.html" class="nav-item">
+            <span class="nav-icon">ⓘ</span><span class="nav-label">About</span>
+        </a>
+
+        <a href="contact.html" class="nav-item">
+            <span class="nav-icon">☏</span><span class="nav-label">Contact</span>
         </a>
 
     </nav>
 
+    <div class="sidebar-bottom">
 
-    <div id="notificationArea" class="notification-area"></div>
+        <div class="sidebar-promo">
+            <span class="promo-icon">✦</span>
+            <div>
+                <strong>Welcome to NEXA</strong>
+                <small>Connect. Share. Discover.</small>
+            </div>
+        </div>
+
+        <button id="logoutButton" class="logout-btn" type="button">
+            <span class="logout-icon">↪</span><span>Logout</span>
+        </button>
+
+    </div>
+
+</aside>
+
+
+<div class="nexa-background">
+    <div class="nexa-background-orb orb-one"></div>
+    <div class="nexa-background-orb orb-two"></div>
+    <div class="nexa-background-orb orb-three"></div>
+</div>
+
+<main class="profile-page">
+
+    <!-- TOP BAR -->
+
+    <header class="profile-topbar">
+
+        <button type="button" class="profile-nav-button" id="profileBackButton" aria-label="Go back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <div class="profile-top-title"><span id="profileUsernameTitle">NEXA</span></div>
+
+        <button type="button" class="profile-nav-button" id="profileMenuButton" aria-label="Profile menu">
+            <i class="fa-solid fa-ellipsis"></i>
+        </button>
+
+    </header>
+
+
+    <!-- HEADER -->
+
+    <section class="profile-header" id="profileHeader">
+
+        <div class="profile-photo-zone">
+
+            <button type="button" class="profile-photo-button" id="profilePhotoButton" aria-label="Profile picture">
+                <div class="profile-photo-wrapper" id="profilePhotoWrapper">
+                    <img id="profilePhoto" class="profile-photo" src="" alt="Profile picture">
+                    <div id="profilePhotoFallback" class="profile-photo-fallback">N</div>
+                </div>
+            </button>
+
+            <button type="button" class="profile-status-cloud" id="profileStatusCloud" aria-label="What's new">
+                <span class="status-cloud-icon"><i class="fa-solid fa-comment"></i></span>
+                <span class="status-cloud-content">
+                    <strong>What's new?</strong>
+                    <small id="profileStatusPreview">Share an update</small>
+                </span>
+            </button>
+
+        </div>
+
+        <div class="profile-identity">
+            <h1 id="profileName" class="profile-name">NEXA Member</h1>
+            <p id="profileUsername" class="profile-username">@nexa</p>
+            <p id="profileBio" class="profile-bio">Welcome to NEXA.</p>
+        </div>
+
+        <div class="profile-stats">
+
+            <button type="button" class="profile-stat" id="profilePostsStat">
+                <strong id="profilePostsCount">0</strong><span>Posts</span>
+            </button>
+
+            <button type="button" class="profile-stat" id="profileFriendsStat">
+                <strong id="profileFriendsCount">0</strong><span>Friends</span>
+            </button>
+
+            <button type="button" class="profile-stat" id="profileLikesStat">
+                <strong id="profileLikesCount">0</strong><span>Likes</span>
+            </button>
+
+        </div>
+
+        <div class="profile-actions" id="profileActions">
+
+            <button type="button" class="profile-action-button primary" id="editProfileButton">
+                <i class="fa-solid fa-pen"></i><span>Edit Profile</span>
+            </button>
+
+            <button type="button" class="profile-action-button primary" id="addFriendProfileButton" hidden>
+                <i class="fa-solid fa-user-plus"></i><span>Add Friend</span>
+            </button>
+
+            <button type="button" class="profile-action-button secondary" id="messageProfileButton" hidden>
+                <i class="fa-solid fa-message"></i><span>Message</span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- STORIES -->
+
+    <section class="profile-stories-section" id="profileStoriesSection">
+
+        <div class="profile-section-header">
+            <div>
+                <span class="profile-section-kicker">STORIES</span>
+                <h2>Recent stories</h2>
+            </div>
+        </div>
+
+        <div class="profile-stories" id="profileStories">
+            <div class="profile-stories-loading" id="profileStoriesLoading">Loading stories...</div>
+        </div>
+
+    </section>
+
+
+    <!-- POSTS -->
+
+    <section class="profile-posts-section" id="profilePostsSection">
+
+        <div class="profile-section-header">
+            <div>
+                <span class="profile-section-kicker">POSTS</span>
+                <h2>Posts</h2>
+            </div>
+
+            <button type="button" class="profile-posts-view-button" id="profilePostsViewButton" aria-label="Change posts view">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+        </div>
+
+        <div class="profile-filters" id="profileFilters">
+            <button type="button" class="profile-filter active" data-filter="all">All</button>
+            <button type="button" class="profile-filter" data-filter="photo">Photos</button>
+            <button type="button" class="profile-filter" data-filter="video">Videos</button>
+            <button type="button" class="profile-filter" data-filter="reel">Reels</button>
+        </div>
+
+        <div class="profile-posts-grid" id="profilePostsGrid">
+            <div class="profile-posts-loading" id="profilePostsLoading"><span>Loading posts...</span></div>
+        </div>
+
+        <div class="profile-empty-posts" id="profileEmptyPosts" hidden>
+            <div class="profile-empty-posts-icon"><i class="fa-regular fa-images"></i></div>
+            <h3>No posts yet</h3>
+            <p>Posts you create will appear here.</p>
+        </div>
+
+    </section>
+
+    <div class="profile-page-loading" id="profilePageLoading">
+        <div class="profile-loader-ring"></div>
+        <p>Loading NEXA profile...</p>
+    </div>
+
+</main>
+
+
+<!-- ================= SHARED MOBILE BAR ================= -->
+
+<nav class="mobile-nav" aria-label="Mobile navigation">
+
+    <a href="home.html" class="mobile-nav-item">
+        <span>⌂</span><small>Home</small>
+    </a>
+
+    <a href="people.html" class="mobile-nav-item">
+        <span>◉</span><small>People</small>
+    </a>
+
+    <a href="messages.html" class="mobile-nav-item">
+        <span>✉</span><small>Messages</small>
+        <span class="mobile-nav-badge" data-unread-badge hidden>0</span>
+    </a>
+
+    <a href="profile.html" class="mobile-nav-item active" aria-current="page">
+        <span>●</span><small>Profile</small>
+    </a>
+
+</nav>
+
+
+
+<!-- WHAT'S NEW MODAL -->
+
+<div class="nexa-modal" id="profileStatusModal" hidden>
+
+    <div class="nexa-modal-backdrop" data-close-modal="profileStatusModal"></div>
+
+    <div class="nexa-modal-card">
+
+        <div class="nexa-modal-header">
+            <div>
+                <span class="nexa-modal-kicker">24 HOURS</span>
+                <h2>What's new?</h2>
+            </div>
+            <button type="button" class="nexa-modal-close" data-close-modal="profileStatusModal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <textarea id="profileStatusInput" class="profile-status-input" maxlength="180" placeholder="Tell everyone what's new..."></textarea>
+
+        <div class="profile-status-footer">
+            <span id="profileStatusCharacters">0 / 180</span>
+            <button type="button" class="profile-save-button" id="saveProfileStatusButton">
+                <i class="fa-solid fa-paper-plane"></i> Post update
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- EDIT PROFILE MODAL -->
+
+<div class="nexa-modal" id="editProfileModal" hidden>
+
+    <div class="nexa-modal-backdrop" data-close-modal="editProfileModal"></div>
+
+    <div class="nexa-modal-card">
+
+        <div class="nexa-modal-header">
+            <div>
+                <span class="nexa-modal-kicker">PROFILE</span>
+                <h2>Edit Profile</h2>
+            </div>
+            <button type="button" class="nexa-modal-close" data-close-modal="editProfileModal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="edit-profile-photo">
+            <div class="edit-profile-photo-preview" id="editProfilePhotoPreview"><span>N</span></div>
+
+            <label for="profilePictureInput" class="profile-change-photo-button">
+                <i class="fa-solid fa-camera"></i> Change picture
+            </label>
+
+            <input type="file" id="profilePictureInput" accept="image/*" hidden>
+        </div>
+
+        <label class="profile-form-field">
+            <span>Name</span>
+            <input type="text" id="editProfileName" maxlength="80" autocomplete="name" placeholder="Your name">
+        </label>
+
+        <label class="profile-form-field">
+            <span>Username</span>
+            <input type="text" id="editProfileUsername" maxlength="30" autocomplete="username" placeholder="username">
+        </label>
+
+        <label class="profile-form-field">
+            <span>Bio</span>
+            <textarea id="editProfileBio" maxlength="160" placeholder="Tell people about yourself..."></textarea>
+        </label>
+
+        <button type="button" class="profile-save-button full" id="saveProfileButton">
+            <i class="fa-solid fa-check"></i> Save Profile
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- POST VIEWER: focused, scrollable, like / comment / share / download -->
+
+<div class="pv" id="postViewer" hidden aria-hidden="true">
+
+    <button type="button" class="pv-close" id="postViewerClose" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="pv-scroller" id="postViewerScroller"></div>
+
+    <div class="pv-comments" id="pvComments" hidden>
+        <div class="pv-comments-box">
+
+            <div class="pv-comments-head">
+                <strong>Comments</strong>
+                <button type="button" id="pvCommentsClose" aria-label="Close comments">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="pv-comments-list" id="pvCommentsList"></div>
+
+            <form class="pv-comments-form" id="pvCommentsForm">
+                <input type="text" id="pvCommentInput" placeholder="Write a comment..." maxlength="500" autocomplete="off">
+                <button type="submit">Post</button>
+            </form>
+
+        </div>
+    </div>
 
 </div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
-<script src="people.js"></script>
+<script src="profile.js"></script>
 <script src="Nexa-nav.js"></script>
 
 </body>
