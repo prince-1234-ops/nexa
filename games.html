@@ -110,24 +110,32 @@
       color: #6ee7b7;
     }
 
-    #audio-btn {
+    .hud-btn {
       pointer-events: auto;
       background: rgba(14, 24, 18, 0.78);
       border: 1px solid rgba(255, 215, 110, 0.35);
       color: #ffdf73;
-      width: 44px;
       height: 44px;
-      border-radius: 50%;
-      font-size: 18px;
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 0 14px;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       transition: transform 0.15s ease, background 0.2s ease;
     }
 
-    #audio-btn:hover {
-      transform: scale(1.08);
+    .hud-btn.icon-only {
+      width: 44px;
+      padding: 0;
+      font-size: 18px;
+    }
+
+    .hud-btn:hover {
+      transform: scale(1.06);
       background: rgba(30, 50, 38, 0.9);
     }
 
@@ -312,7 +320,7 @@
       </div>
 
       <div class="hud-group" style="align-items: flex-end;">
-        <div style="display:flex; gap:10px; align-items:center;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap; justify-content: flex-end;">
           <div class="hud-pill">
             <div>
               <div class="hud-label" style="display:flex;justify-content:space-between;gap:12px;">
@@ -324,7 +332,8 @@
               </div>
             </div>
           </div>
-          <button id="audio-btn" title="Toggle Sound">🔊</button>
+          <button id="cam-btn" class="hud-btn" title="Toggle Camera Angle">📷 Chase</button>
+          <button id="audio-btn" class="hud-btn icon-only" title="Toggle Sound">🔊</button>
         </div>
       </div>
     </div>
@@ -614,7 +623,6 @@
     renderer.toneMappingExposure = 1.12;
     container.appendChild(renderer.domElement);
 
-    // Lights
     const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.8);
     scene.add(hemiLight);
 
@@ -634,7 +642,6 @@
     scene.add(sunLight);
     scene.add(sunLight.target);
 
-    // Cave Torch Lights
     const caveTorchLeft = new THREE.PointLight(0xff7b29, 2.9, 22);
     caveTorchLeft.position.set(-4.5, 4.2, 6);
     scene.add(caveTorchLeft);
@@ -674,6 +681,13 @@
     let stepCycle = 0;
     let lastStepSign = 1;
 
+    // Camera mode: 'chase' or 'overhead'
+    let cameraMode = 'chase';
+
+    // Beast proximity: 0 = far back (~10.8z), 1 = close behind (~4.6z)
+    let beastProximity = 0.28;
+    let beastLungeBoost = 0;
+
     // ==========================================
     // 5. SCULPTED 3D CHARACTERS & CAVE SETPIECE
     // ==========================================
@@ -690,6 +704,7 @@
     const matPupil = new THREE.MeshBasicMaterial({ color: 0x18181b });
     const matFang = new THREE.MeshStandardMaterial({ color: 0xf5f0dc, roughness: 0.35 });
     const matMouthInside = new THREE.MeshStandardMaterial({ color: 0x450a0a, roughness: 0.9 });
+    const matAbyss = new THREE.MeshBasicMaterial({ color: 0x030705 });
 
     const matEmerald = new THREE.MeshStandardMaterial({
       color: 0x10b981,
@@ -1261,7 +1276,8 @@
     function spawnRow(zPos) {
       const pattern = Math.random();
 
-      if (pattern < 0.34) {
+      if (pattern < 0.26) {
+        // Fallen Mossy Log (Jump!)
         const group = new THREE.Group();
         const log = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 8.2, 12), matTrunk);
         log.rotation.z = Math.PI / 2;
@@ -1284,7 +1300,8 @@
         });
 
         spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.5, 4, true);
-      } else if (pattern < 0.66) {
+      } else if (pattern < 0.52) {
+        // Stone Temple Archway with Hanging Vines (Slide!)
         const group = new THREE.Group();
         [-4.1, 4.1].forEach((x) => {
           const col = new THREE.Mesh(new THREE.BoxGeometry(0.85, 3.8, 0.95), matStone);
@@ -1314,7 +1331,8 @@
         });
 
         spawnCoinLine(Math.floor(Math.random() * 3), zPos + 4, 4, false);
-      } else {
+      } else if (pattern < 0.78) {
+        // Ancient Totem Pillars blocking 1 or 2 lanes (Dodge!)
         const openLane = Math.floor(Math.random() * 3);
         const blockedLanes = [0, 1, 2].filter((l) => l !== openLane);
         if (Math.random() > 0.55) {
@@ -1347,6 +1365,49 @@
         });
 
         spawnCoinLine(openLane, zPos + 4, 5, false);
+      } else {
+        // Broken Bridge Pitfall across path (Jump across chasm!)
+        const group = new THREE.Group();
+
+        // Dark chasm pit covering path surface
+        const pit = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.72, 3.8), matAbyss);
+        pit.position.set(0, -0.32, 0);
+        group.add(pit);
+
+        // Broken stone bridge planks on near & far edges
+        const nearDeck = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.25, 0.85), matCurb);
+        nearDeck.position.set(0, 0.04, 1.5);
+        nearDeck.castShadow = true;
+        nearDeck.receiveShadow = true;
+        group.add(nearDeck);
+
+        const farDeck = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.25, 0.85), matCurb);
+        farDeck.position.set(0, 0.04, -1.5);
+        farDeck.castShadow = true;
+        farDeck.receiveShadow = true;
+        group.add(farDeck);
+
+        // Jagged broken stone teeth along the gap
+        for (let bx = -3.4; bx <= 3.4; bx += 1.7) {
+          const tooth = new THREE.Mesh(
+            new THREE.BoxGeometry(1.15, 0.22, 0.45 + Math.random() * 0.35),
+            matStone
+          );
+          tooth.position.set(bx + (Math.random() - 0.5) * 0.3, 0.03, (Math.random() - 0.5) * 1.4);
+          tooth.rotation.y = (Math.random() - 0.5) * 0.25;
+          group.add(tooth);
+        }
+
+        group.position.set(0, 0, zPos);
+        scene.add(group);
+        obstacles.push({
+          mesh: group,
+          type: 'BRIDGE',
+          lanes: [0, 1, 2],
+          zDepth: 1.55
+        });
+
+        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.2, 4, true);
       }
     }
 
@@ -1362,6 +1423,7 @@
     const startScreen = document.getElementById('start-screen');
     const gameoverScreen = document.getElementById('gameover-screen');
     const screenFlash = document.getElementById('screen-flash');
+    const camBtn = document.getElementById('cam-btn');
 
     function showBanner(text) {
       banner.textContent = text;
@@ -1393,6 +1455,11 @@
       }
     }
 
+    function toggleCameraAngle() {
+      cameraMode = cameraMode === 'chase' ? 'overhead' : 'chase';
+      camBtn.textContent = cameraMode === 'chase' ? '📷 Chase' : '📷 High';
+    }
+
     // ==========================================
     // 9. GAME FLOW & INTRO SEQUENCE
     // ==========================================
@@ -1404,6 +1471,8 @@
       isJumping = false;
       isSliding = false;
       slideTimer = 0;
+      beastProximity = 0.28;
+      beastLungeBoost = 0;
 
       playerGroup.position.set(0, 0, 6.2);
       playerGroup.rotation.set(0, Math.PI, 0);
@@ -1466,8 +1535,10 @@
 
     function triggerGameOver() {
       gameState = 'GAMEOVER';
+      beastProximity = 1.0;
+      beastLungeBoost = 1.2;
       sound.playCrash();
-      screenShake = 0.7;
+      screenShake = 0.75;
       triggerFlash('rgba(239, 68, 68, 0.75)');
 
       const finalDist = Math.floor(distance);
@@ -1532,6 +1603,9 @@
         e.preventDefault();
         slide();
       }
+      if (e.code === 'KeyC') {
+        toggleCameraAngle();
+      }
     });
 
     let touchStartX = 0;
@@ -1554,6 +1628,7 @@
 
     document.getElementById('start-btn').addEventListener('click', startIntroSequence);
     document.getElementById('restart-btn').addEventListener('click', startIntroSequence);
+    camBtn.addEventListener('click', toggleCameraAngle);
 
     const audioBtn = document.getElementById('audio-btn');
     audioBtn.addEventListener('click', () => {
@@ -1705,13 +1780,18 @@
         if (t >= 1) {
           playerGroup.rotation.y = 0;
           playerGroup.position.z = 0;
-          beastGroup.position.z = 9.2;
+          beastGroup.position.z = 9.4;
           beginActiveRun();
         }
       } else if (gameState === 'PLAYING') {
         runSpeed = Math.min(42, runSpeed + dt * 0.38);
         const moveDelta = runSpeed * dt;
         distance += moveDelta * 0.45;
+
+        // Gradually ease beast back as speed & distance climb
+        const speedRelief = Math.min(0.22, ((runSpeed - 22) / 20) * 0.22);
+        beastProximity = Math.max(0.08, beastProximity - dt * (0.045 + speedRelief * 0.05));
+        beastLungeBoost = Math.max(0, beastLungeBoost - dt * 1.4);
 
         if (caveGroup.position.z < 45) {
           caveGroup.position.z += moveDelta;
@@ -1777,11 +1857,13 @@
           rightArmRig.elbow.rotation.x = -0.4;
         }
 
-        // Keep beast pursuing cleanly behind runner without blocking forward path view
-        const beastTargetZ = shieldCharge >= 100 ? 11.2 : 8.6 + Math.sin(elapsed * 3) * 0.4;
-        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, beastTargetZ, dt * 3);
+        // Beast position responds to proximity & lunge boosts on mistakes
+        const shieldBuffer = shieldCharge >= 100 ? 1.3 : 0;
+        const baseBeastZ = THREE.MathUtils.lerp(10.8, 5.2, beastProximity) + shieldBuffer - beastLungeBoost * 1.4;
+        const beastTargetZ = baseBeastZ + Math.sin(elapsed * 3.2) * 0.28;
+        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, beastTargetZ, dt * 4.5);
         beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX * 0.72, dt * 5);
-        animateBeastGallop(stepCycle * 0.72);
+        animateBeastGallop(stepCycle * (0.72 + beastProximity * 0.35));
 
         for (let i = collectibles.length - 1; i >= 0; i--) {
           const c = collectibles[i];
@@ -1799,17 +1881,23 @@
               if (c.isGem) {
                 coins += 5;
                 shieldCharge = Math.min(100, shieldCharge + 35);
+                beastProximity = Math.max(0.05, beastProximity - 0.16);
                 sound.playGemChime();
                 triggerFlash('rgba(16, 185, 129, 0.3)');
               } else {
                 coins += 1;
                 shieldCharge = Math.min(100, shieldCharge + 8);
+                beastProximity = Math.max(0.05, beastProximity - 0.03);
                 sound.playCoin();
               }
             }
           }
 
           if (c.mesh.position.z > 12) {
+            // Missed uncollected coin/gem nudges beast slightly closer
+            if (!c.collected) {
+              beastProximity = Math.min(0.95, beastProximity + (c.isGem ? 0.07 : 0.022));
+            }
             scene.remove(c.mesh);
             collectibles.splice(i, 1);
           }
@@ -1827,18 +1915,21 @@
             const inBlockedLane = obs.lanes.includes(currentLane);
             if (inBlockedLane) {
               let collided = false;
-              if (obs.type === 'JUMP' && playerY < 0.95) collided = true;
+              if ((obs.type === 'JUMP' || obs.type === 'BRIDGE') && playerY < 0.95) collided = true;
               if (obs.type === 'SLIDE' && !isSliding) collided = true;
               if (obs.type === 'BLOCK') collided = true;
 
               if (collided) {
                 obs.hit = true;
                 if (shieldCharge >= 100) {
+                  // Shield absorbs mistake, but beast surges forward!
                   shieldCharge = 0;
+                  beastProximity = Math.min(0.95, beastProximity + 0.42);
+                  beastLungeBoost = 0.85;
                   sound.playShieldBreak();
-                  screenShake = 0.5;
+                  screenShake = 0.55;
                   triggerFlash('rgba(52, 211, 153, 0.55)');
-                  obs.mesh.visible = false;
+                  if (obs.type !== 'BRIDGE') obs.mesh.visible = false;
                 } else {
                   triggerGameOver();
                 }
@@ -1857,15 +1948,26 @@
           spawnRow(furthestZ - gap);
         }
 
+        // Camera angle based on toggle ('chase' vs 'overhead')
+        const desiredCamY = cameraMode === 'overhead' ? 7.45 + playerY * 0.35 : 4.95 + playerY * 0.4;
+        const desiredCamZ = cameraMode === 'overhead' ? 7.6 : 7.2;
+        const desiredLookY = cameraMode === 'overhead' ? 0.95 + playerY * 0.2 : 1.45 + playerY * 0.25;
+        const desiredLookZ = cameraMode === 'overhead' ? -12.5 : -14;
+
         camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerX * 0.55, dt * 8);
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.95 + playerY * 0.4, dt * 8);
-        camera.position.z = 7.2;
-        camera.lookAt(playerX * 0.4, 1.45 + playerY * 0.25, -14);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredCamY, dt * 8);
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredCamZ, dt * 8);
+        camera.lookAt(playerX * 0.4, desiredLookY, desiredLookZ);
 
         sunLight.position.set(playerX + 18, 36, -25);
         sunLight.target.position.set(playerX, 0, -15);
 
         updateHUD();
+      } else if (gameState === 'GAMEOVER') {
+        // Beast lunges into frame on catch
+        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, 2.2, dt * 7);
+        beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX, dt * 7);
+        animateBeastGallop(elapsed * 14);
       }
 
       if (screenShake > 0) {
