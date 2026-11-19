@@ -1,5 +1,6 @@
 /* =========================================================
    NEXA SHARED MENU — used by home.html AND messages.html
+   Same sidebar, same mobile bar, same red unread badge.
 ========================================================= */
 
 :root { --nexa-nav-width: 232px; }
@@ -134,3 +135,25 @@ body .nexa-messages-app {
     body .nexa-messages-app { padding-bottom: 64px; }
     body:has(.messages-shell.chat-open) .nexa-messages-app { padding-bottom: 0; }
 }
+
+
+/* ---------- PEOPLE PAGE (old sidebar removed, shared sidebar added) ---------- */
+
+.people-sidebar { display: none !important; }
+
+body .people-main { margin-left: var(--nexa-nav-width); }
+
+.top-action { position: relative; }
+
+.topbar-badge {
+    position: absolute; top: -5px; right: -5px;
+    display: grid; min-width: 18px; height: 18px; place-items: center;
+    padding: 0 5px; border: 2px solid #06101b; border-radius: 999px;
+    background: linear-gradient(135deg, #ff4d6a, #e11d48); color: #fff;
+    font-size: 9px; font-weight: 700; line-height: 1;
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.55);
+}
+.topbar-badge[hidden] { display: none !important; }
+
+/* the shared sidebar already shows the NEXA logo on tablets/desktops */
+@media (min-width: 651px) { .mobile-brand { display: none !important; } }
