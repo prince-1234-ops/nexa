@@ -337,7 +337,7 @@
       <div class="title-badge">Ancient Forest Expedition</div>
       <h1>TEMPLE ESCAPE 3D</h1>
       <p class="subtitle">
-        Deep inside the forbidden cavern rests the Emerald Heart. Snatch the relic from its altar—but beware the Stone Guardian slumbering in the shadows.
+        Deep inside the forbidden cavern rests the Emerald Heart. Snatch the relic from its altar—but beware the Demon Guardian slumbering in the shadows.
       </p>
       <button id="start-btn" class="primary-btn">Steal Gem &amp; Run</button>
       <div class="controls-grid">
@@ -421,7 +421,6 @@
         if (this.muted || !this.ctx) return;
         const now = this.ctx.currentTime;
 
-        // Low growl oscillator
         const osc1 = this.ctx.createOscillator();
         const osc2 = this.ctx.createOscillator();
         const filter = this.ctx.createBiquadFilter();
@@ -429,18 +428,18 @@
 
         osc1.type = 'sawtooth';
         osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(95, now);
-        osc1.frequency.exponentialRampToValueAtTime(38, now + 1.6);
-        osc2.frequency.setValueAtTime(62, now);
-        osc2.frequency.exponentialRampToValueAtTime(28, now + 1.6);
+        osc1.frequency.setValueAtTime(98, now);
+        osc1.frequency.exponentialRampToValueAtTime(36, now + 1.65);
+        osc2.frequency.setValueAtTime(64, now);
+        osc2.frequency.exponentialRampToValueAtTime(26, now + 1.65);
 
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(420, now);
-        filter.frequency.linearRampToValueAtTime(140, now + 1.6);
+        filter.frequency.setValueAtTime(460, now);
+        filter.frequency.linearRampToValueAtTime(135, now + 1.65);
 
         gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.45, now + 0.18);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.7);
+        gain.gain.linearRampToValueAtTime(0.48, now + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.75);
 
         osc1.connect(filter);
         osc2.connect(filter);
@@ -449,8 +448,8 @@
 
         osc1.start(now);
         osc2.start(now);
-        osc1.stop(now + 1.75);
-        osc2.stop(now + 1.75);
+        osc1.stop(now + 1.8);
+        osc2.stop(now + 1.8);
       }
 
       playCoin() {
@@ -595,6 +594,7 @@
     const dirtTex = createNoiseTexture('#4e3b2c', '#2d2117', 6);
     const mossTex = createNoiseTexture('#2f4f32', '#1a2e1c', 5);
     const barkTex = createNoiseTexture('#3b281c', '#1e130c', 4);
+    const furTex = createNoiseTexture('#23201e', '#110f0e', 3);
 
     // ==========================================
     // 3. SCENE, RENDERER & LIGHTING
@@ -611,14 +611,14 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.12;
     container.appendChild(renderer.domElement);
 
     // Lights
-    const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.75);
+    const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.8);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff1d0, 1.55);
+    const sunLight = new THREE.DirectionalLight(0xfff1d0, 1.6);
     sunLight.position.set(18, 36, -25);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
@@ -635,11 +635,11 @@
     scene.add(sunLight.target);
 
     // Cave Torch Lights
-    const caveTorchLeft = new THREE.PointLight(0xff7b29, 2.8, 22);
+    const caveTorchLeft = new THREE.PointLight(0xff7b29, 2.9, 22);
     caveTorchLeft.position.set(-4.5, 4.2, 6);
     scene.add(caveTorchLeft);
 
-    const caveTorchRight = new THREE.PointLight(0xff7b29, 2.8, 22);
+    const caveTorchRight = new THREE.PointLight(0xff7b29, 2.9, 22);
     caveTorchRight.position.set(4.5, 4.2, 6);
     scene.add(caveTorchRight);
 
@@ -654,7 +654,7 @@
     const SEGMENT_LENGTH = 20;
     const NUM_SEGMENTS = 10;
 
-    let gameState = 'MENU'; // MENU, INTRO_STEAL, INTRO_WAKE, INTRO_TURN, PLAYING, GAMEOVER
+    let gameState = 'MENU';
     let introTimer = 0;
 
     let currentLane = 1;
@@ -669,95 +669,254 @@
     let distance = 0;
     let coins = 0;
     let bestScore = parseInt(localStorage.getItem('temple_escape_best') || '0', 10);
-    let shieldCharge = 0; // 0 to 100
+    let shieldCharge = 0;
     let screenShake = 0;
     let stepCycle = 0;
     let lastStepSign = 1;
 
     // ==========================================
-    // 5. BUILD 3D CHARACTERS & CAVE SETPIECE
+    // 5. SCULPTED 3D CHARACTERS & CAVE SETPIECE
     // ==========================================
-    // Materials
-    const matSkin = new THREE.MeshStandardMaterial({ color: 0xd99b72, roughness: 0.6 });
-    const matShirt = new THREE.MeshStandardMaterial({ color: 0x3b6e52, roughness: 0.8 });
-    const matPants = new THREE.MeshStandardMaterial({ color: 0x3d2e22, roughness: 0.85 });
-    const matHat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.75 });
-    const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.2 });
+    const matSkin = new THREE.MeshStandardMaterial({ color: 0xd9956c, roughness: 0.55, metalness: 0.04 });
+    const matShirt = new THREE.MeshStandardMaterial({ color: 0xe5dec9, roughness: 0.8 });
+    const matVest = new THREE.MeshStandardMaterial({ color: 0x6b3e26, roughness: 0.72 });
+    const matPants = new THREE.MeshStandardMaterial({ color: 0x3b4d3b, roughness: 0.85 });
+    const matBoot = new THREE.MeshStandardMaterial({ color: 0x382012, roughness: 0.7 });
+    const matLeather = new THREE.MeshStandardMaterial({ color: 0x4a2916, roughness: 0.65 });
+    const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.88, roughness: 0.2 });
+    const matScarf = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.75 });
+    const matHair = new THREE.MeshStandardMaterial({ color: 0x2b190e, roughness: 0.85 });
+    const matEyeWhite = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    const matPupil = new THREE.MeshBasicMaterial({ color: 0x18181b });
+    const matFang = new THREE.MeshStandardMaterial({ color: 0xf5f0dc, roughness: 0.35 });
+    const matMouthInside = new THREE.MeshStandardMaterial({ color: 0x450a0a, roughness: 0.9 });
+
     const matEmerald = new THREE.MeshStandardMaterial({
       color: 0x10b981,
       emissive: 0x059669,
-      emissiveIntensity: 0.85,
+      emissiveIntensity: 0.9,
       roughness: 0.15,
       metalness: 0.2
     });
     const matStone = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
-    const matBeastStone = new THREE.MeshStandardMaterial({ color: 0x2c302e, map: stoneTex, roughness: 0.85 });
+    const matBeastFur = new THREE.MeshStandardMaterial({ color: 0x242120, map: furTex, roughness: 0.88 });
+    const matBeastMuscle = new THREE.MeshStandardMaterial({ color: 0x1b1817, map: furTex, roughness: 0.82 });
     const matBeastEye = new THREE.MeshStandardMaterial({
-      color: 0xff3b00,
+      color: 0xff4500,
       emissive: 0xff2200,
-      emissiveIntensity: 2.2
+      emissiveIntensity: 2.5
     });
 
-    // --- Explorer Player ---
+    // Helper for tapered organic limb segments
+    function makeTaperedLimb(rTop, rBot, len, mat, yOffset) {
+      const geo = new THREE.CylinderGeometry(rTop, rBot, len, 12);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.y = yOffset;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    }
+
+    // ------------------------------------------
+    // 5A. REALISTIC ARTICULATED HUMAN EXPLORER
+    // ------------------------------------------
     const playerGroup = new THREE.Group();
     scene.add(playerGroup);
 
     const playerBodyPivot = new THREE.Group();
     playerGroup.add(playerBodyPivot);
 
-    // Torso
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.0, 0.42), matShirt);
-    torso.position.y = 1.35;
-    torso.castShadow = true;
-    playerBodyPivot.add(torso);
+    // Pelvis & Belt
+    const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.29, 0.24, 14), matPants);
+    pelvis.position.y = 0.92;
+    pelvis.castShadow = true;
+    playerBodyPivot.add(pelvis);
 
-    // Backpack
-    const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.3), matHat);
-    backpack.position.set(0, 1.4, 0.32);
-    backpack.castShadow = true;
-    playerBodyPivot.add(backpack);
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.1, 14), matLeather);
+    belt.position.y = 1.03;
+    playerBodyPivot.add(belt);
 
-    // Head + Explorer Hat
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.11, 0.06), matGold);
+    buckle.position.set(0, 1.03, -0.34);
+    playerBodyPivot.add(buckle);
+
+    // Torso (Chest + Fitted Explorer Vest)
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.33, 0.68, 14), matShirt);
+    chest.scale.set(1.08, 1.0, 0.76);
+    chest.position.y = 1.38;
+    chest.castShadow = true;
+    playerBodyPivot.add(chest);
+
+    const vestLeft = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.64, 0.34), matVest);
+    vestLeft.position.set(-0.24, 1.38, -0.02);
+    vestLeft.castShadow = true;
+    playerBodyPivot.add(vestLeft);
+
+    const vestRight = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.64, 0.34), matVest);
+    vestRight.position.set(0.24, 1.38, -0.02);
+    vestRight.castShadow = true;
+    playerBodyPivot.add(vestRight);
+
+    // Fluttering Red Neckerchief
+    const scarfCollar = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.065, 10, 18), matScarf);
+    scarfCollar.rotation.x = Math.PI / 2;
+    scarfCollar.position.y = 1.73;
+    playerBodyPivot.add(scarfCollar);
+
+    const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.45), matScarf);
+    scarfTail.position.set(0, 1.69, 0.36);
+    scarfTail.rotation.x = 0.25;
+    playerBodyPivot.add(scarfTail);
+
+    // Explorer Backpack & Bedroll
+    const packMain = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.56, 0.26), matLeather);
+    packMain.position.set(0, 1.38, 0.33);
+    packMain.castShadow = true;
+    playerBodyPivot.add(packMain);
+
+    const bedroll = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.54, 10), matScarf);
+    bedroll.rotation.z = Math.PI / 2;
+    bedroll.position.set(0, 1.72, 0.34);
+    bedroll.castShadow = true;
+    playerBodyPivot.add(bedroll);
+
+    // Sculpted Head & Face
     const headGroup = new THREE.Group();
-    headGroup.position.y = 2.08;
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), matSkin);
-    head.castShadow = true;
-    headGroup.add(head);
-
-    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.06, 16), matHat);
-    hatBrim.position.y = 0.22;
-    headGroup.add(hatBrim);
-
-    const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.3, 0.24, 16), matHat);
-    hatCrown.position.y = 0.34;
-    headGroup.add(hatCrown);
+    headGroup.position.y = 1.98;
     playerBodyPivot.add(headGroup);
 
-    // Limbs
-    function createLimb(w, h, d, mat, yOffset) {
-      const pivot = new THREE.Group();
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-      mesh.position.y = yOffset;
-      mesh.castShadow = true;
-      pivot.add(mesh);
-      return pivot;
+    const cranium = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 16), matSkin);
+    cranium.scale.set(0.95, 1.08, 1.02);
+    cranium.castShadow = true;
+    headGroup.add(cranium);
+
+    const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.18, 0.34), matSkin);
+    jaw.position.set(0, -0.14, -0.03);
+    headGroup.add(jaw);
+
+    // Nose & Ears
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 6), matSkin);
+    nose.rotation.x = -Math.PI / 2.3;
+    nose.position.set(0, -0.02, -0.28);
+    headGroup.add(nose);
+
+    [-0.26, 0.26].forEach((ex) => {
+      const ear = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 10), matSkin);
+      ear.scale.set(0.45, 0.9, 0.7);
+      ear.position.set(ex, -0.02, 0.0);
+      headGroup.add(ear);
+    });
+
+    // Eyes & Brows (facing -Z)
+    [-0.095, 0.095].forEach((xPos) => {
+      const eyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), matEyeWhite);
+      eyeBall.position.set(xPos, 0.04, -0.23);
+      headGroup.add(eyeBall);
+
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.024, 8, 8), matPupil);
+      pupil.position.set(xPos, 0.04, -0.268);
+      headGroup.add(pupil);
+
+      const brow = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.025, 0.04), matHair);
+      brow.position.set(xPos, 0.105, -0.25);
+      brow.rotation.z = xPos < 0 ? -0.12 : 0.12;
+      headGroup.add(brow);
+    });
+
+    // Back Hair & Explorer Fedora Hat
+    const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.275, 14, 14), matHair);
+    backHair.position.set(0, 0.02, 0.04);
+    backHair.scale.set(1.0, 1.02, 0.92);
+    headGroup.add(backHair);
+
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.47, 0.04, 20), matLeather);
+    hatBrim.position.set(0, 0.17, -0.02);
+    hatBrim.rotation.x = 0.06;
+    hatBrim.castShadow = true;
+    headGroup.add(hatBrim);
+
+    const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.23, 0.18, 16), matLeather);
+    hatCrown.position.set(0, 0.26, -0.02);
+    hatCrown.castShadow = true;
+    headGroup.add(hatCrown);
+
+    const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.232, 0.045, 16), matGold);
+    hatBand.position.set(0, 0.19, -0.02);
+    headGroup.add(hatBand);
+
+    // Multi-Jointed Arms (Shoulder -> Upper Arm -> Elbow -> Forearm -> Hand)
+    function createHumanArm(side) {
+      const shoulder = new THREE.Group();
+      shoulder.position.set(side * 0.47, 1.65, 0);
+
+      const deltoid = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), matShirt);
+      shoulder.add(deltoid);
+
+      const upperArm = makeTaperedLimb(0.11, 0.09, 0.34, matShirt, -0.17);
+      shoulder.add(upperArm);
+
+      const elbow = new THREE.Group();
+      elbow.position.set(0, -0.34, 0);
+      shoulder.add(elbow);
+
+      const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.088, 10, 10), matSkin);
+      elbow.add(elbowJoint);
+
+      const forearm = makeTaperedLimb(0.09, 0.072, 0.32, matSkin, -0.16);
+      elbow.add(forearm);
+
+      const hand = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.13, 0.12), matSkin);
+      hand.position.set(0, -0.35, -0.02);
+      hand.castShadow = true;
+      elbow.add(hand);
+
+      return { shoulder, elbow, hand };
     }
 
-    const leftArm = createLimb(0.22, 0.78, 0.22, matSkin, -0.34);
-    leftArm.position.set(-0.5, 1.78, 0);
-    playerBodyPivot.add(leftArm);
+    const leftArmRig = createHumanArm(-1);
+    const rightArmRig = createHumanArm(1);
+    playerBodyPivot.add(leftArmRig.shoulder);
+    playerBodyPivot.add(rightArmRig.shoulder);
 
-    const rightArm = createLimb(0.22, 0.78, 0.22, matSkin, -0.34);
-    rightArm.position.set(0.5, 1.78, 0);
-    playerBodyPivot.add(rightArm);
+    // Multi-Jointed Legs (Hip -> Thigh -> Knee -> Shin -> Hiking Boot)
+    function createHumanLeg(side) {
+      const hip = new THREE.Group();
+      hip.position.set(side * 0.19, 0.86, 0);
 
-    const leftLeg = createLimb(0.28, 0.85, 0.28, matPants, -0.42);
-    leftLeg.position.set(-0.2, 0.88, 0);
-    playerBodyPivot.add(leftLeg);
+      const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), matPants);
+      hip.add(hipJoint);
 
-    const rightLeg = createLimb(0.28, 0.85, 0.28, matPants, -0.42);
-    rightLeg.position.set(0.2, 0.88, 0);
-    playerBodyPivot.add(rightLeg);
+      const thigh = makeTaperedLimb(0.14, 0.105, 0.42, matPants, -0.21);
+      hip.add(thigh);
+
+      const knee = new THREE.Group();
+      knee.position.set(0, -0.42, 0);
+      hip.add(knee);
+
+      const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(0.102, 10, 10), matPants);
+      knee.add(kneeJoint);
+
+      const shin = makeTaperedLimb(0.105, 0.082, 0.38, matPants, -0.19);
+      knee.add(shin);
+
+      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, 0.28), matBoot);
+      boot.position.set(0, -0.4, -0.05);
+      boot.castShadow = true;
+      knee.add(boot);
+
+      return { hip, knee, boot };
+    }
+
+    const leftLegRig = createHumanLeg(-1);
+    const rightLegRig = createHumanLeg(1);
+    playerBodyPivot.add(leftLegRig.hip);
+    playerBodyPivot.add(rightLegRig.hip);
+
+    // Held Emerald Gem in Explorer's Right Hand
+    const heldGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.22, 0), matEmerald);
+    heldGem.position.set(0, -0.38, -0.14);
+    heldGem.visible = false;
+    rightArmRig.elbow.add(heldGem);
 
     // Shield Aura Sphere around player
     const shieldBubble = new THREE.Mesh(
@@ -769,20 +928,175 @@
         wireframe: true
       })
     );
-    shieldBubble.position.y = 1.3;
+    shieldBubble.position.y = 1.25;
     playerGroup.add(shieldBubble);
 
-    // Held Emerald Gem (in player's right hand once stolen)
-    const heldGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.24, 0), matEmerald);
-    heldGem.position.set(0, -0.72, -0.15);
-    heldGem.visible = false;
-    rightArm.add(heldGem);
+    // ------------------------------------------
+    // 5B. FEROCIOUS DEMON GORILLA-BEAST GUARDIAN
+    // ------------------------------------------
+    const beastGroup = new THREE.Group();
+    beastGroup.position.set(0, 0, 12.2);
+    scene.add(beastGroup);
 
-    // --- Ancient Cave & Altar Setpiece (at Z = 0..16) ---
+    const beastBodyPivot = new THREE.Group();
+    beastGroup.add(beastBodyPivot);
+
+    // Hunched Muscular Gorilla Torso
+    const beastChest = new THREE.Mesh(new THREE.SphereGeometry(1.55, 16, 16), matBeastFur);
+    beastChest.scale.set(1.28, 1.05, 1.05);
+    beastChest.position.set(0, 2.75, -0.25);
+    beastChest.rotation.x = 0.38;
+    beastChest.castShadow = true;
+    beastBodyPivot.add(beastChest);
+
+    const beastAbdomen = new THREE.Mesh(new THREE.CylinderGeometry(1.18, 0.98, 1.35, 14), matBeastMuscle);
+    beastAbdomen.position.set(0, 1.75, 0.25);
+    beastAbdomen.rotation.x = 0.22;
+    beastAbdomen.castShadow = true;
+    beastBodyPivot.add(beastAbdomen);
+
+    // Bone / Stone Spine Spikes along back
+    for (let i = 0; i < 4; i++) {
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.95 - i * 0.12, 7), matFang);
+      spike.position.set(0, 3.35 - i * 0.38, 0.85 + i * 0.22);
+      spike.rotation.x = 0.85;
+      spike.castShadow = true;
+      beastBodyPivot.add(spike);
+    }
+
+    // Beast Head with Hinged Snarling Jaw & Fangs (facing -Z toward runner)
+    const beastHead = new THREE.Group();
+    beastHead.position.set(0, 3.65, -1.25);
+    beastBodyPivot.add(beastHead);
+
+    const beastCranium = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.05, 1.35), matBeastFur);
+    beastCranium.position.set(0, 0.15, -0.15);
+    beastCranium.castShadow = true;
+    beastHead.add(beastCranium);
+
+    const browRidge = new THREE.Mesh(new THREE.BoxGeometry(1.38, 0.32, 0.55), matBeastMuscle);
+    browRidge.position.set(0, 0.42, -0.62);
+    beastHead.add(browRidge);
+
+    // Curved Demon Horns
+    [-0.68, 0.68].forEach((hx) => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.22, 1.25, 8), matFang);
+      horn.position.set(hx, 0.88, 0.05);
+      horn.rotation.z = hx < 0 ? 0.55 : -0.55;
+      horn.rotation.x = 0.25;
+      horn.castShadow = true;
+      beastHead.add(horn);
+    });
+
+    // Glowing Fiery Eyes
+    const eyeMatInstance = matBeastEye.clone();
+    eyeMatInstance.emissiveIntensity = 0.05;
+    [-0.36, 0.36].forEach((ex) => {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), eyeMatInstance);
+      eye.position.set(ex, 0.24, -0.78);
+      beastHead.add(eye);
+    });
+
+    // Dark Mouth Cavity & Upper Fangs
+    const mouthVoid = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.45, 0.7), matMouthInside);
+    mouthVoid.position.set(0, -0.25, -0.52);
+    beastHead.add(mouthVoid);
+
+    [-0.35, 0.35].forEach((fx) => {
+      const upperFang = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.42, 6), matFang);
+      upperFang.rotation.x = Math.PI;
+      upperFang.position.set(fx, -0.28, -0.82);
+      beastHead.add(upperFang);
+    });
+
+    // Hinged Lower Jaw
+    const beastJaw = new THREE.Group();
+    beastJaw.position.set(0, -0.35, -0.25);
+    const jawMesh = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.28, 0.85), matBeastMuscle);
+    jawMesh.position.set(0, -0.1, -0.32);
+    beastJaw.add(jawMesh);
+
+    [-0.28, 0.28].forEach((fx) => {
+      const lowerFang = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.32, 6), matFang);
+      lowerFang.position.set(fx, 0.08, -0.66);
+      beastJaw.add(lowerFang);
+    });
+    beastHead.add(beastJaw);
+
+    // Massive Articulated Gorilla Arms with Claws
+    function createBeastArm(side) {
+      const shoulder = new THREE.Group();
+      shoulder.position.set(side * 1.95, 3.15, -0.35);
+
+      const pauldron = new THREE.Mesh(new THREE.DodecahedronGeometry(0.72, 1), matBeastFur);
+      pauldron.castShadow = true;
+      shoulder.add(pauldron);
+
+      const upperArm = makeTaperedLimb(0.52, 0.44, 1.35, matBeastMuscle, -0.68);
+      shoulder.add(upperArm);
+
+      const elbow = new THREE.Group();
+      elbow.position.set(0, -1.35, 0);
+      shoulder.add(elbow);
+
+      const forearm = makeTaperedLimb(0.45, 0.38, 1.25, matBeastFur, -0.62);
+      elbow.add(forearm);
+
+      const fist = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.56, 0.72), matBeastMuscle);
+      fist.position.set(0, -1.35, -0.1);
+      fist.castShadow = true;
+      elbow.add(fist);
+
+      // Claws
+      for (let c = -1; c <= 1; c++) {
+        const claw = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.42, 5), matFang);
+        claw.rotation.x = -Math.PI / 2.4;
+        claw.position.set(c * 0.2, -1.52, -0.52);
+        elbow.add(claw);
+      }
+
+      return { shoulder, elbow };
+    }
+
+    const beastArmLRig = createBeastArm(-1);
+    const beastArmRRig = createBeastArm(1);
+    beastBodyPivot.add(beastArmLRig.shoulder);
+    beastBodyPivot.add(beastArmRRig.shoulder);
+
+    // Powerful Gorilla Legs
+    function createBeastLeg(side) {
+      const hip = new THREE.Group();
+      hip.position.set(side * 0.75, 1.25, 0.25);
+
+      const thigh = makeTaperedLimb(0.56, 0.44, 0.72, matBeastFur, -0.36);
+      hip.add(thigh);
+
+      const knee = new THREE.Group();
+      knee.position.set(0, -0.72, 0);
+      hip.add(knee);
+
+      const shin = makeTaperedLimb(0.42, 0.34, 0.62, matBeastMuscle, -0.31);
+      knee.add(shin);
+
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.26, 0.85), matBeastFur);
+      foot.position.set(0, -0.62, -0.18);
+      foot.castShadow = true;
+      knee.add(foot);
+
+      return { hip, knee };
+    }
+
+    const beastLegLRig = createBeastLeg(-1);
+    const beastLegRRig = createBeastLeg(1);
+    beastBodyPivot.add(beastLegLRig.hip);
+    beastBodyPivot.add(beastLegRRig.hip);
+
+    // ==========================================
+    // 5C. ANCIENT CAVE & ALTAR SETPIECE
+    // ==========================================
     const caveGroup = new THREE.Group();
     scene.add(caveGroup);
 
-    // Cave Tunnel Walls & Roof
     const caveArchGeo = new THREE.CylinderGeometry(7.2, 7.2, 18, 16, 1, true, 0, Math.PI);
     const caveMat = new THREE.MeshStandardMaterial({
       map: stoneTex,
@@ -796,24 +1110,20 @@
     caveTunnel.position.set(0, 1.2, 6);
     caveGroup.add(caveTunnel);
 
-    // Back wall of cave behind the beast
     const caveBackWall = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 2), caveMat);
     caveBackWall.position.set(0, 5, 15.5);
     caveGroup.add(caveBackWall);
 
-    // Stone Altar
     const altarBase = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.15, 1.3, 8), matStone);
     altarBase.position.set(0, 0.65, 8.2);
     altarBase.castShadow = true;
     altarBase.receiveShadow = true;
     caveGroup.add(altarBase);
 
-    // Altar Emerald Relic
     const altarGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.36, 0), matEmerald);
     altarGem.position.set(0, 1.75, 8.2);
     caveGroup.add(altarGem);
 
-    // Torch Braziers
     [-4.2, 4.2].forEach((xPos) => {
       const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), matStone);
       pillar.position.set(xPos, 1.8, 6);
@@ -826,68 +1136,6 @@
       flame.position.set(xPos, 4.0, 6);
       caveGroup.add(flame);
     });
-
-    // --- Giant Forest Stone Beast Guardian ---
-    const beastGroup = new THREE.Group();
-    beastGroup.position.set(0, 0, 12.2);
-    scene.add(beastGroup);
-
-    const beastTorso = new THREE.Mesh(new THREE.DodecahedronGeometry(2.1, 1), matBeastStone);
-    beastTorso.scale.set(1.25, 1.15, 0.95);
-    beastTorso.position.y = 2.4;
-    beastTorso.castShadow = true;
-    beastGroup.add(beastTorso);
-
-    // Moss shoulders
-    const shoulderL = new THREE.Mesh(new THREE.DodecahedronGeometry(1.05, 0), matBeastStone);
-    shoulderL.position.set(-2.3, 3.3, -0.2);
-    beastGroup.add(shoulderL);
-
-    const shoulderR = new THREE.Mesh(new THREE.DodecahedronGeometry(1.05, 0), matBeastStone);
-    shoulderR.position.set(2.3, 3.3, -0.2);
-    beastGroup.add(shoulderR);
-
-    // Beast Arms
-    const beastArmL = new THREE.Mesh(new THREE.BoxGeometry(0.95, 2.7, 0.95), matBeastStone);
-    beastArmL.position.set(-2.5, 1.7, -0.5);
-    beastArmL.rotation.x = -0.35;
-    beastGroup.add(beastArmL);
-
-    const beastArmR = new THREE.Mesh(new THREE.BoxGeometry(0.95, 2.7, 0.95), matBeastStone);
-    beastArmR.position.set(2.5, 1.7, -0.5);
-    beastArmR.rotation.x = -0.35;
-    beastGroup.add(beastArmR);
-
-    // Beast Head & Glowing Eyes
-    const beastHead = new THREE.Group();
-    beastHead.position.set(0, 4.1, -0.8);
-    const skull = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.4, 1.6), matBeastStone);
-    beastHead.add(skull);
-
-    // Horns
-    const hornGeo = new THREE.ConeGeometry(0.28, 1.4, 6);
-    const hornL = new THREE.Mesh(hornGeo, matStone);
-    hornL.position.set(-0.85, 0.8, 0.1);
-    hornL.rotation.z = 0.45;
-    beastHead.add(hornL);
-
-    const hornR = new THREE.Mesh(hornGeo, matStone);
-    hornR.position.set(0.85, 0.8, 0.1);
-    hornR.rotation.z = -0.45;
-    beastHead.add(hornR);
-
-    // Glowing Eyes (dim while sleeping, bright when awake)
-    const eyeMatInstance = matBeastEye.clone();
-    eyeMatInstance.emissiveIntensity = 0.05;
-    const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), eyeMatInstance);
-    eyeL.position.set(-0.42, 0.15, -0.82);
-    beastHead.add(eyeL);
-
-    const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), eyeMatInstance);
-    eyeR.position.set(0.42, 0.15, -0.82);
-    beastHead.add(eyeR);
-
-    beastGroup.add(beastHead);
 
     // ==========================================
     // 6. ENDLESS FOREST TRACK & OBSTACLE POOL
@@ -928,13 +1176,11 @@
       const seg = new THREE.Group();
       seg.position.z = zPos;
 
-      // Dirt path
       const path = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.6, SEGMENT_LENGTH), matPath);
       path.position.y = -0.3;
       path.receiveShadow = true;
       seg.add(path);
 
-      // Stone temple borders
       [-4.4, 4.4].forEach((x) => {
         const curb = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.85, SEGMENT_LENGTH), matCurb);
         curb.position.set(x, -0.15, 0);
@@ -943,7 +1189,6 @@
         seg.add(curb);
       });
 
-      // Forest ground flanking the path
       [-26, 26].forEach((x) => {
         const ground = new THREE.Mesh(new THREE.BoxGeometry(42, 0.5, SEGMENT_LENGTH), matForestFloor);
         ground.position.set(x, -0.35, 0);
@@ -951,7 +1196,6 @@
         seg.add(ground);
       });
 
-      // Trees & Ruins along sides
       for (let i = 0; i < 4; i++) {
         const zLocal = -SEGMENT_LENGTH / 2 + i * 5 + Math.random() * 2;
         const leftTree = createTree();
@@ -963,7 +1207,6 @@
         seg.add(rightTree);
       }
 
-      // Occasional Ancient Stone Pillar
       if (Math.random() > 0.45) {
         const side = Math.random() > 0.5 ? 1 : -1;
         const ruin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.2, 1.2), matStone);
@@ -978,12 +1221,11 @@
       return seg;
     }
 
-    // Initialize segments
     for (let i = 0; i < NUM_SEGMENTS; i++) {
       createSegment(10 - i * SEGMENT_LENGTH);
     }
 
-    // Fireflies / Forest Spores Particle System
+    // Fireflies Particle System
     const particleCount = 160;
     const particleGeo = new THREE.BufferGeometry();
     const particlePos = new Float32Array(particleCount * 3);
@@ -1040,14 +1282,9 @@
     }
 
     function spawnRow(zPos) {
-      // Types:
-      // 'LOG' -> Jump over (spans 1 or 2 lanes)
-      // 'ARCH' -> Slide under (spans 1 or 2 lanes)
-      // 'TOTEM' -> Dodge left/right (blocks 1 or 2 lanes)
       const pattern = Math.random();
 
       if (pattern < 0.34) {
-        // Fallen Mossy Log across all lanes (Jump!)
         const group = new THREE.Group();
         const log = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 8.2, 12), matTrunk);
         log.rotation.z = Math.PI / 2;
@@ -1056,7 +1293,6 @@
         log.receiveShadow = true;
         group.add(log);
 
-        // Moss patches on log
         const moss = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, 0.7), matFoliage);
         moss.position.set(-1.2, 1.05, 0);
         group.add(moss);
@@ -1072,7 +1308,6 @@
 
         spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.5, 4, true);
       } else if (pattern < 0.66) {
-        // Stone Temple Archway with Hanging Vines (Slide!)
         const group = new THREE.Group();
         [-4.1, 4.1].forEach((x) => {
           const col = new THREE.Mesh(new THREE.BoxGeometry(0.85, 3.8, 0.95), matStone);
@@ -1086,7 +1321,6 @@
         lintel.castShadow = true;
         group.add(lintel);
 
-        // Hanging Vines
         for (let vx = -3.2; vx <= 3.2; vx += 0.8) {
           const vine = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 0.14), matFoliageLight);
           vine.position.set(vx, 1.55, 0.45);
@@ -1104,11 +1338,9 @@
 
         spawnCoinLine(Math.floor(Math.random() * 3), zPos + 4, 4, false);
       } else {
-        // Ancient Totem Pillars blocking 1 or 2 lanes (Dodge!)
         const openLane = Math.floor(Math.random() * 3);
         const blockedLanes = [0, 1, 2].filter((l) => l !== openLane);
         if (Math.random() > 0.55) {
-          // Sometimes leave 2 lanes open
           blockedLanes.pop();
         }
 
@@ -1120,7 +1352,6 @@
           body.receiveShadow = true;
           totem.add(body);
 
-          // Glowing carved eyes on totem
           const carving = new THREE.Mesh(
             new THREE.BoxGeometry(1.1, 0.35, 0.1),
             new THREE.MeshBasicMaterial({ color: 0xff9900 })
@@ -1198,9 +1429,19 @@
       slideTimer = 0;
 
       playerGroup.position.set(0, 0, 6.2);
-      playerGroup.rotation.set(0, Math.PI, 0); // Facing the altar & beast (+Z)
+      playerGroup.rotation.set(0, Math.PI, 0);
+      playerBodyPivot.position.set(0, 0, 0);
       playerBodyPivot.rotation.set(0, 0, 0);
       playerBodyPivot.scale.set(1, 1, 1);
+
+      leftArmRig.shoulder.rotation.set(0, 0, 0);
+      leftArmRig.elbow.rotation.set(0, 0, 0);
+      rightArmRig.shoulder.rotation.set(0, 0, 0);
+      rightArmRig.elbow.rotation.set(0, 0, 0);
+      leftLegRig.hip.rotation.set(0, 0, 0);
+      leftLegRig.knee.rotation.set(0, 0, 0);
+      rightLegRig.hip.rotation.set(0, 0, 0);
+      rightLegRig.knee.rotation.set(0, 0, 0);
 
       altarGem.visible = true;
       heldGem.visible = false;
@@ -1208,9 +1449,10 @@
       caveGroup.position.z = 0;
       beastGroup.position.set(0, 0, 12.2);
       beastGroup.rotation.set(0, 0, 0);
+      beastHead.rotation.set(0, 0, 0);
+      beastJaw.rotation.x = 0.05;
       eyeMatInstance.emissiveIntensity = 0.05;
 
-      // Reset segments
       for (let i = 0; i < NUM_SEGMENTS; i++) {
         segments[i].position.z = 10 - i * SEGMENT_LENGTH;
       }
@@ -1240,7 +1482,6 @@
       hideBanner();
       hud.classList.add('visible');
 
-      // Spawn initial wave of forest obstacles ahead
       for (let z = -38; z >= -160; z -= 26) {
         spawnRow(z);
       }
@@ -1294,7 +1535,6 @@
     function slide() {
       if (gameState !== 'PLAYING') return;
       if (isJumping) {
-        // Fast drop into slide
         velocityY = -22;
       }
       if (!isSliding) {
@@ -1317,7 +1557,6 @@
       }
     });
 
-    // Swipe Controls
     let touchStartX = 0;
     let touchStartY = 0;
     window.addEventListener('pointerdown', (e) => {
@@ -1358,22 +1597,61 @@
     resetPositionsForMenu();
     const clock = new THREE.Clock();
 
+    function animateHumanRun(cycle) {
+      const s = Math.sin(cycle);
+      const c = Math.cos(cycle);
+
+      leftLegRig.hip.rotation.x = s * 0.85;
+      leftLegRig.knee.rotation.x = Math.max(0, -c * 1.15);
+
+      rightLegRig.hip.rotation.x = -s * 0.85;
+      rightLegRig.knee.rotation.x = Math.max(0, c * 1.15);
+
+      leftArmRig.shoulder.rotation.x = -s * 0.75;
+      leftArmRig.elbow.rotation.x = -0.65 - Math.max(0, c * 0.45);
+
+      rightArmRig.shoulder.rotation.x = s * 0.75;
+      rightArmRig.elbow.rotation.x = -0.65 - Math.max(0, -c * 0.45);
+
+      playerBodyPivot.position.y = Math.abs(c) * 0.13;
+      scarfTail.rotation.x = 0.35 + Math.sin(cycle * 1.8) * 0.25;
+    }
+
+    function animateBeastGallop(cycle) {
+      const g = Math.sin(cycle);
+      const gc = Math.cos(cycle);
+
+      beastGroup.position.y = Math.abs(g) * 0.38;
+      beastBodyPivot.rotation.x = 0.14 + gc * 0.08;
+
+      beastArmLRig.shoulder.rotation.x = -0.85 + g * 0.65;
+      beastArmLRig.elbow.rotation.x = -0.35 + Math.max(0, -gc * 0.4);
+
+      beastArmRRig.shoulder.rotation.x = -0.85 - g * 0.65;
+      beastArmRRig.elbow.rotation.x = -0.35 + Math.max(0, gc * 0.4);
+
+      beastLegLRig.hip.rotation.x = -g * 0.65;
+      beastLegLRig.knee.rotation.x = Math.max(0, gc * 0.75);
+
+      beastLegRRig.hip.rotation.x = g * 0.65;
+      beastLegRRig.knee.rotation.x = Math.max(0, -gc * 0.75);
+
+      beastJaw.rotation.x = 0.32 + Math.abs(Math.sin(cycle * 0.5)) * 0.24;
+    }
+
     function animate() {
       requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
 
-      // Rotate altar gem & fireflies
       if (altarGem.visible) {
         altarGem.rotation.y += dt * 2.2;
         altarGem.position.y = 1.75 + Math.sin(elapsed * 3) * 0.1;
       }
 
-      // Torch flicker
-      caveTorchLeft.intensity = 2.6 + Math.sin(elapsed * 18) * 0.4;
-      caveTorchRight.intensity = 2.6 + Math.cos(elapsed * 16) * 0.4;
+      caveTorchLeft.intensity = 2.7 + Math.sin(elapsed * 18) * 0.4;
+      caveTorchRight.intensity = 2.7 + Math.cos(elapsed * 16) * 0.4;
 
-      // Update Fireflies
       const posAttr = fireflies.geometry.attributes.position;
       for (let i = 0; i < particleCount; i++) {
         posAttr.array[i * 3 + 1] += Math.sin(elapsed * 2 + i) * 0.005;
@@ -1386,24 +1664,21 @@
       }
       posAttr.needsUpdate = true;
 
-      // ------------------------------------------
-      // STATE: MENU (Atmospheric Cave Preview)
-      // ------------------------------------------
       if (gameState === 'MENU') {
-        const camX = Math.sin(elapsed * 0.5) * 1.4;
-        camera.position.set(camX, 3.1, 2.2);
-        camera.lookAt(0, 2.0, 9.5);
-      }
-
-      // ------------------------------------------
-      // STATE: CINEMATIC INTRO (Steal -> Wake -> Turn)
-      // ------------------------------------------
-      else if (gameState === 'INTRO_STEAL') {
+        const camX = Math.sin(elapsed * 0.5) * 1.3;
+        camera.position.set(camX, 2.8, 2.4);
+        camera.lookAt(0, 2.0, 9.2);
+        // Subtle breathing idle
+        playerBodyPivot.position.y = Math.sin(elapsed * 2.4) * 0.03;
+        beastJaw.rotation.x = 0.08 + Math.sin(elapsed * 1.8) * 0.04;
+      } else if (gameState === 'INTRO_STEAL') {
         introTimer += dt;
-        // Player reaches out hand toward altar
-        rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -1.35, dt * 6);
-        camera.position.lerp(new THREE.Vector3(2.1, 2.5, 4.4), dt * 4);
-        camera.lookAt(0, 1.8, 8.6);
+        rightArmRig.shoulder.rotation.x = THREE.MathUtils.lerp(rightArmRig.shoulder.rotation.x, -1.35, dt * 6);
+        rightArmRig.elbow.rotation.x = THREE.MathUtils.lerp(rightArmRig.elbow.rotation.x, -0.25, dt * 6);
+        headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, -0.2, dt * 6);
+
+        camera.position.lerp(new THREE.Vector3(2.0, 2.35, 4.3), dt * 4);
+        camera.lookAt(0, 1.75, 8.5);
 
         if (introTimer >= 0.85 && altarGem.visible) {
           altarGem.visible = false;
@@ -1417,20 +1692,19 @@
           introTimer = 0;
           sound.playBeastRoar();
           screenShake = 0.85;
-          showBanner('THE STONE GUARDIAN AWAKENS!');
+          showBanner('THE DEMON GUARDIAN AWAKENS!');
         }
       } else if (gameState === 'INTRO_WAKE') {
         introTimer += dt;
-        // Beast eyes ignite & beast rises up roaring
-        eyeMatInstance.emissiveIntensity = THREE.MathUtils.lerp(eyeMatInstance.emissiveIntensity, 3.5, dt * 5);
+        eyeMatInstance.emissiveIntensity = THREE.MathUtils.lerp(eyeMatInstance.emissiveIntensity, 3.8, dt * 5);
         beastGroup.position.y = Math.sin(Math.min(introTimer / 1.4, 1) * Math.PI) * 0.65;
-        beastHead.rotation.x = -0.25 + Math.sin(introTimer * 28) * 0.08;
-        beastArmL.rotation.x = -1.1;
-        beastArmR.rotation.x = -1.1;
+        beastHead.rotation.x = -0.22 + Math.sin(introTimer * 26) * 0.08;
+        beastJaw.rotation.x = 0.48 + Math.sin(introTimer * 22) * 0.14;
+        beastArmLRig.shoulder.rotation.x = -1.25;
+        beastArmRRig.shoulder.rotation.x = -1.25;
 
-        // Camera pulls back dramatically showing the giant beast towering over player
-        camera.position.lerp(new THREE.Vector3(-2.4, 3.3, 3.0), dt * 4.5);
-        camera.lookAt(0, 2.8, 11.5);
+        camera.position.lerp(new THREE.Vector3(-2.3, 3.2, 3.1), dt * 4.5);
+        camera.lookAt(0, 2.7, 11.2);
 
         if (introTimer >= 1.55) {
           gameState = 'INTRO_TURN';
@@ -1440,20 +1714,16 @@
       } else if (gameState === 'INTRO_TURN') {
         introTimer += dt;
         const t = Math.min(introTimer / 0.75, 1);
-        // Player spins 180 degrees to face -Z (forest exit) and starts sprinting
         playerGroup.rotation.y = Math.PI * (1 - t);
-        rightArm.rotation.x = 0;
+        headGroup.rotation.x = 0;
         playerGroup.position.z -= 14 * dt;
         beastGroup.position.z -= 12.5 * dt;
 
-        // Animate running limbs
         stepCycle += dt * 16;
-        leftLeg.rotation.x = Math.sin(stepCycle) * 0.85;
-        rightLeg.rotation.x = -Math.sin(stepCycle) * 0.85;
-        leftArm.rotation.x = -Math.sin(stepCycle) * 0.7;
-        rightArm.rotation.x = Math.sin(stepCycle) * 0.7;
+        animateHumanRun(stepCycle);
+        animateBeastGallop(stepCycle * 0.75);
 
-        camera.position.lerp(new THREE.Vector3(0, 4.4, playerGroup.position.z + 6.5), dt * 6);
+        camera.position.lerp(new THREE.Vector3(0, 4.3, playerGroup.position.z + 6.5), dt * 6);
         camera.lookAt(0, 1.8, playerGroup.position.z - 8);
 
         if (t >= 1) {
@@ -1461,23 +1731,15 @@
           playerGroup.position.z = 0;
           beginActiveRun();
         }
-      }
-
-      // ------------------------------------------
-      // STATE: PLAYING (Endless Forest Run)
-      // ------------------------------------------
-      else if (gameState === 'PLAYING') {
-        // Gradually increase speed
+      } else if (gameState === 'PLAYING') {
         runSpeed = Math.min(42, runSpeed + dt * 0.38);
         const moveDelta = runSpeed * dt;
         distance += moveDelta * 0.45;
 
-        // Move Cave backward out of sight
         if (caveGroup.position.z < 45) {
           caveGroup.position.z += moveDelta;
         }
 
-        // Scroll Forest Track Segments
         for (let i = 0; i < segments.length; i++) {
           segments[i].position.z += moveDelta;
           if (segments[i].position.z > SEGMENT_LENGTH * 1.5) {
@@ -1485,15 +1747,11 @@
           }
         }
 
-        // Lane Horizontal Smooth Movement
         const targetX = LANES[currentLane];
         playerX = THREE.MathUtils.lerp(playerX, targetX, dt * 14);
         playerGroup.position.x = playerX;
-
-        // Subtle banking tilt when switching lanes
         playerBodyPivot.rotation.z = (playerX - targetX) * 0.14;
 
-        // Jump Physics
         if (isJumping) {
           playerY += velocityY * dt;
           velocityY -= 38 * dt;
@@ -1506,11 +1764,14 @@
         }
         playerGroup.position.y = playerY;
 
-        // Slide Physics
         if (isSliding) {
           slideTimer -= dt;
-          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 0.48, dt * 18);
-          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, -0.55, dt * 15);
+          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 0.5, dt * 18);
+          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, -0.6, dt * 15);
+          leftLegRig.hip.rotation.x = -1.25;
+          leftLegRig.knee.rotation.x = 0.25;
+          rightLegRig.hip.rotation.x = -0.35;
+          rightLegRig.knee.rotation.x = 1.15;
           if (slideTimer <= 0) {
             isSliding = false;
           }
@@ -1519,36 +1780,31 @@
           playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, 0.08, dt * 15);
         }
 
-        // Running Limb Animation & Footstep Audio
         if (!isJumping && !isSliding) {
           stepCycle += dt * (runSpeed * 0.72);
           const s = Math.sin(stepCycle);
-          leftLeg.rotation.x = s * 0.9;
-          rightLeg.rotation.x = -s * 0.9;
-          leftArm.rotation.x = -s * 0.75;
-          rightArm.rotation.x = s * 0.75;
-          playerBodyPivot.position.y = Math.abs(Math.cos(stepCycle)) * 0.14;
+          animateHumanRun(stepCycle);
 
           if (Math.sign(s) !== lastStepSign) {
             lastStepSign = Math.sign(s);
             sound.playFootstep();
           }
-        } else if (isJumping) {
-          leftLeg.rotation.x = 0.5;
-          rightLeg.rotation.x = -0.4;
-          leftArm.rotation.x = -0.8;
-          rightArm.rotation.x = -0.8;
+        } else if (isJumping && !isSliding) {
+          leftLegRig.hip.rotation.x = 0.65;
+          leftLegRig.knee.rotation.x = 0.85;
+          rightLegRig.hip.rotation.x = -0.45;
+          rightLegRig.knee.rotation.x = 0.5;
+          leftArmRig.shoulder.rotation.x = -1.1;
+          leftArmRig.elbow.rotation.x = -0.4;
+          rightArmRig.shoulder.rotation.x = -1.1;
+          rightArmRig.elbow.rotation.x = -0.4;
         }
 
-        // Chasing Beast Animation behind player
-        const beastTargetZ = shieldCharge >= 100 ? 6.8 : 4.3 + Math.sin(elapsed * 3) * 0.35;
+        const beastTargetZ = shieldCharge >= 100 ? 7.2 : 4.7 + Math.sin(elapsed * 3) * 0.35;
         beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, beastTargetZ, dt * 3);
         beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX * 0.75, dt * 5);
-        beastGroup.position.y = Math.abs(Math.sin(stepCycle * 0.7)) * 0.35;
-        beastArmL.rotation.x = -0.7 + Math.sin(stepCycle * 0.7) * 0.5;
-        beastArmR.rotation.x = -0.7 - Math.sin(stepCycle * 0.7) * 0.5;
+        animateBeastGallop(stepCycle * 0.72);
 
-        // Move & Check Collectibles
         for (let i = collectibles.length - 1; i >= 0; i--) {
           const c = collectibles[i];
           c.mesh.position.z += moveDelta;
@@ -1581,7 +1837,6 @@
           }
         }
 
-        // Move & Check Obstacles
         let furthestZ = -40;
         for (let i = obstacles.length - 1; i >= 0; i--) {
           const obs = obstacles[i];
@@ -1590,7 +1845,6 @@
             furthestZ = obs.mesh.position.z;
           }
 
-          // Collision Detection near Z = 0
           if (!obs.hit && Math.abs(obs.mesh.position.z) < obs.zDepth) {
             const inBlockedLane = obs.lanes.includes(currentLane);
             if (inBlockedLane) {
@@ -1602,7 +1856,6 @@
               if (collided) {
                 obs.hit = true;
                 if (shieldCharge >= 100) {
-                  // Relic Shield absorbs the hit!
                   shieldCharge = 0;
                   sound.playShieldBreak();
                   screenShake = 0.5;
@@ -1621,26 +1874,22 @@
           }
         }
 
-        // Continuously Spawn New Rows Ahead
         if (furthestZ > -145) {
           const gap = Math.max(21, 28 - runSpeed * 0.15);
           spawnRow(furthestZ - gap);
         }
 
-        // Smooth Follow Camera
         camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerX * 0.55, dt * 8);
         camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + playerY * 0.45, dt * 8);
         camera.position.z = 6.6;
         camera.lookAt(playerX * 0.4, 1.7 + playerY * 0.3, -10);
 
-        // Update Sunlight shadow box to follow player
         sunLight.position.set(playerX + 18, 36, -25);
         sunLight.target.position.set(playerX, 0, -15);
 
         updateHUD();
       }
 
-      // Apply Camera Shake
       if (screenShake > 0) {
         camera.position.x += (Math.random() - 0.5) * screenShake;
         camera.position.y += (Math.random() - 0.5) * screenShake;
