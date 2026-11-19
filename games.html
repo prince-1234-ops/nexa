@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Temple Dash 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Temple Escape 3D — Ancient Forest Runner</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,19 +12,30 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    body {
+
+    body, html {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background: #0d1a14;
+      background-color: #0b130e;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #f4e8c1;
     }
-    #game-canvas {
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
       display: block;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
     }
+
+    /* HUD Overlay */
     #hud {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -34,696 +45,1268 @@
       align-items: flex-start;
       pointer-events: none;
       z-index: 10;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
-    .stat-box {
-      background: rgba(18, 28, 22, 0.72);
-      border: 2px solid #c99a45;
+
+    #hud.visible {
+      opacity: 1;
+    }
+
+    .hud-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hud-pill {
+      background: rgba(14, 24, 18, 0.72);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 215, 110, 0.28);
       border-radius: 12px;
       padding: 10px 18px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
+      color: #f4f1ea;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
-    .stat-label {
+
+    .hud-label {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: #d4b475;
+      color: #a8b8aa;
     }
-    .stat-value {
-      font-size: 26px;
+
+    .hud-value {
+      font-size: 22px;
       font-weight: 800;
-      color: #fff6d6;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+      letter-spacing: 0.5px;
+      color: #ffdf73;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     }
-    .hud-right {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+
+    #shield-bar-container {
+      width: 140px;
+      height: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(64, 255, 175, 0.35);
     }
-    #mute-btn {
+
+    #shield-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399, #a7f3d0);
+      box-shadow: 0 0 10px #10b981;
+      transition: width 0.2s ease;
+    }
+
+    #shield-status {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6ee7b7;
+    }
+
+    #audio-btn {
       pointer-events: auto;
-      background: rgba(18, 28, 22, 0.8);
-      border: 2px solid #c99a45;
-      color: #f4e8c1;
-      border-radius: 12px;
-      padding: 12px 14px;
+      background: rgba(14, 24, 18, 0.78);
+      border: 1px solid rgba(255, 215, 110, 0.35);
+      color: #ffdf73;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
       font-size: 18px;
       cursor: pointer;
-      transition: transform 0.15s, background 0.15s;
-    }
-    #mute-btn:hover {
-      background: rgba(45, 65, 52, 0.9);
-      transform: scale(1.05);
-    }
-    #powerup-bar {
-      position: fixed;
-      top: 95px;
-      left: 28px;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .powerup-badge {
-      background: rgba(15, 25, 20, 0.82);
-      border-left: 4px solid #38bdf8;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      display: none;
-    }
-    .powerup-badge.magnet {
-      border-left-color: #f43f5e;
-    }
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at center, rgba(16, 30, 22, 0.78), rgba(7, 14, 10, 0.93));
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    #audio-btn:hover {
+      transform: scale(1.08);
+      background: rgba(30, 50, 38, 0.9);
+    }
+
+    /* Cinematic Banner */
+    #cinematic-banner {
+      position: absolute;
+      bottom: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, transparent, rgba(10, 18, 12, 0.85), transparent);
+      padding: 14px 48px;
+      color: #ffdf73;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 15;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    #cinematic-banner.visible {
+      opacity: 1;
+    }
+
+    /* Start & Game Over Screens */
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(12, 22, 16, 0.55) 0%, rgba(5, 10, 7, 0.88) 100%);
+      z-index: 20;
       text-align: center;
       padding: 24px;
-      z-index: 20;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.45s ease;
     }
-    .overlay.hidden {
+
+    .overlay-screen.hidden {
       opacity: 0;
       pointer-events: none;
     }
-    h1 {
-      font-size: clamp(2.4rem, 6vw, 4.4rem);
-      font-weight: 900;
-      letter-spacing: 3px;
+
+    .title-badge {
+      font-size: 13px;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      background: linear-gradient(180deg, #ffe58f 0%, #d4882a 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.8));
+      color: #34d399;
       margin-bottom: 10px;
-    }
-    .subtitle {
-      font-size: 1.05rem;
-      color: #c8d6cc;
-      max-width: 460px;
-      line-height: 1.5;
-      margin-bottom: 28px;
-    }
-    .controls-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px 22px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(201, 154, 69, 0.35);
-      border-radius: 12px;
-      padding: 16px 24px;
-      margin-bottom: 30px;
-      font-size: 0.92rem;
-    }
-    .controls-grid span {
-      color: #ffd666;
       font-weight: 700;
     }
-    .btn-primary {
-      background: linear-gradient(180deg, #eab308 0%, #b45309 100%);
-      color: #1a1105;
-      border: 2px solid #fde047;
-      border-radius: 14px;
-      padding: 16px 44px;
-      font-size: 1.25rem;
+
+    h1 {
+      font-size: clamp(36px, 6vw, 68px);
       font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(180deg, #fff3b0 0%, #f59e0b 65%, #b45309 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.75));
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      max-width: 520px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #d1dbd3;
+      margin-bottom: 30px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      border: 2px solid #6ee7b7;
+      padding: 16px 42px;
+      font-size: 18px;
+      font-weight: 800;
       letter-spacing: 1.5px;
       text-transform: uppercase;
+      border-radius: 50px;
       cursor: pointer;
-      box-shadow: 0 8px 25px rgba(234, 179, 8, 0.4);
-      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.45);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
     }
-    .btn-primary:hover {
+
+    .primary-btn:hover {
       transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 12px 30px rgba(234, 179, 8, 0.6);
+      box-shadow: 0 14px 36px rgba(16, 185, 129, 0.65);
+      filter: brightness(1.08);
     }
-    .btn-primary:active {
-      transform: translateY(1px) scale(0.98);
+
+    .primary-btn:active {
+      transform: translateY(1px) scale(0.99);
     }
-    .final-stats {
+
+    .controls-grid {
+      display: flex;
+      gap: 18px;
+      margin-top: 34px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .control-chip {
+      background: rgba(20, 34, 26, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    .control-chip strong {
+      color: #ffdf73;
+    }
+
+    .stats-box {
       display: flex;
       gap: 24px;
       margin-bottom: 28px;
+      background: rgba(15, 26, 19, 0.85);
+      border: 1px solid rgba(255, 215, 110, 0.3);
+      padding: 18px 32px;
+      border-radius: 16px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-item span:first-child {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+
+    .stat-item span:last-child {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffdf73;
+      margin-top: 4px;
+    }
+
+    /* Damage / Shield Flash */
+    #screen-flash {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 12;
+      transition: opacity 0.25s ease;
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+  <div id="game-container">
+    <div id="screen-flash"></div>
 
-  <div id="hud">
-    <div style="display:flex; gap:14px;">
-      <div class="stat-box">
-        <div class="stat-label">Distance</div>
-        <div class="stat-value" id="score-val">0m</div>
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-group">
+        <div class="hud-pill">
+          <div>
+            <div class="hud-label">Distance</div>
+            <div class="hud-value" id="score-val">0m</div>
+          </div>
+          <div style="width:1px;height:30px;background:rgba(255,255,255,0.15);"></div>
+          <div>
+            <div class="hud-label">Coins</div>
+            <div class="hud-value" id="coins-val">0</div>
+          </div>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label">Relic Coins</div>
-        <div class="stat-value" id="coins-val">0</div>
+
+      <div class="hud-group" style="align-items: flex-end;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="hud-pill">
+            <div>
+              <div class="hud-label" style="display:flex;justify-content:space-between;gap:12px;">
+                <span>Relic Shield</span>
+                <span id="shield-status">0%</span>
+              </div>
+              <div id="shield-bar-container" style="margin-top:6px;">
+                <div id="shield-bar"></div>
+              </div>
+            </div>
+          </div>
+          <button id="audio-btn" title="Toggle Sound">🔊</button>
+        </div>
       </div>
     </div>
-    <div class="hud-right">
-      <div class="stat-box">
-        <div class="stat-label">Best</div>
-        <div class="stat-value" id="best-val">0m</div>
+
+    <!-- Cinematic Subtitle -->
+    <div id="cinematic-banner"></div>
+
+    <!-- Start Overlay -->
+    <div id="start-screen" class="overlay-screen">
+      <div class="title-badge">Ancient Forest Expedition</div>
+      <h1>TEMPLE ESCAPE 3D</h1>
+      <p class="subtitle">
+        Deep inside the forbidden cavern rests the Emerald Heart. Snatch the relic from its altar—but beware the Stone Guardian slumbering in the shadows.
+      </p>
+      <button id="start-btn" class="primary-btn">Steal Gem &amp; Run</button>
+      <div class="controls-grid">
+        <div class="control-chip"><strong>← / → or A / D</strong> Switch Lanes</div>
+        <div class="control-chip"><strong>↑ / W / Space</strong> Jump</div>
+        <div class="control-chip"><strong>↓ / S</strong> Slide</div>
+        <div class="control-chip"><strong>Touch / Mouse</strong> Swipe</div>
       </div>
-      <button id="mute-btn" title="Toggle Sound">🔊</button>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameover-screen" class="overlay-screen hidden">
+      <div class="title-badge" style="color:#f87171;">Caught by the Guardian</div>
+      <h1>RUN ENDED</h1>
+      <div class="stats-box">
+        <div class="stat-item">
+          <span>Distance</span>
+          <span id="final-score">0m</span>
+        </div>
+        <div class="stat-item">
+          <span>Best</span>
+          <span id="best-score">0m</span>
+        </div>
+        <div class="stat-item">
+          <span>Coins</span>
+          <span id="final-coins">0</span>
+        </div>
+      </div>
+      <button id="restart-btn" class="primary-btn">Run Again</button>
     </div>
   </div>
 
-  <div id="powerup-bar">
-    <div id="shield-badge" class="powerup-badge">🛡️ AEGIS SHIELD ACTIVE</div>
-    <div id="magnet-badge" class="powerup-badge magnet">🧲 IDOL MAGNET: <span id="magnet-timer">0s</span></div>
-  </div>
-
-  <!-- Start Screen -->
-  <div id="start-screen" class="overlay">
-    <h1>Temple Dash 3D</h1>
-    <p class="subtitle">Escape the cursed jungle viaduct! Dodge ancient monoliths, leap over fallen timber, and slide beneath crumbling stone arches.</p>
-    <div class="controls-grid">
-      <div><span>← / →</span> or <span>A / D</span> : Switch Lane</div>
-      <div><span>↑ / W / Space</span> : Jump</div>
-      <div><span>↓ / S</span> : Slide</div>
-      <div><span>Touch / Mouse</span> : Swipe</div>
-    </div>
-    <button id="start-btn" class="btn-primary">Start Run</button>
-  </div>
-
-  <!-- Game Over Screen -->
-  <div id="gameover-screen" class="overlay hidden">
-    <h1>Temple Claimed You</h1>
-    <p class="subtitle" id="death-reason">You crashed into an ancient obstacle.</p>
-    <div class="final-stats">
-      <div class="stat-box">
-        <div class="stat-label">Final Distance</div>
-        <div class="stat-value" id="final-score">0m</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Coins Collected</div>
-        <div class="stat-value" id="final-coins">0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Best Run</div>
-        <div class="stat-value" id="final-best">0m</div>
-      </div>
-    </div>
-    <button id="restart-btn" class="btn-primary">Run Again</button>
-  </div>
-
-  <canvas id="game-canvas"></canvas>
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script>
     // ==========================================
     // 1. PROCEDURAL WEB AUDIO ENGINE
     // ==========================================
-    class SoundFX {
+    class SoundEngine {
       constructor() {
         this.ctx = null;
         this.muted = false;
       }
+
       init() {
         if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioCtx();
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
         }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
       }
-      playTone(freq, endFreq, duration, type = 'sine', vol = 0.15) {
+
+      toggleMute() {
+        this.muted = !this.muted;
+        return this.muted;
+      }
+
+      playGemChime() {
         if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const freqs = [587.33, 880, 1174.66, 1760];
+        freqs.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.06);
+          gain.gain.setValueAtTime(0.001, now + i * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.06 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.06 + 0.9);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.06);
+          osc.stop(now + i * 0.06 + 0.95);
+        });
+      }
+
+      playBeastRoar() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        // Low growl oscillator
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        osc1.type = 'sawtooth';
+        osc2.type = 'triangle';
+        osc1.frequency.setValueAtTime(95, now);
+        osc1.frequency.exponentialRampToValueAtTime(38, now + 1.6);
+        osc2.frequency.setValueAtTime(62, now);
+        osc2.frequency.exponentialRampToValueAtTime(28, now + 1.6);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(420, now);
+        filter.frequency.linearRampToValueAtTime(140, now + 1.6);
+
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.45, now + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.7);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 1.75);
+        osc2.stop(now + 1.75);
+      }
+
+      playCoin() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        if (endFreq) {
-          osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
-        }
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1046.5, now);
+        osc.frequency.setValueAtTime(1318.5, now + 0.055);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
+        osc.start(now);
+        osc.stop(now + 0.26);
       }
-      playNoise(duration, vol = 0.12) {
+
+      playJump() {
         if (this.muted || !this.ctx) return;
-        const bufferSize = this.ctx.sampleRate * duration;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(460, now + 0.18);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      }
+
+      playSlide() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.28;
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
         const noise = this.ctx.createBufferSource();
         noise.buffer = buffer;
+
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.value = 900;
+        filter.frequency.setValueAtTime(900, now);
+        filter.frequency.exponentialRampToValueAtTime(300, now + 0.28);
+
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
         noise.connect(filter);
         filter.connect(gain);
         gain.connect(this.ctx.destination);
-        noise.start();
+        noise.start(now);
       }
-      step() { this.playTone(95, 55, 0.06, 'triangle', 0.06); }
-      lane() { this.playTone(240, 380, 0.09, 'sine', 0.08); }
-      jump() { this.playTone(190, 520, 0.22, 'sine', 0.14); }
-      slide() { this.playNoise(0.28, 0.14); }
-      coin() {
-        this.playTone(880, 1320, 0.12, 'sine', 0.12);
-        setTimeout(() => this.playTone(1320, 1760, 0.14, 'sine', 0.1), 50);
+
+      playFootstep() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, now);
+        osc.frequency.exponentialRampToValueAtTime(42, now + 0.07);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
       }
-      powerup() {
-        this.playTone(440, 880, 0.25, 'triangle', 0.16);
-        setTimeout(() => this.playTone(660, 1320, 0.3, 'sine', 0.14), 100);
+
+      playCrash() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.45);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
       }
-      shieldBreak() {
-        this.playTone(320, 90, 0.35, 'sawtooth', 0.18);
-        this.playNoise(0.3, 0.2);
-      }
-      crash() {
-        this.playTone(140, 35, 0.45, 'sawtooth', 0.25);
-        this.playNoise(0.45, 0.28);
+
+      playShieldBreak() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        [720, 540, 360].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.32);
+        });
       }
     }
-    const sfx = new SoundFX();
+
+    const sound = new SoundEngine();
 
     // ==========================================
-    // 2. THREE.JS SCENE & LIGHTING SETUP
+    // 2. PROCEDURAL TEXTURES
     // ==========================================
-    const canvas = document.getElementById('game-canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    function createNoiseTexture(baseHex, accentHex, scale = 4) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = baseHex;
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 2200; i++) {
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        const r = Math.random() * scale + 1;
+        ctx.fillStyle = accentHex;
+        ctx.globalAlpha = Math.random() * 0.25;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    const stoneTex = createNoiseTexture('#4b524d', '#232825', 5);
+    const dirtTex = createNoiseTexture('#4e3b2c', '#2d2117', 6);
+    const mossTex = createNoiseTexture('#2f4f32', '#1a2e1c', 5);
+    const barkTex = createNoiseTexture('#3b281c', '#1e130c', 4);
+
+    // ==========================================
+    // 3. SCENE, RENDERER & LIGHTING
+    // ==========================================
+    const container = document.getElementById('game-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0c1610);
+    scene.fog = new THREE.FogExp2(0x16281c, 0.016);
+
+    const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 220);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    const scene = new THREE.Scene();
-    const FOG_COLOR = 0x162b22;
-    scene.background = new THREE.Color(FOG_COLOR);
-    scene.fog = new THREE.FogExp2(FOG_COLOR, 0.015);
-
-    const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 160);
-    camera.position.set(0, 5.2, 8.8);
-    camera.lookAt(0, 1.8, -8);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    container.appendChild(renderer.domElement);
 
     // Lights
-    const hemiLight = new THREE.HemisphereLight(0x9be3b9, 0x1d261f, 0.85);
+    const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.75);
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffe4a3, 1.35);
-    dirLight.position.set(14, 28, 16);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    dirLight.shadow.camera.near = 2;
-    dirLight.shadow.camera.far = 85;
-    const d = 22;
-    dirLight.shadow.camera.left = -d;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = -d;
-    scene.add(dirLight);
+    const sunLight = new THREE.DirectionalLight(0xfff1d0, 1.55);
+    sunLight.position.set(18, 36, -25);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 1;
+    sunLight.shadow.camera.far = 110;
+    const d = 26;
+    sunLight.shadow.camera.left = -d;
+    sunLight.shadow.camera.right = d;
+    sunLight.shadow.camera.top = d;
+    sunLight.shadow.camera.bottom = -d;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+    scene.add(sunLight.target);
+
+    // Cave Torch Lights
+    const caveTorchLeft = new THREE.PointLight(0xff7b29, 2.8, 22);
+    caveTorchLeft.position.set(-4.5, 4.2, 6);
+    scene.add(caveTorchLeft);
+
+    const caveTorchRight = new THREE.PointLight(0xff7b29, 2.8, 22);
+    caveTorchRight.position.set(4.5, 4.2, 6);
+    scene.add(caveTorchRight);
+
+    const gemLight = new THREE.PointLight(0x10b981, 3.2, 14);
+    gemLight.position.set(0, 2.2, 8.2);
+    scene.add(gemLight);
 
     // ==========================================
-    // 3. SHARED MATERIALS & GEOMETRIES
+    // 4. GAME CONSTANTS & STATE
     // ==========================================
-    const LANE_WIDTH = 2.6;
-    const LANES = [-LANE_WIDTH, 0, LANE_WIDTH];
-    const SEGMENT_LENGTH = 12;
-    const NUM_SEGMENTS = 14;
+    const LANES = [-2.6, 0, 2.6];
+    const SEGMENT_LENGTH = 20;
+    const NUM_SEGMENTS = 10;
 
-    const matStone = new THREE.MeshStandardMaterial({ color: 0x5c635a, roughness: 0.88, metalness: 0.05 });
-    const matStoneDark = new THREE.MeshStandardMaterial({ color: 0x3b423b, roughness: 0.92 });
-    const matMoss = new THREE.MeshStandardMaterial({ color: 0x366334, roughness: 0.9 });
-    const matGold = new THREE.MeshStandardMaterial({ color: 0xffcf40, emissive: 0x593a00, roughness: 0.25, metalness: 0.85 });
-    const matWood = new THREE.MeshStandardMaterial({ color: 0x59371c, roughness: 0.9 });
-    const matFire = new THREE.MeshBasicMaterial({ color: 0xff7b1c });
-    const matShield = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, roughness: 0.2, metalness: 0.5 });
-    const matMagnet = new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xbe123c, roughness: 0.2, metalness: 0.5 });
+    let gameState = 'MENU'; // MENU, INTRO_STEAL, INTRO_WAKE, INTRO_TURN, PLAYING, GAMEOVER
+    let introTimer = 0;
+
+    let currentLane = 1;
+    let playerX = 0;
+    let playerY = 0;
+    let velocityY = 0;
+    let isJumping = false;
+    let isSliding = false;
+    let slideTimer = 0;
+
+    let runSpeed = 22;
+    let distance = 0;
+    let coins = 0;
+    let bestScore = parseInt(localStorage.getItem('temple_escape_best') || '0', 10);
+    let shieldCharge = 0; // 0 to 100
+    let screenShake = 0;
+    let stepCycle = 0;
+    let lastStepSign = 1;
 
     // ==========================================
-    // 4. BUILD ANIMATED 3D EXPLORER CHARACTER
+    // 5. BUILD 3D CHARACTERS & CAVE SETPIECE
     // ==========================================
+    // Materials
+    const matSkin = new THREE.MeshStandardMaterial({ color: 0xd99b72, roughness: 0.6 });
+    const matShirt = new THREE.MeshStandardMaterial({ color: 0x3b6e52, roughness: 0.8 });
+    const matPants = new THREE.MeshStandardMaterial({ color: 0x3d2e22, roughness: 0.85 });
+    const matHat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.75 });
+    const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.2 });
+    const matEmerald = new THREE.MeshStandardMaterial({
+      color: 0x10b981,
+      emissive: 0x059669,
+      emissiveIntensity: 0.85,
+      roughness: 0.15,
+      metalness: 0.2
+    });
+    const matStone = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
+    const matBeastStone = new THREE.MeshStandardMaterial({ color: 0x2c302e, map: stoneTex, roughness: 0.85 });
+    const matBeastEye = new THREE.MeshStandardMaterial({
+      color: 0xff3b00,
+      emissive: 0xff2200,
+      emissiveIntensity: 2.2
+    });
+
+    // --- Explorer Player ---
     const playerGroup = new THREE.Group();
     scene.add(playerGroup);
 
-    const playerRig = new THREE.Group();
-    playerGroup.add(playerRig);
+    const playerBodyPivot = new THREE.Group();
+    playerGroup.add(playerBodyPivot);
 
-    // Torso (Explorer jacket)
-    const torso = new THREE.Mesh(
-      new THREE.BoxGeometry(0.75, 0.95, 0.45),
-      new THREE.MeshStandardMaterial({ color: 0x8c5a32, roughness: 0.8 })
-    );
+    // Torso
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.0, 0.42), matShirt);
     torso.position.y = 1.35;
     torso.castShadow = true;
-    playerRig.add(torso);
+    playerBodyPivot.add(torso);
 
     // Backpack
-    const pack = new THREE.Mesh(
-      new THREE.BoxGeometry(0.55, 0.7, 0.35),
-      new THREE.MeshStandardMaterial({ color: 0x3f4f3a, roughness: 0.9 })
-    );
-    pack.position.set(0, 1.38, 0.35);
-    pack.castShadow = true;
-    playerRig.add(pack);
+    const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.3), matHat);
+    backpack.position.set(0, 1.4, 0.32);
+    backpack.castShadow = true;
+    playerBodyPivot.add(backpack);
 
-    // Red Scarf
-    const scarfNeck = new THREE.Mesh(
-      new THREE.BoxGeometry(0.8, 0.18, 0.52),
-      new THREE.MeshStandardMaterial({ color: 0xd92626 })
-    );
-    scarfNeck.position.y = 1.82;
-    playerRig.add(scarfNeck);
-
-    const scarfTail = new THREE.Mesh(
-      new THREE.BoxGeometry(0.24, 0.12, 0.75),
-      new THREE.MeshStandardMaterial({ color: 0xd92626 })
-    );
-    scarfTail.position.set(0.18, 1.78, 0.52);
-    playerRig.add(scarfTail);
-
-    // Head & Fedora
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.52, 0.52, 0.52),
-      new THREE.MeshStandardMaterial({ color: 0xf1c29b, roughness: 0.6 })
-    );
-    head.position.y = 2.12;
+    // Head + Explorer Hat
+    const headGroup = new THREE.Group();
+    headGroup.position.y = 2.08;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), matSkin);
     head.castShadow = true;
-    playerRig.add(head);
+    headGroup.add(head);
 
-    const hatBrim = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.52, 0.52, 0.06, 16),
-      new THREE.MeshStandardMaterial({ color: 0x4a311d, roughness: 0.85 })
-    );
-    hatBrim.position.y = 2.38;
-    playerRig.add(hatBrim);
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.06, 16), matHat);
+    hatBrim.position.y = 0.22;
+    headGroup.add(hatBrim);
 
-    const hatCrown = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.28, 0.33, 0.28, 16),
-      new THREE.MeshStandardMaterial({ color: 0x4a311d, roughness: 0.85 })
-    );
-    hatCrown.position.y = 2.52;
-    playerRig.add(hatCrown);
+    const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.3, 0.24, 16), matHat);
+    hatCrown.position.y = 0.34;
+    headGroup.add(hatCrown);
+    playerBodyPivot.add(headGroup);
 
-    // Limbs with pivot groups
-    function createLimb(w, h, d, color, x, y) {
+    // Limbs
+    function createLimb(w, h, d, mat, yOffset) {
       const pivot = new THREE.Group();
-      pivot.position.set(x, y, 0);
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, d),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.8 })
-      );
-      mesh.position.y = -h / 2;
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      mesh.position.y = yOffset;
       mesh.castShadow = true;
       pivot.add(mesh);
-      playerRig.add(pivot);
       return pivot;
     }
 
-    const leftArm = createLimb(0.24, 0.78, 0.24, 0x8c5a32, -0.52, 1.75);
-    const rightArm = createLimb(0.24, 0.78, 0.24, 0x8c5a32, 0.52, 1.75);
-    const leftLeg = createLimb(0.28, 0.88, 0.3, 0x2d3748, -0.22, 0.88);
-    const rightLeg = createLimb(0.28, 0.88, 0.3, 0x2d3748, 0.22, 0.88);
+    const leftArm = createLimb(0.22, 0.78, 0.22, matSkin, -0.34);
+    leftArm.position.set(-0.5, 1.78, 0);
+    playerBodyPivot.add(leftArm);
 
-    // Shield Aura Bubble around Player
+    const rightArm = createLimb(0.22, 0.78, 0.22, matSkin, -0.34);
+    rightArm.position.set(0.5, 1.78, 0);
+    playerBodyPivot.add(rightArm);
+
+    const leftLeg = createLimb(0.28, 0.85, 0.28, matPants, -0.42);
+    leftLeg.position.set(-0.2, 0.88, 0);
+    playerBodyPivot.add(leftLeg);
+
+    const rightLeg = createLimb(0.28, 0.85, 0.28, matPants, -0.42);
+    rightLeg.position.set(0.2, 0.88, 0);
+    playerBodyPivot.add(rightLeg);
+
+    // Shield Aura Sphere around player
     const shieldBubble = new THREE.Mesh(
-      new THREE.SphereGeometry(1.55, 20, 20),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.24, wireframe: true })
+      new THREE.SphereGeometry(1.45, 24, 24),
+      new THREE.MeshBasicMaterial({
+        color: 0x34d399,
+        transparent: true,
+        opacity: 0.0,
+        wireframe: true
+      })
     );
-    shieldBubble.position.y = 1.35;
-    shieldBubble.visible = false;
+    shieldBubble.position.y = 1.3;
     playerGroup.add(shieldBubble);
 
-    // ==========================================
-    // 5. TEMPLE TRACK SEGMENTS & SCENERY
-    // ==========================================
-    const trackSegments = [];
-    const torchFlames = [];
+    // Held Emerald Gem (in player's right hand once stolen)
+    const heldGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.24, 0), matEmerald);
+    heldGem.position.set(0, -0.72, -0.15);
+    heldGem.visible = false;
+    rightArm.add(heldGem);
 
-    function createTrackSegment(zPos) {
+    // --- Ancient Cave & Altar Setpiece (at Z = 0..16) ---
+    const caveGroup = new THREE.Group();
+    scene.add(caveGroup);
+
+    // Cave Tunnel Walls & Roof
+    const caveArchGeo = new THREE.CylinderGeometry(7.2, 7.2, 18, 16, 1, true, 0, Math.PI);
+    const caveMat = new THREE.MeshStandardMaterial({
+      map: stoneTex,
+      color: 0x2b302d,
+      roughness: 0.95,
+      side: THREE.BackSide
+    });
+    const caveTunnel = new THREE.Mesh(caveArchGeo, caveMat);
+    caveTunnel.rotation.z = Math.PI / 2;
+    caveTunnel.rotation.y = Math.PI / 2;
+    caveTunnel.position.set(0, 1.2, 6);
+    caveGroup.add(caveTunnel);
+
+    // Back wall of cave behind the beast
+    const caveBackWall = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 2), caveMat);
+    caveBackWall.position.set(0, 5, 15.5);
+    caveGroup.add(caveBackWall);
+
+    // Stone Altar
+    const altarBase = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.15, 1.3, 8), matStone);
+    altarBase.position.set(0, 0.65, 8.2);
+    altarBase.castShadow = true;
+    altarBase.receiveShadow = true;
+    caveGroup.add(altarBase);
+
+    // Altar Emerald Relic
+    const altarGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.36, 0), matEmerald);
+    altarGem.position.set(0, 1.75, 8.2);
+    caveGroup.add(altarGem);
+
+    // Torch Braziers
+    [-4.2, 4.2].forEach((xPos) => {
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), matStone);
+      pillar.position.set(xPos, 1.8, 6);
+      caveGroup.add(pillar);
+
+      const flame = new THREE.Mesh(
+        new THREE.ConeGeometry(0.35, 0.85, 8),
+        new THREE.MeshBasicMaterial({ color: 0xff8800 })
+      );
+      flame.position.set(xPos, 4.0, 6);
+      caveGroup.add(flame);
+    });
+
+    // --- Giant Forest Stone Beast Guardian ---
+    const beastGroup = new THREE.Group();
+    beastGroup.position.set(0, 0, 12.2);
+    scene.add(beastGroup);
+
+    const beastTorso = new THREE.Mesh(new THREE.DodecahedronGeometry(2.1, 1), matBeastStone);
+    beastTorso.scale.set(1.25, 1.15, 0.95);
+    beastTorso.position.y = 2.4;
+    beastTorso.castShadow = true;
+    beastGroup.add(beastTorso);
+
+    // Moss shoulders
+    const shoulderL = new THREE.Mesh(new THREE.DodecahedronGeometry(1.05, 0), matBeastStone);
+    shoulderL.position.set(-2.3, 3.3, -0.2);
+    beastGroup.add(shoulderL);
+
+    const shoulderR = new THREE.Mesh(new THREE.DodecahedronGeometry(1.05, 0), matBeastStone);
+    shoulderR.position.set(2.3, 3.3, -0.2);
+    beastGroup.add(shoulderR);
+
+    // Beast Arms
+    const beastArmL = new THREE.Mesh(new THREE.BoxGeometry(0.95, 2.7, 0.95), matBeastStone);
+    beastArmL.position.set(-2.5, 1.7, -0.5);
+    beastArmL.rotation.x = -0.35;
+    beastGroup.add(beastArmL);
+
+    const beastArmR = new THREE.Mesh(new THREE.BoxGeometry(0.95, 2.7, 0.95), matBeastStone);
+    beastArmR.position.set(2.5, 1.7, -0.5);
+    beastArmR.rotation.x = -0.35;
+    beastGroup.add(beastArmR);
+
+    // Beast Head & Glowing Eyes
+    const beastHead = new THREE.Group();
+    beastHead.position.set(0, 4.1, -0.8);
+    const skull = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.4, 1.6), matBeastStone);
+    beastHead.add(skull);
+
+    // Horns
+    const hornGeo = new THREE.ConeGeometry(0.28, 1.4, 6);
+    const hornL = new THREE.Mesh(hornGeo, matStone);
+    hornL.position.set(-0.85, 0.8, 0.1);
+    hornL.rotation.z = 0.45;
+    beastHead.add(hornL);
+
+    const hornR = new THREE.Mesh(hornGeo, matStone);
+    hornR.position.set(0.85, 0.8, 0.1);
+    hornR.rotation.z = -0.45;
+    beastHead.add(hornR);
+
+    // Glowing Eyes (dim while sleeping, bright when awake)
+    const eyeMatInstance = matBeastEye.clone();
+    eyeMatInstance.emissiveIntensity = 0.05;
+    const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), eyeMatInstance);
+    eyeL.position.set(-0.42, 0.15, -0.82);
+    beastHead.add(eyeL);
+
+    const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), eyeMatInstance);
+    eyeR.position.set(0.42, 0.15, -0.82);
+    beastHead.add(eyeR);
+
+    beastGroup.add(beastHead);
+
+    // ==========================================
+    // 6. ENDLESS FOREST TRACK & OBSTACLE POOL
+    // ==========================================
+    const segments = [];
+    const obstacles = [];
+    const collectibles = [];
+
+    const matPath = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 0.95 });
+    const matCurb = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
+    const matForestFloor = new THREE.MeshStandardMaterial({ map: mossTex, roughness: 1.0 });
+    const matTrunk = new THREE.MeshStandardMaterial({ map: barkTex, roughness: 0.9 });
+    const matFoliage = new THREE.MeshStandardMaterial({ color: 0x1e4628, roughness: 0.85 });
+    const matFoliageLight = new THREE.MeshStandardMaterial({ color: 0x2d6a3e, roughness: 0.8 });
+
+    function createTree() {
+      const tree = new THREE.Group();
+      const height = 8 + Math.random() * 6;
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.7, height, 7), matTrunk);
+      trunk.position.y = height / 2;
+      trunk.castShadow = true;
+      tree.add(trunk);
+
+      for (let i = 0; i < 3; i++) {
+        const radius = 2.6 - i * 0.55;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(radius, 3.6, 7),
+          i % 2 === 0 ? matFoliage : matFoliageLight
+        );
+        cone.position.y = height - 1.2 + i * 1.9;
+        cone.castShadow = true;
+        tree.add(cone);
+      }
+      return tree;
+    }
+
+    function createSegment(zPos) {
       const seg = new THREE.Group();
       seg.position.z = zPos;
 
-      // Main stone bridge deck (3 lanes wide)
-      const deck = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 3 + 0.8, 1.2, SEGMENT_LENGTH - 0.15), matStone);
-      deck.position.y = -0.6;
-      deck.receiveShadow = true;
-      seg.add(deck);
+      // Dirt path
+      const path = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.6, SEGMENT_LENGTH), matPath);
+      path.position.y = -0.3;
+      path.receiveShadow = true;
+      seg.add(path);
 
-      // Lane divider grooves & moss patches
-      [-LANE_WIDTH / 2, LANE_WIDTH / 2].forEach(x => {
-        const trim = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.24, SEGMENT_LENGTH - 0.15), matStoneDark);
-        trim.position.set(x, -0.6, 0);
-        seg.add(trim);
-      });
-
-      // Side temple walls / curbs
-      [-4.4, 4.4].forEach(x => {
-        const curb = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.65, SEGMENT_LENGTH), matStoneDark);
-        curb.position.set(x, 0.15, 0);
-        curb.castShadow = true;
+      // Stone temple borders
+      [-4.4, 4.4].forEach((x) => {
+        const curb = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.85, SEGMENT_LENGTH), matCurb);
+        curb.position.set(x, -0.15, 0);
         curb.receiveShadow = true;
+        curb.castShadow = true;
         seg.add(curb);
-
-        // Occasional moss block on curb
-        if (Math.random() > 0.45) {
-          const moss = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.2, 2.5), matMoss);
-          moss.position.set(x, 0.5, (Math.random() - 0.5) * 6);
-          seg.add(moss);
-        }
       });
 
-      // Distant jungle pillars & torch braziers every second segment
-      if (Math.round(Math.abs(zPos) / SEGMENT_LENGTH) % 2 === 0) {
-        [-4.5, 4.5].forEach(x => {
-          const brazier = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.22, 1.1, 8), matStoneDark);
-          brazier.position.set(x, 0.9, 0);
-          seg.add(brazier);
+      // Forest ground flanking the path
+      [-26, 26].forEach((x) => {
+        const ground = new THREE.Mesh(new THREE.BoxGeometry(42, 0.5, SEGMENT_LENGTH), matForestFloor);
+        ground.position.set(x, -0.35, 0);
+        ground.receiveShadow = true;
+        seg.add(ground);
+      });
 
-          const flame = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.55, 7), matFire);
-          flame.position.set(x, 1.65, 0);
-          seg.add(flame);
-          torchFlames.push(flame);
-        });
+      // Trees & Ruins along sides
+      for (let i = 0; i < 4; i++) {
+        const zLocal = -SEGMENT_LENGTH / 2 + i * 5 + Math.random() * 2;
+        const leftTree = createTree();
+        leftTree.position.set(-7.5 - Math.random() * 14, 0, zLocal);
+        seg.add(leftTree);
 
-        // Background ruined columns rising from the abyss
-        [-10.5, 10.5].forEach(x => {
-          if (Math.random() > 0.25) {
-            const h = 14 + Math.random() * 14;
-            const col = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, h, 8), matStoneDark);
-            col.position.set(x + (Math.random() - 0.5) * 2, h / 2 - 12, (Math.random() - 0.5) * 4);
-            seg.add(col);
-          }
-        });
+        const rightTree = createTree();
+        rightTree.position.set(7.5 + Math.random() * 14, 0, zLocal);
+        seg.add(rightTree);
+      }
+
+      // Occasional Ancient Stone Pillar
+      if (Math.random() > 0.45) {
+        const side = Math.random() > 0.5 ? 1 : -1;
+        const ruin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.2, 1.2), matStone);
+        ruin.position.set(side * 5.6, 2.1, (Math.random() - 0.5) * 12);
+        ruin.castShadow = true;
+        ruin.receiveShadow = true;
+        seg.add(ruin);
       }
 
       scene.add(seg);
-      trackSegments.push(seg);
+      segments.push(seg);
+      return seg;
     }
 
+    // Initialize segments
     for (let i = 0; i < NUM_SEGMENTS; i++) {
-      createTrackSegment(12 - i * SEGMENT_LENGTH);
+      createSegment(10 - i * SEGMENT_LENGTH);
     }
 
-    // ==========================================
-    // 6. OBSTACLES, COINS, POWERUPS & PARTICLES
-    // ==========================================
-    const obstacles = [];
-    const collectibles = [];
-    const particles = [];
+    // Fireflies / Forest Spores Particle System
+    const particleCount = 160;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      particlePos[i * 3] = (Math.random() - 0.5) * 32;
+      particlePos[i * 3 + 1] = 0.5 + Math.random() * 7;
+      particlePos[i * 3 + 2] = -Math.random() * 120;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0xa7f3d0,
+      size: 0.22,
+      transparent: true,
+      opacity: 0.75
+    });
+    const fireflies = new THREE.Points(particleGeo, particleMat);
+    scene.add(fireflies);
 
-    const coinGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.14, 14);
-    coinGeo.rotateX(Math.PI / 2);
+    // ==========================================
+    // 7. OBSTACLE & COLLECTIBLE SPAWNING
+    // ==========================================
+    function clearEntities() {
+      obstacles.forEach((o) => scene.remove(o.mesh));
+      obstacles.length = 0;
+      collectibles.forEach((c) => scene.remove(c.mesh));
+      collectibles.length = 0;
+    }
 
-    function spawnParticles(x, y, z, colorHex, count = 14) {
-      const geo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
-      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+    function spawnCoinLine(laneIdx, startZ, count, arcJump = false) {
+      const x = LANES[laneIdx];
       for (let i = 0; i < count; i++) {
-        const mesh = new THREE.Mesh(geo, mat);
+        const isGem = i === count - 1 && Math.random() > 0.78;
+        const mesh = isGem
+          ? new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), matEmerald)
+          : new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.1, 14), matGold);
+
+        if (!isGem) mesh.rotation.x = Math.PI / 2;
+        const z = startZ - i * 2.4;
+        let y = 1.05;
+        if (arcJump) {
+          const t = i / Math.max(1, count - 1);
+          y = 1.05 + Math.sin(t * Math.PI) * 2.1;
+        }
         mesh.position.set(x, y, z);
+        mesh.castShadow = true;
         scene.add(mesh);
-        particles.push({
+        collectibles.push({
           mesh,
-          vx: (Math.random() - 0.5) * 8,
-          vy: Math.random() * 7 + 2,
-          vz: (Math.random() - 0.5) * 8,
-          life: 0.55 + Math.random() * 0.25
+          lane: laneIdx,
+          isGem,
+          collected: false
         });
       }
     }
 
-    function spawnCoinLine(laneIdx, startZ, count, arcHeight = 0) {
-      const x = LANES[laneIdx];
-      for (let i = 0; i < count; i++) {
-        const mesh = new THREE.Mesh(coinGeo, matGold);
-        const t = count > 1 ? i / (count - 1) : 0.5;
-        const y = 1.0 + Math.sin(t * Math.PI) * arcHeight;
-        mesh.position.set(x, y, startZ - i * 2.1);
-        scene.add(mesh);
-        collectibles.push({ mesh, type: 'coin', collected: false });
-      }
-    }
+    function spawnRow(zPos) {
+      // Types:
+      // 'LOG' -> Jump over (spans 1 or 2 lanes)
+      // 'ARCH' -> Slide under (spans 1 or 2 lanes)
+      // 'TOTEM' -> Dodge left/right (blocks 1 or 2 lanes)
+      const pattern = Math.random();
 
-    function spawnPowerup(laneIdx, zPos) {
-      const type = Math.random() < 0.5 ? 'shield' : 'magnet';
-      const geo = type === 'shield'
-        ? new THREE.OctahedronGeometry(0.55, 0)
-        : new THREE.TorusGeometry(0.42, 0.15, 8, 16);
-      const mesh = new THREE.Mesh(geo, type === 'shield' ? matShield : matMagnet);
-      mesh.position.set(LANES[laneIdx], 1.25, zPos);
-      scene.add(mesh);
-      collectibles.push({ mesh, type, collected: false });
-    }
-
-    function createObstacleMesh(type, laneIdx) {
-      const group = new THREE.Group();
-      const x = LANES[laneIdx];
-
-      if (type === 'blocker') {
-        // Tall carved stone monolith (must switch lanes)
-        const pillar = new THREE.Mesh(new THREE.BoxGeometry(1.95, 2.9, 1.35), matStone);
-        pillar.position.y = 1.45;
-        pillar.castShadow = true;
-        pillar.receiveShadow = true;
-        group.add(pillar);
-
-        const cap = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.35, 1.55), matMoss);
-        cap.position.y = 2.95;
-        group.add(cap);
-      } else if (type === 'jump') {
-        // Low fallen mossy log / barrier (must jump over)
-        const log = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 2.2, 12), matWood);
+      if (pattern < 0.34) {
+        // Fallen Mossy Log across all lanes (Jump!)
+        const group = new THREE.Group();
+        const log = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 8.2, 12), matTrunk);
         log.rotation.z = Math.PI / 2;
-        log.position.y = 0.52;
+        log.position.y = 0.55;
         log.castShadow = true;
+        log.receiveShadow = true;
         group.add(log);
 
-        const mossPatch = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.25, 0.6), matMoss);
-        mossPatch.position.y = 0.98;
-        group.add(mossPatch);
-      } else if (type === 'slide') {
-        // High stone archway beam (must slide under)
-        const leftPost = new THREE.Mesh(new THREE.BoxGeometry(0.32, 3.2, 0.75), matStoneDark);
-        leftPost.position.set(-0.95, 1.6, 0);
-        leftPost.castShadow = true;
-        group.add(leftPost);
+        // Moss patches on log
+        const moss = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, 0.7), matFoliage);
+        moss.position.set(-1.2, 1.05, 0);
+        group.add(moss);
 
-        const rightPost = new THREE.Mesh(new THREE.BoxGeometry(0.32, 3.2, 0.75), matStoneDark);
-        rightPost.position.set(0.95, 1.6, 0);
-        rightPost.castShadow = true;
-        group.add(rightPost);
+        group.position.set(0, 0, zPos);
+        scene.add(group);
+        obstacles.push({
+          mesh: group,
+          type: 'JUMP',
+          lanes: [0, 1, 2],
+          zDepth: 0.75
+        });
 
-        const lintel = new THREE.Mesh(new THREE.BoxGeometry(2.3, 1.55, 0.9), matStone);
-        lintel.position.set(0, 2.35, 0);
+        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.5, 4, true);
+      } else if (pattern < 0.66) {
+        // Stone Temple Archway with Hanging Vines (Slide!)
+        const group = new THREE.Group();
+        [-4.1, 4.1].forEach((x) => {
+          const col = new THREE.Mesh(new THREE.BoxGeometry(0.85, 3.8, 0.95), matStone);
+          col.position.set(x, 1.9, 0);
+          col.castShadow = true;
+          group.add(col);
+        });
+
+        const lintel = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.85, 1.1), matStone);
+        lintel.position.set(0, 2.65, 0);
         lintel.castShadow = true;
         group.add(lintel);
-      }
 
-      group.position.set(x, 0, 0);
-      return group;
-    }
-
-    function spawnRow(zPos) {
-      const lanes = [0, 1, 2];
-      // Shuffle lanes
-      for (let i = lanes.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [lanes[i], lanes[j]] = [lanes[j], lanes[i]];
-      }
-
-      // Always keep at least 1 lane completely passable or jump/slideable
-      const safeLane = lanes[0];
-      const obstacleCount = Math.random() < 0.45 ? 1 : 2;
-
-      for (let i = 1; i <= obstacleCount; i++) {
-        const laneIdx = lanes[i];
-        const roll = Math.random();
-        const type = roll < 0.4 ? 'blocker' : (roll < 0.72 ? 'jump' : 'slide');
-        const mesh = createObstacleMesh(type, laneIdx);
-        mesh.position.z = zPos;
-        scene.add(mesh);
-        obstacles.push({ mesh, type, lane: laneIdx, hit: false });
-
-        // Put coins over jump obstacles or under slide obstacles occasionally
-        if (type === 'jump' && Math.random() < 0.5) {
-          spawnCoinLine(laneIdx, zPos + 2.1, 3, 2.0);
+        // Hanging Vines
+        for (let vx = -3.2; vx <= 3.2; vx += 0.8) {
+          const vine = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 0.14), matFoliageLight);
+          vine.position.set(vx, 1.55, 0.45);
+          group.add(vine);
         }
-      }
 
-      // Coins or powerup in the safe lane
-      if (Math.random() < 0.14) {
-        spawnPowerup(safeLane, zPos);
-      } else if (Math.random() < 0.7) {
-        spawnCoinLine(safeLane, zPos + 2, 4, 0);
+        group.position.set(0, 0, zPos);
+        scene.add(group);
+        obstacles.push({
+          mesh: group,
+          type: 'SLIDE',
+          lanes: [0, 1, 2],
+          zDepth: 0.85
+        });
+
+        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 4, 4, false);
+      } else {
+        // Ancient Totem Pillars blocking 1 or 2 lanes (Dodge!)
+        const openLane = Math.floor(Math.random() * 3);
+        const blockedLanes = [0, 1, 2].filter((l) => l !== openLane);
+        if (Math.random() > 0.55) {
+          // Sometimes leave 2 lanes open
+          blockedLanes.pop();
+        }
+
+        blockedLanes.forEach((laneIdx) => {
+          const totem = new THREE.Group();
+          const body = new THREE.Mesh(new THREE.BoxGeometry(1.75, 3.6, 1.6), matStone);
+          body.position.y = 1.8;
+          body.castShadow = true;
+          body.receiveShadow = true;
+          totem.add(body);
+
+          // Glowing carved eyes on totem
+          const carving = new THREE.Mesh(
+            new THREE.BoxGeometry(1.1, 0.35, 0.1),
+            new THREE.MeshBasicMaterial({ color: 0xff9900 })
+          );
+          carving.position.set(0, 2.3, 0.82);
+          totem.add(carving);
+
+          totem.position.set(LANES[laneIdx], 0, zPos);
+          scene.add(totem);
+          obstacles.push({
+            mesh: totem,
+            type: 'BLOCK',
+            lanes: [laneIdx],
+            zDepth: 0.95
+          });
+        });
+
+        spawnCoinLine(openLane, zPos + 4, 5, false);
       }
     }
 
     // ==========================================
-    // 7. GAME STATE & INPUT HANDLING
+    // 8. UI & CINEMATIC HELPERS
     // ==========================================
-    const state = {
-      running: false,
-      score: 0,
-      coins: 0,
-      best: Number(localStorage.getItem('templeDashBest') || 0),
-      speed: 22,
-      currentLane: 1,
-      targetX: 0,
-      playerY: 0,
-      velY: 0,
-      isJumping: false,
-      slideTimer: 0,
-      shieldActive: false,
-      magnetTimer: 0,
-      nextSpawnZ: -35,
-      stepTimer: 0,
-      shakeTimer: 0
-    };
+    const hud = document.getElementById('hud');
+    const scoreVal = document.getElementById('score-val');
+    const coinsVal = document.getElementById('coins-val');
+    const shieldBar = document.getElementById('shield-bar');
+    const shieldStatus = document.getElementById('shield-status');
+    const banner = document.getElementById('cinematic-banner');
+    const startScreen = document.getElementById('start-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const screenFlash = document.getElementById('screen-flash');
 
-    document.getElementById('best-val').textContent = `${state.best}m`;
+    function showBanner(text) {
+      banner.textContent = text;
+      banner.classList.add('visible');
+    }
 
-    function moveLane(dir) {
-      if (!state.running) return;
-      const next = Math.max(0, Math.min(2, state.currentLane + dir));
-      if (next !== state.currentLane) {
-        state.currentLane = next;
-        state.targetX = LANES[state.currentLane];
-        sfx.lane();
+    function hideBanner() {
+      banner.classList.remove('visible');
+    }
+
+    function triggerFlash(color) {
+      screenFlash.style.background = color;
+      screenFlash.style.opacity = '0.55';
+      setTimeout(() => {
+        screenFlash.style.opacity = '0';
+      }, 180);
+    }
+
+    function updateHUD() {
+      scoreVal.textContent = `${Math.floor(distance)}m`;
+      coinsVal.textContent = coins;
+      shieldBar.style.width = `${shieldCharge}%`;
+      if (shieldCharge >= 100) {
+        shieldStatus.textContent = 'ACTIVE';
+        shieldBubble.material.opacity = 0.22;
+      } else {
+        shieldStatus.textContent = `${Math.floor(shieldCharge)}%`;
+        shieldBubble.material.opacity = 0.0;
       }
+    }
+
+    // ==========================================
+    // 9. GAME FLOW & INTRO SEQUENCE
+    // ==========================================
+    function resetPositionsForMenu() {
+      currentLane = 1;
+      playerX = 0;
+      playerY = 0;
+      velocityY = 0;
+      isJumping = false;
+      isSliding = false;
+      slideTimer = 0;
+
+      playerGroup.position.set(0, 0, 6.2);
+      playerGroup.rotation.set(0, Math.PI, 0); // Facing the altar & beast (+Z)
+      playerBodyPivot.rotation.set(0, 0, 0);
+      playerBodyPivot.scale.set(1, 1, 1);
+
+      altarGem.visible = true;
+      heldGem.visible = false;
+
+      caveGroup.position.z = 0;
+      beastGroup.position.set(0, 0, 12.2);
+      beastGroup.rotation.set(0, 0, 0);
+      eyeMatInstance.emissiveIntensity = 0.05;
+
+      // Reset segments
+      for (let i = 0; i < NUM_SEGMENTS; i++) {
+        segments[i].position.z = 10 - i * SEGMENT_LENGTH;
+      }
+      clearEntities();
+    }
+
+    function startIntroSequence() {
+      sound.init();
+      resetPositionsForMenu();
+      startScreen.classList.add('hidden');
+      gameoverScreen.classList.add('hidden');
+      hud.classList.remove('visible');
+
+      distance = 0;
+      coins = 0;
+      shieldCharge = 0;
+      runSpeed = 22;
+      updateHUD();
+
+      gameState = 'INTRO_STEAL';
+      introTimer = 0;
+      showBanner('Stealing the Emerald Heart...');
+    }
+
+    function beginActiveRun() {
+      gameState = 'PLAYING';
+      hideBanner();
+      hud.classList.add('visible');
+
+      // Spawn initial wave of forest obstacles ahead
+      for (let z = -38; z >= -160; z -= 26) {
+        spawnRow(z);
+      }
+    }
+
+    function triggerGameOver() {
+      gameState = 'GAMEOVER';
+      sound.playCrash();
+      screenShake = 0.7;
+      triggerFlash('rgba(239, 68, 68, 0.75)');
+
+      const finalDist = Math.floor(distance);
+      if (finalDist > bestScore) {
+        bestScore = finalDist;
+        localStorage.setItem('temple_escape_best', bestScore.toString());
+      }
+
+      document.getElementById('final-score').textContent = `${finalDist}m`;
+      document.getElementById('best-score').textContent = `${bestScore}m`;
+      document.getElementById('final-coins').textContent = coins;
+
+      setTimeout(() => {
+        hud.classList.remove('visible');
+        gameoverScreen.classList.remove('hidden');
+      }, 650);
+    }
+
+    // ==========================================
+    // 10. PLAYER INPUTS (KEYBOARD & TOUCH)
+    // ==========================================
+    function moveLeft() {
+      if (gameState !== 'PLAYING') return;
+      if (currentLane > 0) currentLane--;
+    }
+
+    function moveRight() {
+      if (gameState !== 'PLAYING') return;
+      if (currentLane < 2) currentLane++;
     }
 
     function jump() {
-      if (!state.running) return;
-      if (!state.isJumping) {
-        state.isJumping = true;
-        state.velY = 16.5;
-        state.slideTimer = 0; // cancel slide immediately
-        sfx.jump();
+      if (gameState !== 'PLAYING') return;
+      if (!isJumping) {
+        isJumping = true;
+        isSliding = false;
+        velocityY = 14.5;
+        sound.playJump();
       }
     }
 
     function slide() {
-      if (!state.running) return;
-      if (state.isJumping) {
-        // Fast-drop slam into slide
-        state.velY = -24;
+      if (gameState !== 'PLAYING') return;
+      if (isJumping) {
+        // Fast drop into slide
+        velocityY = -22;
       }
-      state.slideTimer = 0.68;
-      sfx.slide();
+      if (!isSliding) {
+        isSliding = true;
+        slideTimer = 0.68;
+        sound.playSlide();
+      }
     }
 
-    // Keyboard Controls
     window.addEventListener('keydown', (e) => {
-      if (['ArrowLeft', 'KeyA'].includes(e.code)) moveLane(-1);
-      if (['ArrowRight', 'KeyD'].includes(e.code)) moveLane(1);
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) moveLeft();
+      if (['ArrowRight', 'KeyD'].includes(e.code)) moveRight();
       if (['ArrowUp', 'KeyW', 'Space'].includes(e.code)) {
         e.preventDefault();
         jump();
@@ -734,116 +1317,45 @@
       }
     });
 
-    // Touch & Pointer Swipe Controls
+    // Swipe Controls
     let touchStartX = 0;
     let touchStartY = 0;
     window.addEventListener('pointerdown', (e) => {
       touchStartX = e.clientX;
       touchStartY = e.clientY;
     });
+
     window.addEventListener('pointerup', (e) => {
-      if (!state.running) return;
       const dx = e.clientX - touchStartX;
       const dy = e.clientY - touchStartY;
       if (Math.abs(dx) < 25 && Math.abs(dy) < 25) return;
       if (Math.abs(dx) > Math.abs(dy)) {
-        moveLane(dx > 0 ? 1 : -1);
+        dx > 0 ? moveRight() : moveLeft();
       } else {
         dy < 0 ? jump() : slide();
       }
     });
 
-    // ==========================================
-    // 8. START, RESET & GAME OVER LOGIC
-    // ==========================================
-    const startScreen = document.getElementById('start-screen');
-    const gameOverScreen = document.getElementById('gameover-screen');
-    const scoreEl = document.getElementById('score-val');
-    const coinsEl = document.getElementById('coins-val');
-    const bestEl = document.getElementById('best-val');
-    const shieldBadge = document.getElementById('shield-badge');
-    const magnetBadge = document.getElementById('magnet-badge');
-    const magnetTimerEl = document.getElementById('magnet-timer');
+    document.getElementById('start-btn').addEventListener('click', startIntroSequence);
+    document.getElementById('restart-btn').addEventListener('click', startIntroSequence);
 
-    function clearEntities() {
-      obstacles.forEach(o => scene.remove(o.mesh));
-      obstacles.length = 0;
-      collectibles.forEach(c => scene.remove(c.mesh));
-      collectibles.length = 0;
-      particles.forEach(p => scene.remove(p.mesh));
-      particles.length = 0;
-    }
+    const audioBtn = document.getElementById('audio-btn');
+    audioBtn.addEventListener('click', () => {
+      sound.init();
+      const isMuted = sound.toggleMute();
+      audioBtn.textContent = isMuted ? '🔇' : '🔊';
+    });
 
-    function startGame() {
-      sfx.init();
-      clearEntities();
-
-      state.running = true;
-      state.score = 0;
-      state.coins = 0;
-      state.speed = 23;
-      state.currentLane = 1;
-      state.targetX = 0;
-      state.playerY = 0;
-      state.velY = 0;
-      state.isJumping = false;
-      state.slideTimer = 0;
-      state.shieldActive = false;
-      state.magnetTimer = 0;
-      state.nextSpawnZ = -32;
-      state.shakeTimer = 0;
-
-      playerGroup.position.set(0, 0, 0);
-      playerRig.scale.set(1, 1, 1);
-      playerRig.rotation.set(0, 0, 0);
-      shieldBubble.visible = false;
-      shieldBadge.style.display = 'none';
-      magnetBadge.style.display = 'none';
-
-      // Pre-populate initial rows
-      for (let i = 0; i < 6; i++) {
-        spawnRow(state.nextSpawnZ);
-        state.nextSpawnZ -= 22;
-      }
-
-      startScreen.classList.add('hidden');
-      gameOverScreen.classList.add('hidden');
-    }
-
-    function triggerGameOver(reason) {
-      state.running = false;
-      state.shakeTimer = 0.4;
-      sfx.crash();
-      spawnParticles(playerGroup.position.x, playerGroup.position.y + 1.2, 0, 0xd92626, 22);
-
-      const finalMeters = Math.floor(state.score);
-      if (finalMeters > state.best) {
-        state.best = finalMeters;
-        localStorage.setItem('templeDashBest', state.best);
-        bestEl.textContent = `${state.best}m`;
-      }
-
-      document.getElementById('death-reason').textContent = reason;
-      document.getElementById('final-score').textContent = `${finalMeters}m`;
-      document.getElementById('final-coins').textContent = state.coins;
-      document.getElementById('final-best').textContent = `${state.best}m`;
-
-      setTimeout(() => {
-        gameOverScreen.classList.remove('hidden');
-      }, 450);
-    }
-
-    document.getElementById('start-btn').addEventListener('click', startGame);
-    document.getElementById('restart-btn').addEventListener('click', startGame);
-
-    document.getElementById('mute-btn').addEventListener('click', (e) => {
-      sfx.muted = !sfx.muted;
-      e.target.textContent = sfx.muted ? '🔇' : '🔊';
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
     // ==========================================
-    // 9. MAIN ANIMATION & PHYSICS LOOP
+    // 11. MAIN ANIMATION & PHYSICS LOOP
     // ==========================================
+    resetPositionsForMenu();
     const clock = new THREE.Clock();
 
     function animate() {
@@ -851,235 +1363,292 @@
       const dt = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
 
-      // Flicker temple torches
-      torchFlames.forEach((flame, idx) => {
-        const s = 0.85 + Math.sin(elapsed * 18 + idx) * 0.2;
-        flame.scale.set(s, 0.8 + Math.cos(elapsed * 22 + idx) * 0.25, s);
-      });
+      // Rotate altar gem & fireflies
+      if (altarGem.visible) {
+        altarGem.rotation.y += dt * 2.2;
+        altarGem.position.y = 1.75 + Math.sin(elapsed * 3) * 0.1;
+      }
 
-      // Update Particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life -= dt;
-        p.vy -= 20 * dt;
-        p.mesh.position.x += p.vx * dt;
-        p.mesh.position.y += p.vy * dt;
-        p.mesh.position.z += p.vz * dt;
-        p.mesh.rotation.x += 6 * dt;
-        p.mesh.rotation.y += 6 * dt;
-        if (p.life <= 0) {
-          scene.remove(p.mesh);
-          particles.splice(i, 1);
+      // Torch flicker
+      caveTorchLeft.intensity = 2.6 + Math.sin(elapsed * 18) * 0.4;
+      caveTorchRight.intensity = 2.6 + Math.cos(elapsed * 16) * 0.4;
+
+      // Update Fireflies
+      const posAttr = fireflies.geometry.attributes.position;
+      for (let i = 0; i < particleCount; i++) {
+        posAttr.array[i * 3 + 1] += Math.sin(elapsed * 2 + i) * 0.005;
+        if (gameState === 'PLAYING') {
+          posAttr.array[i * 3 + 2] += runSpeed * dt * 0.6;
+          if (posAttr.array[i * 3 + 2] > 10) {
+            posAttr.array[i * 3 + 2] = -120;
+          }
+        }
+      }
+      posAttr.needsUpdate = true;
+
+      // ------------------------------------------
+      // STATE: MENU (Atmospheric Cave Preview)
+      // ------------------------------------------
+      if (gameState === 'MENU') {
+        const camX = Math.sin(elapsed * 0.5) * 1.4;
+        camera.position.set(camX, 3.1, 2.2);
+        camera.lookAt(0, 2.0, 9.5);
+      }
+
+      // ------------------------------------------
+      // STATE: CINEMATIC INTRO (Steal -> Wake -> Turn)
+      // ------------------------------------------
+      else if (gameState === 'INTRO_STEAL') {
+        introTimer += dt;
+        // Player reaches out hand toward altar
+        rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -1.35, dt * 6);
+        camera.position.lerp(new THREE.Vector3(2.1, 2.5, 4.4), dt * 4);
+        camera.lookAt(0, 1.8, 8.6);
+
+        if (introTimer >= 0.85 && altarGem.visible) {
+          altarGem.visible = false;
+          heldGem.visible = true;
+          sound.playGemChime();
+          triggerFlash('rgba(16, 185, 129, 0.45)');
+        }
+
+        if (introTimer >= 1.35) {
+          gameState = 'INTRO_WAKE';
+          introTimer = 0;
+          sound.playBeastRoar();
+          screenShake = 0.85;
+          showBanner('THE STONE GUARDIAN AWAKENS!');
+        }
+      } else if (gameState === 'INTRO_WAKE') {
+        introTimer += dt;
+        // Beast eyes ignite & beast rises up roaring
+        eyeMatInstance.emissiveIntensity = THREE.MathUtils.lerp(eyeMatInstance.emissiveIntensity, 3.5, dt * 5);
+        beastGroup.position.y = Math.sin(Math.min(introTimer / 1.4, 1) * Math.PI) * 0.65;
+        beastHead.rotation.x = -0.25 + Math.sin(introTimer * 28) * 0.08;
+        beastArmL.rotation.x = -1.1;
+        beastArmR.rotation.x = -1.1;
+
+        // Camera pulls back dramatically showing the giant beast towering over player
+        camera.position.lerp(new THREE.Vector3(-2.4, 3.3, 3.0), dt * 4.5);
+        camera.lookAt(0, 2.8, 11.5);
+
+        if (introTimer >= 1.55) {
+          gameState = 'INTRO_TURN';
+          introTimer = 0;
+          showBanner('RUN!');
+        }
+      } else if (gameState === 'INTRO_TURN') {
+        introTimer += dt;
+        const t = Math.min(introTimer / 0.75, 1);
+        // Player spins 180 degrees to face -Z (forest exit) and starts sprinting
+        playerGroup.rotation.y = Math.PI * (1 - t);
+        rightArm.rotation.x = 0;
+        playerGroup.position.z -= 14 * dt;
+        beastGroup.position.z -= 12.5 * dt;
+
+        // Animate running limbs
+        stepCycle += dt * 16;
+        leftLeg.rotation.x = Math.sin(stepCycle) * 0.85;
+        rightLeg.rotation.x = -Math.sin(stepCycle) * 0.85;
+        leftArm.rotation.x = -Math.sin(stepCycle) * 0.7;
+        rightArm.rotation.x = Math.sin(stepCycle) * 0.7;
+
+        camera.position.lerp(new THREE.Vector3(0, 4.4, playerGroup.position.z + 6.5), dt * 6);
+        camera.lookAt(0, 1.8, playerGroup.position.z - 8);
+
+        if (t >= 1) {
+          playerGroup.rotation.y = 0;
+          playerGroup.position.z = 0;
+          beginActiveRun();
         }
       }
 
-      if (state.running) {
-        // Accelerate gradually
-        state.speed = Math.min(44, state.speed + dt * 0.42);
-        const moveDist = state.speed * dt;
-        state.score += moveDist * 0.45;
-        scoreEl.textContent = `${Math.floor(state.score)}m`;
-        coinsEl.textContent = state.coins;
+      // ------------------------------------------
+      // STATE: PLAYING (Endless Forest Run)
+      // ------------------------------------------
+      else if (gameState === 'PLAYING') {
+        // Gradually increase speed
+        runSpeed = Math.min(42, runSpeed + dt * 0.38);
+        const moveDelta = runSpeed * dt;
+        distance += moveDelta * 0.45;
 
-        // Horizontal lane smoothing & body tilt
-        const prevX = playerGroup.position.x;
-        playerGroup.position.x = THREE.MathUtils.lerp(prevX, state.targetX, 14 * dt);
-        const vx = (playerGroup.position.x - prevX) / dt;
-        playerRig.rotation.z = THREE.MathUtils.clamp(-vx * 0.025, -0.32, 0.32);
+        // Move Cave backward out of sight
+        if (caveGroup.position.z < 45) {
+          caveGroup.position.z += moveDelta;
+        }
 
-        // Vertical Jump & Gravity
-        if (state.isJumping) {
-          state.playerY += state.velY * dt;
-          state.velY -= 44 * dt;
-          if (state.playerY <= 0) {
-            state.playerY = 0;
-            state.velY = 0;
-            state.isJumping = false;
-            sfx.step();
+        // Scroll Forest Track Segments
+        for (let i = 0; i < segments.length; i++) {
+          segments[i].position.z += moveDelta;
+          if (segments[i].position.z > SEGMENT_LENGTH * 1.5) {
+            segments[i].position.z -= SEGMENT_LENGTH * NUM_SEGMENTS;
           }
         }
-        playerGroup.position.y = state.playerY;
 
-        // Slide timer & character posture
-        if (state.slideTimer > 0) {
-          state.slideTimer -= dt;
-          playerRig.scale.y = THREE.MathUtils.lerp(playerRig.scale.y, 0.48, 18 * dt);
-          playerRig.rotation.x = THREE.MathUtils.lerp(playerRig.rotation.x, -0.45, 18 * dt);
+        // Lane Horizontal Smooth Movement
+        const targetX = LANES[currentLane];
+        playerX = THREE.MathUtils.lerp(playerX, targetX, dt * 14);
+        playerGroup.position.x = playerX;
+
+        // Subtle banking tilt when switching lanes
+        playerBodyPivot.rotation.z = (playerX - targetX) * 0.14;
+
+        // Jump Physics
+        if (isJumping) {
+          playerY += velocityY * dt;
+          velocityY -= 38 * dt;
+          if (playerY <= 0) {
+            playerY = 0;
+            velocityY = 0;
+            isJumping = false;
+            sound.playFootstep();
+          }
+        }
+        playerGroup.position.y = playerY;
+
+        // Slide Physics
+        if (isSliding) {
+          slideTimer -= dt;
+          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 0.48, dt * 18);
+          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, -0.55, dt * 15);
+          if (slideTimer <= 0) {
+            isSliding = false;
+          }
         } else {
-          playerRig.scale.y = THREE.MathUtils.lerp(playerRig.scale.y, 1.0, 15 * dt);
-          playerRig.rotation.x = THREE.MathUtils.lerp(playerRig.rotation.x, 0.12, 15 * dt);
+          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 1.0, dt * 15);
+          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, 0.08, dt * 15);
         }
 
-        // Character Running Limb Animation
-        if (!state.isJumping && state.slideTimer <= 0) {
-          const runCycle = elapsed * (state.speed * 0.72);
-          leftLeg.rotation.x = Math.sin(runCycle) * 0.95;
-          rightLeg.rotation.x = -Math.sin(runCycle) * 0.95;
-          leftArm.rotation.x = -Math.sin(runCycle) * 0.85;
-          rightArm.rotation.x = Math.sin(runCycle) * 0.85;
-          playerRig.position.y = Math.abs(Math.cos(runCycle)) * 0.14;
-          scarfTail.rotation.x = 0.3 + Math.sin(runCycle * 2) * 0.2;
+        // Running Limb Animation & Footstep Audio
+        if (!isJumping && !isSliding) {
+          stepCycle += dt * (runSpeed * 0.72);
+          const s = Math.sin(stepCycle);
+          leftLeg.rotation.x = s * 0.9;
+          rightLeg.rotation.x = -s * 0.9;
+          leftArm.rotation.x = -s * 0.75;
+          rightArm.rotation.x = s * 0.75;
+          playerBodyPivot.position.y = Math.abs(Math.cos(stepCycle)) * 0.14;
 
-          state.stepTimer -= dt;
-          if (state.stepTimer <= 0) {
-            sfx.step();
-            state.stepTimer = Math.max(0.18, 0.36 - state.speed * 0.004);
+          if (Math.sign(s) !== lastStepSign) {
+            lastStepSign = Math.sign(s);
+            sound.playFootstep();
           }
-        } else if (state.isJumping) {
-          leftLeg.rotation.x = 0.55;
-          rightLeg.rotation.x = -0.35;
-          leftArm.rotation.x = -0.9;
-          rightArm.rotation.x = -0.9;
-          playerRig.position.y = 0;
+        } else if (isJumping) {
+          leftLeg.rotation.x = 0.5;
+          rightLeg.rotation.x = -0.4;
+          leftArm.rotation.x = -0.8;
+          rightArm.rotation.x = -0.8;
         }
 
-        // Powerup timers
-        if (state.magnetTimer > 0) {
-          state.magnetTimer -= dt;
-          magnetTimerEl.textContent = `${Math.ceil(state.magnetTimer)}s`;
-          if (state.magnetTimer <= 0) {
-            magnetBadge.style.display = 'none';
-          }
-        }
-        if (state.shieldActive) {
-          shieldBubble.rotation.y += 2.2 * dt;
-        }
+        // Chasing Beast Animation behind player
+        const beastTargetZ = shieldCharge >= 100 ? 6.8 : 4.3 + Math.sin(elapsed * 3) * 0.35;
+        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, beastTargetZ, dt * 3);
+        beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX * 0.75, dt * 5);
+        beastGroup.position.y = Math.abs(Math.sin(stepCycle * 0.7)) * 0.35;
+        beastArmL.rotation.x = -0.7 + Math.sin(stepCycle * 0.7) * 0.5;
+        beastArmR.rotation.x = -0.7 - Math.sin(stepCycle * 0.7) * 0.5;
 
-        // Scroll Track Segments infinitely
-        trackSegments.forEach(seg => {
-          seg.position.z += moveDist;
-          if (seg.position.z > SEGMENT_LENGTH * 1.5) {
-            seg.position.z -= NUM_SEGMENTS * SEGMENT_LENGTH;
-          }
-        });
+        // Move & Check Collectibles
+        for (let i = collectibles.length - 1; i >= 0; i--) {
+          const c = collectibles[i];
+          c.mesh.position.z += moveDelta;
+          c.mesh.rotation.y += dt * 3.5;
 
-        // Spawn upcoming rows
-        state.nextSpawnZ += moveDist;
-        const gap = Math.max(15, 22 - (state.speed - 23) * 0.25);
-        while (state.nextSpawnZ > -145) {
-          spawnRow(state.nextSpawnZ);
-          state.nextSpawnZ -= gap;
-        }
+          if (!c.collected) {
+            const dx = Math.abs(c.mesh.position.x - playerX);
+            const dy = Math.abs(c.mesh.position.y - (playerY + 1.1));
+            const dz = Math.abs(c.mesh.position.z - 0);
 
-        // Player AABB Bounds
-        const pHeight = state.slideTimer > 0 ? 1.05 : 2.35;
-        const pMinY = state.playerY;
-        const pMaxY = state.playerY + pHeight;
-        const pX = playerGroup.position.x;
-
-        // Move & Check Obstacles
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-          const obs = obstacles[i];
-          obs.mesh.position.z += moveDist;
-          const oz = obs.mesh.position.z;
-
-          if (!obs.hit && Math.abs(oz) < 0.72 && Math.abs(pX - obs.mesh.position.x) < 0.95) {
-            let collided = false;
-            if (obs.type === 'blocker') {
-              collided = true;
-            } else if (obs.type === 'jump' && pMinY < 0.92) {
-              collided = true;
-            } else if (obs.type === 'slide' && pMaxY > 1.38) {
-              collided = true;
-            }
-
-            if (collided) {
-              obs.hit = true;
-              if (state.shieldActive) {
-                state.shieldActive = false;
-                shieldBubble.visible = false;
-                shieldBadge.style.display = 'none';
-                state.shakeTimer = 0.25;
-                sfx.shieldBreak();
-                spawnParticles(obs.mesh.position.x, 1.5, oz, 0x38bdf8, 18);
-                scene.remove(obs.mesh);
-                obstacles.splice(i, 1);
-                continue;
+            if (dx < 0.95 && dy < 1.35 && dz < 1.1) {
+              c.collected = true;
+              c.mesh.visible = false;
+              if (c.isGem) {
+                coins += 5;
+                shieldCharge = Math.min(100, shieldCharge + 35);
+                sound.playGemChime();
+                triggerFlash('rgba(16, 185, 129, 0.3)');
               } else {
-                const msg = obs.type === 'jump'
-                  ? 'You tripped over a fallen temple log! Press UP / W to jump.'
-                  : obs.type === 'slide'
-                  ? 'You hit a stone archway! Press DOWN / S to slide.'
-                  : 'You slammed into an ancient monolith!';
-                triggerGameOver(msg);
-                break;
+                coins += 1;
+                shieldCharge = Math.min(100, shieldCharge + 8);
+                sound.playCoin();
               }
             }
           }
 
-          if (oz > 14) {
+          if (c.mesh.position.z > 12) {
+            scene.remove(c.mesh);
+            collectibles.splice(i, 1);
+          }
+        }
+
+        // Move & Check Obstacles
+        let furthestZ = -40;
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.mesh.position.z += moveDelta;
+          if (obs.mesh.position.z < furthestZ) {
+            furthestZ = obs.mesh.position.z;
+          }
+
+          // Collision Detection near Z = 0
+          if (!obs.hit && Math.abs(obs.mesh.position.z) < obs.zDepth) {
+            const inBlockedLane = obs.lanes.includes(currentLane);
+            if (inBlockedLane) {
+              let collided = false;
+              if (obs.type === 'JUMP' && playerY < 0.95) collided = true;
+              if (obs.type === 'SLIDE' && !isSliding) collided = true;
+              if (obs.type === 'BLOCK') collided = true;
+
+              if (collided) {
+                obs.hit = true;
+                if (shieldCharge >= 100) {
+                  // Relic Shield absorbs the hit!
+                  shieldCharge = 0;
+                  sound.playShieldBreak();
+                  screenShake = 0.5;
+                  triggerFlash('rgba(52, 211, 153, 0.55)');
+                  obs.mesh.visible = false;
+                } else {
+                  triggerGameOver();
+                }
+              }
+            }
+          }
+
+          if (obs.mesh.position.z > 14) {
             scene.remove(obs.mesh);
             obstacles.splice(i, 1);
           }
         }
 
-        // Move & Check Coins / Powerups
-        for (let i = collectibles.length - 1; i >= 0; i--) {
-          const item = collectibles[i];
-          item.mesh.position.z += moveDist;
-          item.mesh.rotation.y += 3.2 * dt;
-
-          // Idol Magnet pull
-          if (item.type === 'coin' && state.magnetTimer > 0 && item.mesh.position.z > -22 && item.mesh.position.z < 3) {
-            item.mesh.position.x = THREE.MathUtils.lerp(item.mesh.position.x, pX, 10 * dt);
-            item.mesh.position.y = THREE.MathUtils.lerp(item.mesh.position.y, state.playerY + 1.1, 10 * dt);
-          }
-
-          const dx = Math.abs(pX - item.mesh.position.x);
-          const dy = Math.abs((state.playerY + pHeight * 0.5) - item.mesh.position.y);
-          const dz = Math.abs(item.mesh.position.z);
-
-          if (!item.collected && dx < 1.05 && dy < 1.35 && dz < 1.05) {
-            item.collected = true;
-            if (item.type === 'coin') {
-              state.coins += 1;
-              state.score += 5;
-              sfx.coin();
-              spawnParticles(item.mesh.position.x, item.mesh.position.y, item.mesh.position.z, 0xffd666, 6);
-            } else if (item.type === 'shield') {
-              state.shieldActive = true;
-              shieldBubble.visible = true;
-              shieldBadge.style.display = 'block';
-              sfx.powerup();
-              spawnParticles(item.mesh.position.x, item.mesh.position.y, item.mesh.position.z, 0x38bdf8, 14);
-            } else if (item.type === 'magnet') {
-              state.magnetTimer = 10;
-              magnetBadge.style.display = 'block';
-              sfx.powerup();
-              spawnParticles(item.mesh.position.x, item.mesh.position.y, item.mesh.position.z, 0xf43f5e, 14);
-            }
-            scene.remove(item.mesh);
-            collectibles.splice(i, 1);
-            continue;
-          }
-
-          if (item.mesh.position.z > 12) {
-            scene.remove(item.mesh);
-            collectibles.splice(i, 1);
-          }
+        // Continuously Spawn New Rows Ahead
+        if (furthestZ > -145) {
+          const gap = Math.max(21, 28 - runSpeed * 0.15);
+          spawnRow(furthestZ - gap);
         }
+
+        // Smooth Follow Camera
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerX * 0.55, dt * 8);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, 4.3 + playerY * 0.45, dt * 8);
+        camera.position.z = 6.6;
+        camera.lookAt(playerX * 0.4, 1.7 + playerY * 0.3, -10);
+
+        // Update Sunlight shadow box to follow player
+        sunLight.position.set(playerX + 18, 36, -25);
+        sunLight.target.position.set(playerX, 0, -15);
+
+        updateHUD();
       }
 
-      // Dynamic Camera Follow & Screen Shake
-      let shakeX = 0, shakeY = 0;
-      if (state.shakeTimer > 0) {
-        state.shakeTimer -= dt;
-        shakeX = (Math.random() - 0.5) * 0.45;
-        shakeY = (Math.random() - 0.5) * 0.45;
+      // Apply Camera Shake
+      if (screenShake > 0) {
+        camera.position.x += (Math.random() - 0.5) * screenShake;
+        camera.position.y += (Math.random() - 0.5) * screenShake;
+        screenShake = Math.max(0, screenShake - dt * 2.2);
       }
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerGroup.position.x * 0.45, 6 * dt) + shakeX;
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 5.2 + playerGroup.position.y * 0.35, 6 * dt) + shakeY;
-      camera.lookAt(playerGroup.position.x * 0.25, 1.8 + playerGroup.position.y * 0.2, -9);
 
       renderer.render(scene, camera);
     }
-
-    // Handle Resize
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
 
     animate();
   </script>
