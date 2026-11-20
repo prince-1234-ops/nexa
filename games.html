@@ -1,2322 +1,825 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <title>Temple Escape 3D — Ancient Forest Runner</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-tap-highlight-color: transparent;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#06101b">
+    <title>NEXA — Games</title>
+    <link rel="icon" type="image/jpeg" href="images/hub.jpg">
 
-    html, body {
-      width: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      overscroll-behavior: none;
-      touch-action: none;
-      background-color: #0b130e;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    #game-container {
-      position: relative;
-      width: 100%;
-      height: 100dvh;
-      touch-action: none;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
-    }
-
-    /* HUD Overlay */
-    #hud {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 12px calc(14px + env(safe-area-inset-left));
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      pointer-events: none;
-      z-index: 10;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-
-    #hud.visible {
-      opacity: 1;
-    }
-
-    .hud-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .hud-pill {
-      background: rgba(14, 24, 18, 0.76);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 215, 110, 0.28);
-      border-radius: 12px;
-      padding: 8px 12px;
-      color: #f4f1ea;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .hud-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: #a8b8aa;
-    }
-
-    .hud-value {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      color: #ffdf73;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-    }
-
-    #shield-bar-container {
-      width: 96px;
-      height: 8px;
-      background: rgba(0, 0, 0, 0.55);
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid rgba(64, 255, 175, 0.35);
-    }
-
-    #shield-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #10b981, #34d399, #a7f3d0);
-      box-shadow: 0 0 10px #10b981;
-      transition: width 0.2s ease;
-    }
-
-    #shield-status {
-      font-size: 11px;
-      font-weight: 700;
-      color: #6ee7b7;
-    }
-
-    .hud-controls-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .hud-btn {
-      pointer-events: auto;
-      background: rgba(14, 24, 18, 0.82);
-      border: 1px solid rgba(255, 215, 110, 0.35);
-      color: #ffdf73;
-      height: 38px;
-      border-radius: 19px;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 0 11px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      transition: transform 0.15s ease, background 0.2s ease;
-    }
-
-    .hud-btn.icon-only {
-      width: 38px;
-      padding: 0;
-      font-size: 16px;
-    }
-
-    .hud-btn.active-toggle {
-      background: rgba(16, 185, 129, 0.28);
-      border-color: #6ee7b7;
-      color: #ffffff;
-    }
-
-    .hud-btn:active {
-      transform: scale(0.95);
-    }
-
-    /* Optional On-Screen Touch Pad for Mobile */
-    #touch-pad {
-      position: absolute;
-      bottom: calc(14px + env(safe-area-inset-bottom));
-      left: 0;
-      width: 100%;
-      padding: 0 18px;
-      display: none;
-      justify-content: space-between;
-      align-items: flex-end;
-      pointer-events: none;
-      z-index: 11;
-    }
-
-    #touch-pad.visible {
-      display: flex;
-    }
-
-    .pad-cluster {
-      display: flex;
-      gap: 10px;
-      pointer-events: auto;
-    }
-
-    .pad-btn {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      background: rgba(14, 24, 18, 0.65);
-      backdrop-filter: blur(6px);
-      border: 1.5px solid rgba(255, 223, 115, 0.38);
-      color: #ffdf73;
-      font-size: 20px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-      touch-action: none;
-    }
-
-    .pad-btn:active {
-      background: rgba(16, 185, 129, 0.45);
-      border-color: #6ee7b7;
-      transform: scale(0.92);
-    }
-
-    /* Cinematic Banner */
-    #cinematic-banner {
-      position: absolute;
-      bottom: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 92%;
-      max-width: 580px;
-      background: linear-gradient(90deg, transparent, rgba(10, 18, 12, 0.9), transparent);
-      padding: 12px 24px;
-      color: #ffdf73;
-      font-size: clamp(14px, 4vw, 18px);
-      font-weight: 800;
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
-      text-align: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      z-index: 15;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
-    }
-
-    #cinematic-banner.beast-speech {
-      color: #ff5544;
-      text-shadow: 0 0 16px rgba(255, 40, 20, 0.8), 0 2px 10px rgba(0, 0, 0, 0.95);
-    }
-
-    #cinematic-banner.visible {
-      opacity: 1;
-    }
-
-    /* Start & Game Over Screens */
-    .overlay-screen {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at center, rgba(12, 22, 16, 0.58) 0%, rgba(5, 10, 7, 0.9) 100%);
-      z-index: 20;
-      text-align: center;
-      padding: 24px;
-      transition: opacity 0.45s ease;
-    }
-
-    .overlay-screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .title-badge {
-      font-size: 12px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #34d399;
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    h1 {
-      font-size: clamp(32px, 8vw, 64px);
-      font-weight: 900;
-      letter-spacing: 1.5px;
-      background: linear-gradient(180deg, #fff3b0 0%, #f59e0b 65%, #b45309 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.75));
-      margin-bottom: 12px;
-    }
-
-    .subtitle {
-      max-width: 480px;
-      font-size: clamp(14px, 3.8vw, 16px);
-      line-height: 1.55;
-      color: #d1dbd3;
-      margin-bottom: 24px;
-    }
-
-    .primary-btn {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #ffffff;
-      border: 2px solid #6ee7b7;
-      padding: 15px 36px;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.45);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-    }
-
-    .primary-btn:active {
-      transform: scale(0.96);
-    }
-
-    .controls-grid {
-      display: flex;
-      gap: 10px;
-      margin-top: 26px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .control-chip {
-      background: rgba(20, 34, 26, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 10px;
-      padding: 8px 12px;
-      color: #cbd5e1;
-      font-size: 12px;
-    }
-
-    .control-chip strong {
-      color: #ffdf73;
-    }
-
-    .stats-box {
-      display: flex;
-      gap: 18px;
-      margin-bottom: 24px;
-      background: rgba(15, 26, 19, 0.88);
-      border: 1px solid rgba(255, 215, 110, 0.3);
-      padding: 16px 22px;
-      border-radius: 16px;
-    }
-
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .stat-item span:first-child {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #94a3b8;
-      letter-spacing: 1px;
-    }
-
-    .stat-item span:last-child {
-      font-size: 24px;
-      font-weight: 800;
-      color: #ffdf73;
-      margin-top: 4px;
-    }
-
-    /* Damage / Shield Flash */
-    #screen-flash {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 12;
-      transition: opacity 0.25s ease;
-    }
-
-    @media (min-width: 640px) {
-      .hud-pill {
-        padding: 10px 18px;
-        gap: 12px;
-      }
-      .hud-label {
-        font-size: 11px;
-        letter-spacing: 1.5px;
-      }
-      .hud-value {
-        font-size: 22px;
-      }
-      #shield-bar-container {
-        width: 140px;
-        height: 10px;
-      }
-      .hud-btn {
-        height: 42px;
-        font-size: 13px;
-        padding: 0 14px;
-      }
-      .hud-btn.icon-only {
-        width: 42px;
-        padding: 0;
-        font-size: 17px;
-      }
-    }
-  </style>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="games.css">
+    <link rel="stylesheet" href="Nexa nav.css">
+    <link rel="stylesheet" href="nexa-theme.css">
 </head>
+
 <body>
-  <div id="game-container">
-    <div id="screen-flash"></div>
 
-    <!-- HUD -->
-    <div id="hud">
-      <div class="hud-group">
-        <div class="hud-pill">
-          <div>
-            <div class="hud-label">Distance</div>
-            <div class="hud-value" id="score-val">0m</div>
-          </div>
-          <div style="width:1px;height:26px;background:rgba(255,255,255,0.15);"></div>
-          <div>
-            <div class="hud-label">Coins</div>
-            <div class="hud-value" id="coins-val">0</div>
-          </div>
+<div class="nexa-app">
+
+    <!-- ================= SHARED SIDEBAR ================= -->
+
+    <aside class="sidebar" aria-label="Main navigation">
+
+        <div class="sidebar-brand">
+            <a href="home.html" class="logo">NEXA</a>
+            <span class="brand-status">SOCIAL</span>
         </div>
-      </div>
 
-      <div class="hud-group" style="align-items: flex-end;">
-        <div class="hud-controls-row">
-          <div class="hud-pill">
-            <div>
-              <div class="hud-label" style="display:flex;justify-content:space-between;gap:8px;">
-                <span>Shield</span>
-                <span id="shield-status">0%</span>
-              </div>
-              <div id="shield-bar-container" style="margin-top:5px;">
-                <div id="shield-bar"></div>
-              </div>
+        <nav class="main-nav">
+
+            <a href="home.html" class="nav-item">
+                <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
+            </a>
+
+            <a href="people.html" class="nav-item">
+                <span class="nav-icon">◉</span><span class="nav-label">People</span>
+            </a>
+
+            <a href="messages.html" class="nav-item">
+                <span class="nav-icon">✉</span><span class="nav-label">Messages</span>
+                <span class="nav-badge" data-unread-badge hidden>0</span>
+            </a>
+
+            <a href="reels.html" class="nav-item">
+                <span class="nav-icon">📽️</span><span class="nav-label">Reels</span>
+            </a>
+
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">●</span><span class="nav-label">Profile</span>
+            </a>
+
+            <a href="games.html" class="nav-item active" aria-current="page">
+                <span class="nav-icon">🎮</span><span class="nav-label">Games</span>
+            </a>
+
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a href="about.html" class="nav-item">
+                <span class="nav-icon">ⓘ</span><span class="nav-label">About</span>
+            </a>
+
+            <a href="contact.html" class="nav-item">
+                <span class="nav-icon">☏</span><span class="nav-label">Contact</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-promo">
+                <span class="promo-icon">✦</span>
+                <div>
+                    <strong>Welcome to NEXA</strong>
+                    <small>Connect. Share. Discover.</small>
+                </div>
             </div>
-          </div>
-          <button id="voice-btn" class="hud-btn active-toggle" title="Toggle Voice">🗣 Voice</button>
-          <button id="pad-btn" class="hud-btn active-toggle" title="Toggle Touch Pad">🎮 Pad</button>
-          <button id="cam-btn" class="hud-btn" title="Toggle Camera Angle">📷 Chase</button>
-          <button id="audio-btn" class="hud-btn icon-only" title="Toggle Sound">🔊</button>
+
+            <button id="logoutButton" class="logout-btn" type="button">
+                <span class="logout-icon">↪</span><span>Logout</span>
+            </button>
+
         </div>
-      </div>
-    </div>
 
-    <!-- Optional On-Screen Touch Buttons -->
-    <div id="touch-pad" class="visible">
-      <div class="pad-cluster">
-        <button class="pad-btn" id="pad-left" aria-label="Move Left">←</button>
-        <button class="pad-btn" id="pad-right" aria-label="Move Right">→</button>
-      </div>
-      <div class="pad-cluster">
-        <button class="pad-btn" id="pad-slide" aria-label="Slide">↓</button>
-        <button class="pad-btn" id="pad-jump" aria-label="Jump">↑</button>
-      </div>
-    </div>
+    </aside>
 
-    <!-- Cinematic Subtitle -->
-    <div id="cinematic-banner"></div>
 
-    <!-- Start Overlay -->
-    <div id="start-screen" class="overlay-screen">
-      <div class="title-badge">Mobile 3D Expedition</div>
-      <h1>TEMPLE ESCAPE 3D</h1>
-      <p class="subtitle">
-        Snatch the Emerald Heart from the cave altar—then swipe or tap to outrun the Demon Guardian through the ancient forest.
-      </p>
-      <button id="start-btn" class="primary-btn">Steal Gem &amp; Run</button>
-      <div class="controls-grid">
-        <div class="control-chip"><strong>Swipe L/R or Tap ←/→</strong> Lane</div>
-        <div class="control-chip"><strong>Swipe Up or Tap ↑</strong> Jump</div>
-        <div class="control-chip"><strong>Swipe Down or Tap ↓</strong> Slide</div>
-      </div>
-    </div>
+    <!-- ================= MAIN ================= -->
 
-    <!-- Game Over Overlay -->
-    <div id="gameover-screen" class="overlay-screen hidden">
-      <div class="title-badge" style="color:#f87171;">Caught by the Guardian</div>
-      <h1>RUN ENDED</h1>
-      <div class="stats-box">
-        <div class="stat-item">
-          <span>Distance</span>
-          <span id="final-score">0m</span>
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <a href="home.html" class="mobile-logo">NEXA</a>
+
+            <div class="topbar-search">
+                <span class="search-icon">⌕</span>
+                <label for="gameSearchInput" class="sr-only">Search NEXA games</label>
+                <input type="search" id="gameSearchInput" placeholder="Search runner, fighting games and more..." autocomplete="off">
+                <button class="search-shortcut" type="button" aria-label="Search">/</button>
+            </div>
+
+            <div class="topbar-actions">
+
+                <button class="top-create-button" id="openConnectModalBtn" type="button">
+                    <span>+</span><strong>Link Game</strong>
+                </button>
+
+                <button class="topbar-btn notification-trigger" id="notificationButton" type="button"
+                    title="Notifications" aria-label="Notifications">
+                    <span>♡</span><i class="notification-dot" aria-hidden="true"></i>
+                </button>
+
+                <a href="messages.html" class="topbar-btn" title="Messages" aria-label="Messages">✉</a>
+
+                <a href="profile.html" class="mini-profile" aria-label="Open profile">
+                    <div class="mini-avatar" id="miniAvatar">N</div>
+                </a>
+
+            </div>
+
+        </header>
+
+        <div id="notificationArea" class="notification-area" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="games-page">
+
+            <!-- HERO BANNER -->
+            <section class="games-hero">
+                <div class="games-hero-copy">
+                    <span class="games-eyebrow">NEXA ARCADE</span>
+                    <h1>Tap any wallpaper to <span>start playing.</span></h1>
+                    <p>Sprint through collapsing ruins or clash in high-speed arena combat. Connect new game files anytime and launch them right inside NEXA.</p>
+                </div>
+
+                <div class="games-hero-actions">
+                    <button type="button" class="hero-cta primary" id="quickPlayRunnerBtn">
+                        ▶ Play Runner
+                    </button>
+                    <button type="button" class="hero-cta secondary" id="quickPlayFighterBtn">
+                        ⚔ Play Fighting
+                    </button>
+                </div>
+            </section>
+
+            <!-- FILTER TABS -->
+            <div class="games-toolbar">
+                <div class="games-section-heading">
+                    <span class="section-eyebrow">GAME WALLPAPERS</span>
+                    <h2>Featured Worlds</h2>
+                </div>
+
+                <div class="games-filter-tabs" role="tablist" aria-label="Game categories">
+                    <button type="button" class="filter-tab is-active" data-filter="all">All Games</button>
+                    <button type="button" class="filter-tab" data-filter="running">Running</button>
+                    <button type="button" class="filter-tab" data-filter="fighting">Fighting</button>
+                </div>
+            </div>
+
+            <!-- GAME WALLPAPER GRID (rendered dynamically from NEXA_GAMES) -->
+            <section class="games-grid" id="gamesGrid" aria-label="Games catalog"></section>
+
         </div>
-        <div class="stat-item">
-          <span>Best</span>
-          <span id="best-score">0m</span>
+
+    </main>
+
+</div>
+
+
+<!-- ================= SHARED MOBILE BAR ================= -->
+
+<nav class="mobile-nav" aria-label="Mobile navigation">
+
+    <a href="home.html" class="mobile-nav-item">
+        <span>⌂</span><small>Home</small>
+    </a>
+
+    <a href="people.html" class="mobile-nav-item">
+        <span>◉</span><small>People</small>
+    </a>
+
+    <a href="messages.html" class="mobile-nav-item">
+        <span>✉</span><small>Messages</small>
+        <span class="mobile-nav-badge" data-unread-badge hidden>0</span>
+    </a>
+
+    <a href="games.html" class="mobile-nav-item active" aria-current="page">
+        <span>🎮</span><small>Games</small>
+    </a>
+
+    <a href="profile.html" class="mobile-nav-item">
+        <span>●</span><small>Profile</small>
+    </a>
+
+</nav>
+
+
+<!-- ================= GAME LAUNCHER / PLAYER MODAL ================= -->
+
+<div id="gamePlayerModal" class="game-modal" hidden aria-hidden="true">
+    <div class="game-modal-backdrop" id="gameModalBackdrop"></div>
+
+    <div class="game-modal-box" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
+        <div class="game-modal-bar">
+            <div class="game-modal-meta">
+                <span class="game-modal-tag" id="gameModalTag">RUNNING</span>
+                <h2 id="gameModalTitle">Game Title</h2>
+            </div>
+
+            <div class="game-modal-controls">
+                <a id="gameExternalLink" href="#" target="_blank" rel="noopener" class="modal-pill-btn">
+                    Open Tab ↗
+                </a>
+                <button id="closeGameModalBtn" class="modal-close-btn" type="button" aria-label="Close game">×</button>
+            </div>
         </div>
-        <div class="stat-item">
-          <span>Coins</span>
-          <span id="final-coins">0</span>
+
+        <div class="game-stage" id="gameStage">
+            <!-- Connected game iframe or built-in starter preview mounts here -->
         </div>
-      </div>
-      <button id="restart-btn" class="primary-btn">Run Again</button>
     </div>
-  </div>
+</div>
 
-  <!-- Three.js from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <script>
-    // ==========================================
-    // 1. PROCEDURAL WEB AUDIO ENGINE
-    // ==========================================
-    class SoundEngine {
-      constructor() {
-        this.ctx = null;
-        this.muted = false;
-      }
+<!-- ================= CONNECT / LINK GAME MODAL ================= -->
 
-      init() {
-        if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioContext();
-        }
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
-      }
+<div id="connectGameModal" class="game-modal" hidden aria-hidden="true">
+    <div class="game-modal-backdrop" id="connectModalBackdrop"></div>
 
-      toggleMute() {
-        this.muted = !this.muted;
-        return this.muted;
-      }
+    <div class="game-modal-box connect-modal-box" role="dialog" aria-modal="true" aria-labelledby="connectModalTitle">
+        <div class="game-modal-bar">
+            <div class="game-modal-meta">
+                <span class="section-eyebrow">PLUG &amp; PLAY</span>
+                <h2 id="connectModalTitle">Connect Game URL or File</h2>
+            </div>
+            <button id="closeConnectModalBtn" class="modal-close-btn" type="button" aria-label="Close">×</button>
+        </div>
 
-      playGemChime() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const freqs = [587.33, 880, 1174.66, 1760];
-        freqs.forEach((f, i) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(f, now + i * 0.06);
-          gain.gain.setValueAtTime(0.001, now + i * 0.06);
-          gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.06 + 0.03);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.06 + 0.9);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + i * 0.06);
-          osc.stop(now + i * 0.06 + 0.95);
-        });
-      }
+        <form id="connectGameForm" class="connect-form">
+            <label class="form-field">
+                <span>Game Slot</span>
+                <select id="connectGameSelect">
+                    <option value="temple-sprint">Temple Sprint (Running)</option>
+                    <option value="cyber-clash">Cyber Clash (Fighting)</option>
+                    <option value="blade-duel">Ronin Blade Duel (Fighting)</option>
+                </select>
+            </label>
 
-      playBeastRoar() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
+            <label class="form-field">
+                <span>Game File / URL</span>
+                <input type="text" id="connectGameUrl" placeholder="e.g. runner.html or games/fighter/index.html" required>
+            </label>
 
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const filter = this.ctx.createBiquadFilter();
-        const gain = this.ctx.createGain();
+            <p class="form-hint">
+                Once saved, clicking that game's wallpaper automatically loads your file/URL in the player. You can also set defaults directly in <code>NEXA_GAMES</code> inside the script below.
+            </p>
 
-        osc1.type = 'sawtooth';
-        osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(92, now);
-        osc1.frequency.exponentialRampToValueAtTime(34, now + 1.5);
-        osc2.frequency.setValueAtTime(58, now);
-        osc2.frequency.exponentialRampToValueAtTime(24, now + 1.5);
+            <div class="connect-form-actions">
+                <button type="button" class="hero-cta secondary" id="resetGameUrlBtn">Reset Slot</button>
+                <button type="submit" class="hero-cta primary">Save &amp; Connect</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(420, now);
-        filter.frequency.linearRampToValueAtTime(125, now + 1.5);
 
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.45, now + 0.16);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="nexa-theme.js"></script>
+<script src="Nexa-nav.js"></script>
 
-        osc1.connect(filter);
-        osc2.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
+<script>
+/**
+ * =========================================================================
+ * NEXA GAMES REGISTRY
+ * Drop your game file paths or URLs into `url` below (e.g., "runner.html",
+ * "fighter.html"). When `url` is null, clicking the wallpaper opens a live
+ * playable mini-preview so the hub feels alive right away.
+ * =========================================================================
+ */
+const DEFAULT_GAMES = [
+    {
+        id: "temple-sprint",
+        title: "Temple Sprint",
+        category: "running",
+        badge: "RUNNING • ENDLESS",
+        subtitle: "Dash through ancient stone temples, vault gaps, and outrun the rising shadow.",
+        wallpaperType: "runner",
+        url: null,
+        accent: "#55baff"
+    },
+    {
+        id: "cyber-clash",
+        title: "Cyber Clash",
+        category: "fighting",
+        badge: "FIGHTING • 1V1 ARENA",
+        subtitle: "High-speed neon melee combat with heavy strikes, blocks, and combo finishers.",
+        wallpaperType: "fighter-neon",
+        url: null,
+        accent: "#80f2ff"
+    },
+    {
+        id: "blade-duel",
+        title: "Frostblade Duel",
+        category: "fighting",
+        badge: "FIGHTING • DUEL",
+        subtitle: "Precision parry-and-strike duels across frozen cyber-dojo platforms.",
+        wallpaperType: "fighter-frost",
+        url: null,
+        accent: "#8bd5ff"
+    }
+];
 
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 1.65);
-        osc2.stop(now + 1.65);
-      }
+const STORAGE_KEY = "nexa_connected_game_urls_v1";
 
-      // Deep sub-bass rumble that plays under the monster's voice
-      playBeastRumble(duration = 2.6) {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const sub = this.ctx.createOscillator();
-        const growl = this.ctx.createOscillator();
-        const filter = this.ctx.createBiquadFilter();
-        const gain = this.ctx.createGain();
+function loadGamesConfig() {
+    let saved = {};
+    try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch (_) {
+        saved = {};
+    }
+    return DEFAULT_GAMES.map(game => ({
+        ...game,
+        url: Object.prototype.hasOwnProperty.call(saved, game.id) ? saved[game.id] : game.url
+    }));
+}
 
-        sub.type = 'sine';
-        sub.frequency.setValueAtTime(46, now);
-        sub.frequency.linearRampToValueAtTime(32, now + duration);
+function saveGameUrl(gameId, url) {
+    let saved = {};
+    try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch (_) {
+        saved = {};
+    }
+    if (url && url.trim()) {
+        saved[gameId] = url.trim();
+    } else {
+        delete saved[gameId];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+}
 
-        growl.type = 'sawtooth';
-        growl.frequency.setValueAtTime(54, now);
-        growl.frequency.linearRampToValueAtTime(38, now + duration);
-
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(140, now);
-
-        gain.gain.setValueAtTime(0.001, now);
-        gain.gain.linearRampToValueAtTime(0.26, now + 0.2);
-        gain.gain.setValueAtTime(0.22, now + duration - 0.45);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
-        sub.connect(gain);
-        growl.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        sub.start(now);
-        growl.start(now);
-        sub.stop(now + duration + 0.05);
-        growl.stop(now + duration + 0.05);
-      }
-
-      playCoin() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1046.5, now);
-        osc.frequency.setValueAtTime(1318.5, now + 0.055);
-        gain.gain.setValueAtTime(0.14, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.26);
-      }
-
-      playJump() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(460, now + 0.18);
-        gain.gain.setValueAtTime(0.16, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.24);
-      }
-
-      playSlide() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const bufferSize = this.ctx.sampleRate * 0.28;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(900, now);
-        filter.frequency.exponentialRampToValueAtTime(300, now + 0.28);
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.18, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start(now);
-      }
-
-      playFootstep() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(110, now);
-        osc.frequency.exponentialRampToValueAtTime(42, now + 0.07);
-        gain.gain.setValueAtTime(0.09, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.09);
-      }
-
-      playCrash() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(130, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.45);
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.5);
-      }
-
-      playShieldBreak() {
-        if (this.muted || !this.ctx) return;
-        const now = this.ctx.currentTime;
-        [720, 540, 360].forEach((f, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(f, now + idx * 0.04);
-          gain.gain.setValueAtTime(0.2, now + idx * 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.3);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + idx * 0.04);
-          osc.stop(now + idx * 0.04 + 0.32);
-        });
-      }
+function renderWallpaperArtwork(type) {
+    if (type === "runner") {
+        return `
+            <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <defs>
+                    <linearGradient id="runSky" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#071a2d"/>
+                        <stop offset="65%" stop-color="#0e3759"/>
+                        <stop offset="100%" stop-color="#19699e"/>
+                    </linearGradient>
+                    <linearGradient id="runGlow" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#2589e8" stop-opacity="0.0"/>
+                        <stop offset="50%" stop-color="#80f2ff" stop-opacity="0.45"/>
+                        <stop offset="100%" stop-color="#55baff" stop-opacity="0.0"/>
+                    </linearGradient>
+                </defs>
+                <rect width="640" height="360" fill="url(#runSky)"/>
+                <!-- temple pillars -->
+                <polygon points="70,260 115,90 150,90 120,260" fill="#091d30" opacity="0.85"/>
+                <polygon points="490,260 520,90 555,90 580,260" fill="#091d30" opacity="0.85"/>
+                <!-- speed lines -->
+                <line x1="20" y1="120" x2="220" y2="120" stroke="#80f2ff" stroke-width="2" opacity="0.35"/>
+                <line x1="380" y1="150" x2="620" y2="150" stroke="#55baff" stroke-width="2" opacity="0.3"/>
+                <line x1="60" y1="190" x2="290" y2="190" stroke="#8bd5ff" stroke-width="1.5" opacity="0.25"/>
+                <!-- runner silhouette sprinting -->
+                <g transform="translate(310, 178)">
+                    <ellipse cx="10" cy="78" rx="46" ry="8" fill="#80f2ff" opacity="0.22"/>
+                    <circle cx="14" cy="-34" r="11" fill="#dff4ff"/>
+                    <path d="M 10 -22 L 22 6 L 4 32 L -16 54" stroke="#8bd5ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 18 -12 L 42 -2 L 56 14" stroke="#55baff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 12 -18 L -14 -8 L -28 8" stroke="#80f2ff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 22 6 L 46 28 L 36 58" stroke="#dff4ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </g>
+                <!-- track & gap -->
+                <rect x="0" y="256" width="275" height="104" fill="#05101c"/>
+                <rect x="355" y="256" width="285" height="104" fill="#05101c"/>
+                <rect x="0" y="254" width="275" height="4" fill="#80f2ff" opacity="0.7"/>
+                <rect x="355" y="254" width="285" height="4" fill="#80f2ff" opacity="0.7"/>
+                <rect x="0" y="246" width="640" height="16" fill="url(#runGlow)"/>
+            </svg>
+        `;
     }
 
-    const sound = new SoundEngine();
-
-    // ==========================================
-    // 1B. DEEP DEMON BEAST & COMMENTARY VOICE ENGINE
-    // ==========================================
-    class VoiceGuide {
-      constructor() {
-        this.enabled = true;
-        this.lastSpeakTime = 0;
-        this.lastDangerSpeak = 0;
-      }
-
-      unlock() {
-        if (!('speechSynthesis' in window)) return;
-        const utter = new SpeechSynthesisUtterance('');
-        utter.volume = 0;
-        window.speechSynthesis.speak(utter);
-      }
-
-      toggle() {
-        this.enabled = !this.enabled;
-        if (!this.enabled && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-        } else if (this.enabled) {
-          this.beastSpeak('You cannot escape me!', { priority: true, withRumble: false });
-        }
-        return this.enabled;
-      }
-
-      pickDeepBeastVoice() {
-        if (!('speechSynthesis' in window)) return null;
-        const voices = window.speechSynthesis.getVoices() || [];
-        return (
-          voices.find((v) => /en/i.test(v.lang) && /daniel|fred|aaron|guy|male|david|mark|alex|bruce/i.test(v.name)) ||
-          voices.find((v) => /en/i.test(v.lang)) ||
-          voices[0] ||
-          null
-        );
-      }
-
-      // Ultra-deep, slow, scary monster voice
-      beastSpeak(text, { priority = true, cooldown = 2.0, withRumble = true } = {}) {
-        if (!this.enabled || sound.muted || !('speechSynthesis' in window)) return;
-        const now = performance.now() / 1000;
-        if (!priority && now - this.lastSpeakTime < cooldown) return;
-
-        this.lastSpeakTime = now;
-        if (withRumble) {
-          sound.playBeastRumble(2.8);
-        }
-
-        try {
-          if (priority) {
-            window.speechSynthesis.cancel();
-          }
-          const utter = new SpeechSynthesisUtterance(text);
-          const voice = this.pickDeepBeastVoice();
-          if (voice) utter.voice = voice;
-          utter.rate = 0.78;
-          utter.pitch = 0.25;
-          utter.volume = 1.0;
-          window.speechSynthesis.speak(utter);
-        } catch (err) {
-          // Ignore speech synthesis errors on restricted devices
-        }
-      }
-
-      warnCloseBeast() {
-        const now = performance.now() / 1000;
-        if (now - this.lastDangerSpeak < 7.5) return;
-        this.lastDangerSpeak = now;
-        const lines = [
-          'I can smell your fear... Run faster!',
-          'You will never leave this forest alive!',
-          'Give me back my emerald!'
-        ];
-        this.beastSpeak(lines[Math.floor(Math.random() * lines.length)], {
-          priority: false,
-          cooldown: 2.5,
-          withRumble: true
-        });
-      }
+    if (type === "fighter-neon") {
+        return `
+            <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <defs>
+                    <radialGradient id="fightArena" cx="50%" cy="45%" r="60%">
+                        <stop offset="0%" stop-color="#1d5b8c"/>
+                        <stop offset="65%" stop-color="#091d30"/>
+                        <stop offset="100%" stop-color="#040b14"/>
+                    </radialGradient>
+                </defs>
+                <rect width="640" height="360" fill="url(#fightArena)"/>
+                <!-- energy clash burst -->
+                <circle cx="320" cy="182" r="56" fill="#80f2ff" opacity="0.14"/>
+                <path d="M 255 155 L 320 182 L 385 148" stroke="#80f2ff" stroke-width="4" fill="none" opacity="0.85"/>
+                <path d="M 265 205 L 320 182 L 375 212" stroke="#55baff" stroke-width="3" fill="none" opacity="0.7"/>
+                <!-- left fighter -->
+                <g transform="translate(215, 145)">
+                    <circle cx="0" cy="-26" r="11" fill="#e6f6ff"/>
+                    <path d="M -2 -14 L 4 22 L -18 68" stroke="#55baff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 4 22 L 26 52 L 38 72" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 0 -8 L 48 16" stroke="#80f2ff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                </g>
+                <!-- right fighter -->
+                <g transform="translate(425, 148)">
+                    <circle cx="0" cy="-26" r="11" fill="#e6f6ff"/>
+                    <path d="M 2 -14 L -4 22 L 18 65" stroke="#2589e8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M -4 22 L -28 48 L -42 69" stroke="#80f2ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M 0 -8 L -46 14" stroke="#bfeaff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                </g>
+                <!-- arena floor -->
+                <rect x="60" y="256" width="520" height="8" rx="4" fill="#55baff" opacity="0.55"/>
+                <rect x="0" y="264" width="640" height="96" fill="#05101b"/>
+            </svg>
+        `;
     }
 
-    const voice = new VoiceGuide();
-    if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = () => voice.pickDeepBeastVoice();
-    }
+    return `
+        <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+                <linearGradient id="frostBg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#07192b"/>
+                    <stop offset="55%" stop-color="#10395c"/>
+                    <stop offset="100%" stop-color="#061220"/>
+                </linearGradient>
+            </defs>
+            <rect width="640" height="360" fill="url(#frostBg)"/>
+            <!-- angled ice shards -->
+            <polygon points="110,40 165,140 90,175" fill="#80f2ff" opacity="0.12"/>
+            <polygon points="510,50 565,155 485,180" fill="#55baff" opacity="0.14"/>
+            <!-- duelist left -->
+            <g transform="translate(225, 152)">
+                <circle cx="0" cy="-25" r="10" fill="#edf7ff"/>
+                <path d="M 0 -14 L 0 24 L -16 62" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <path d="M 0 24 L 20 62" stroke="#55baff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <!-- energy blade -->
+                <line x1="6" y1="2" x2="88" y2="-22" stroke="#80f2ff" stroke-width="5" stroke-linecap="round"/>
+            </g>
+            <!-- duelist right -->
+            <g transform="translate(415, 152)">
+                <circle cx="0" cy="-25" r="10" fill="#edf7ff"/>
+                <path d="M 0 -14 L 0 24 L 16 62" stroke="#55baff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <path d="M 0 24 L -20 62" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <!-- energy blade -->
+                <line x1="-6" y1="2" x2="-88" y2="-22" stroke="#bfeaff" stroke-width="5" stroke-linecap="round"/>
+            </g>
+            <rect x="0" y="256" width="640" height="4" fill="#80f2ff" opacity="0.6"/>
+            <rect x="0" y="260" width="640" height="100" fill="#05101d"/>
+        </svg>
+    `;
+}
 
-    // ==========================================
-    // 2. PROCEDURAL TEXTURES
-    // ==========================================
-    function createNoiseTexture(baseHex, accentHex, scale = 4) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 256;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = baseHex;
-      ctx.fillRect(0, 0, 256, 256);
+let activeFilter = "all";
+let searchQuery = "";
+let demoCleanup = null;
 
-      for (let i = 0; i < 2200; i++) {
-        const x = Math.random() * 256;
-        const y = Math.random() * 256;
-        const r = Math.random() * scale + 1;
-        ctx.fillStyle = accentHex;
-        ctx.globalAlpha = Math.random() * 0.25;
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
-      return tex;
-    }
-
-    const stoneTex = createNoiseTexture('#4b524d', '#232825', 5);
-    const dirtTex = createNoiseTexture('#4e3b2c', '#2d2117', 6);
-    const mossTex = createNoiseTexture('#2f4f32', '#1a2e1c', 5);
-    const barkTex = createNoiseTexture('#3b281c', '#1e130c', 4);
-    const furTex = createNoiseTexture('#23201e', '#110f0e', 3);
-
-    // ==========================================
-    // 3. SCENE, RENDERER & LIGHTING
-    // ==========================================
-    const container = document.getElementById('game-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0c1610);
-    scene.fog = new THREE.FogExp2(0x16281c, 0.015);
-
-    const camera = new THREE.PerspectiveCamera(66, window.innerWidth / window.innerHeight, 0.1, 220);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
-    container.appendChild(renderer.domElement);
-    const canvas = renderer.domElement;
-
-    const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.8);
-    scene.add(hemiLight);
-
-    const sunLight = new THREE.DirectionalLight(0xfff1d0, 1.6);
-    sunLight.position.set(18, 36, -25);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.near = 1;
-    sunLight.shadow.camera.far = 110;
-    const d = 26;
-    sunLight.shadow.camera.left = -d;
-    sunLight.shadow.camera.right = d;
-    sunLight.shadow.camera.top = d;
-    sunLight.shadow.camera.bottom = -d;
-    sunLight.shadow.bias = -0.0005;
-    scene.add(sunLight);
-    scene.add(sunLight.target);
-
-    const caveTorchLeft = new THREE.PointLight(0xff7b29, 2.9, 22);
-    caveTorchLeft.position.set(-4.5, 4.2, 6);
-    scene.add(caveTorchLeft);
-
-    const caveTorchRight = new THREE.PointLight(0xff7b29, 2.9, 22);
-    caveTorchRight.position.set(4.5, 4.2, 6);
-    scene.add(caveTorchRight);
-
-    const gemLight = new THREE.PointLight(0x10b981, 3.2, 14);
-    gemLight.position.set(0, 2.2, 8.2);
-    scene.add(gemLight);
-
-    // ==========================================
-    // 4. GAME CONSTANTS & STATE
-    // ==========================================
-    const LANES = [-2.6, 0, 2.6];
-    const SEGMENT_LENGTH = 20;
-    const NUM_SEGMENTS = 10;
-
-    let gameState = 'MENU';
-    let introTimer = 0;
-
-    let currentLane = 1;
-    let playerX = 0;
-    let playerY = 0;
-    let velocityY = 0;
-    let isJumping = false;
-    let isSliding = false;
-    let slideTimer = 0;
-
-    let runSpeed = 22;
-    let distance = 0;
-    let coins = 0;
-    let bestScore = parseInt(localStorage.getItem('temple_escape_best') || '0', 10);
-    let shieldCharge = 0;
-    let screenShake = 0;
-    let stepCycle = 0;
-    let lastStepSign = 1;
-
-    let cameraMode = 'chase';
-    let touchPadEnabled = true;
-
-    let beastProximity = 0.28;
-    let beastLungeBoost = 0;
-
-    function applyResponsiveCameraFraming() {
-      const aspect = window.innerWidth / window.innerHeight;
-      camera.aspect = aspect;
-      camera.fov = aspect < 0.8 ? 74 : 66;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    // ==========================================
-    // 5. SCULPTED 3D CHARACTERS & CAVE SETPIECE
-    // ==========================================
-    const matSkin = new THREE.MeshStandardMaterial({ color: 0xd9956c, roughness: 0.55, metalness: 0.04 });
-    const matShirt = new THREE.MeshStandardMaterial({ color: 0xe5dec9, roughness: 0.8 });
-    const matVest = new THREE.MeshStandardMaterial({ color: 0x6b3e26, roughness: 0.72 });
-    const matPants = new THREE.MeshStandardMaterial({ color: 0x3b4d3b, roughness: 0.85 });
-    const matBoot = new THREE.MeshStandardMaterial({ color: 0x382012, roughness: 0.7 });
-    const matLeather = new THREE.MeshStandardMaterial({ color: 0x4a2916, roughness: 0.65 });
-    const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.88, roughness: 0.2 });
-    const matScarf = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.75 });
-    const matHair = new THREE.MeshStandardMaterial({ color: 0x2b190e, roughness: 0.85 });
-    const matEyeWhite = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
-    const matPupil = new THREE.MeshBasicMaterial({ color: 0x18181b });
-    const matFang = new THREE.MeshStandardMaterial({ color: 0xf5f0dc, roughness: 0.35 });
-    const matMouthInside = new THREE.MeshStandardMaterial({ color: 0x450a0a, roughness: 0.9 });
-    const matAbyss = new THREE.MeshBasicMaterial({ color: 0x030705 });
-
-    const matEmerald = new THREE.MeshStandardMaterial({
-      color: 0x10b981,
-      emissive: 0x059669,
-      emissiveIntensity: 0.9,
-      roughness: 0.15,
-      metalness: 0.2
-    });
-    const matStone = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
-    const matBeastFur = new THREE.MeshStandardMaterial({ color: 0x242120, map: furTex, roughness: 0.88 });
-    const matBeastMuscle = new THREE.MeshStandardMaterial({ color: 0x1b1817, map: furTex, roughness: 0.82 });
-    const matBeastEye = new THREE.MeshStandardMaterial({
-      color: 0xff4500,
-      emissive: 0xff2200,
-      emissiveIntensity: 2.5
+function renderGamesGrid() {
+    const grid = document.getElementById("gamesGrid");
+    const games = loadGamesConfig().filter(g => {
+        const matchesCategory = activeFilter === "all" || g.category === activeFilter;
+        const q = searchQuery.trim().toLowerCase();
+        const matchesSearch = !q ||
+            g.title.toLowerCase().includes(q) ||
+            g.category.toLowerCase().includes(q) ||
+            g.subtitle.toLowerCase().includes(q);
+        return matchesCategory && matchesSearch;
     });
 
-    function makeTaperedLimb(rTop, rBot, len, mat, yOffset) {
-      const geo = new THREE.CylinderGeometry(rTop, rBot, len, 12);
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.y = yOffset;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      return mesh;
+    if (!games.length) {
+        grid.innerHTML = `
+            <div class="games-empty">
+                <strong>No matching games found</strong>
+                <p>Try another filter or search term.</p>
+            </div>
+        `;
+        return;
     }
 
-    // ------------------------------------------
-    // 5A. REALISTIC ARTICULATED HUMAN EXPLORER
-    // ------------------------------------------
-    const playerGroup = new THREE.Group();
-    scene.add(playerGroup);
-
-    const playerBodyPivot = new THREE.Group();
-    playerGroup.add(playerBodyPivot);
-
-    const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.29, 0.24, 14), matPants);
-    pelvis.position.y = 0.92;
-    pelvis.castShadow = true;
-    playerBodyPivot.add(pelvis);
-
-    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.1, 14), matLeather);
-    belt.position.y = 1.03;
-    playerBodyPivot.add(belt);
-
-    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.11, 0.06), matGold);
-    buckle.position.set(0, 1.03, -0.34);
-    playerBodyPivot.add(buckle);
-
-    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.33, 0.68, 14), matShirt);
-    chest.scale.set(1.08, 1.0, 0.76);
-    chest.position.y = 1.38;
-    chest.castShadow = true;
-    playerBodyPivot.add(chest);
-
-    const vestLeft = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.64, 0.34), matVest);
-    vestLeft.position.set(-0.24, 1.38, -0.02);
-    vestLeft.castShadow = true;
-    playerBodyPivot.add(vestLeft);
-
-    const vestRight = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.64, 0.34), matVest);
-    vestRight.position.set(0.24, 1.38, -0.02);
-    vestRight.castShadow = true;
-    playerBodyPivot.add(vestRight);
-
-    const scarfCollar = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.065, 10, 18), matScarf);
-    scarfCollar.rotation.x = Math.PI / 2;
-    scarfCollar.position.y = 1.73;
-    playerBodyPivot.add(scarfCollar);
-
-    const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.45), matScarf);
-    scarfTail.position.set(0, 1.69, 0.36);
-    scarfTail.rotation.x = 0.25;
-    playerBodyPivot.add(scarfTail);
-
-    const packMain = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.56, 0.26), matLeather);
-    packMain.position.set(0, 1.38, 0.33);
-    packMain.castShadow = true;
-    playerBodyPivot.add(packMain);
-
-    const bedroll = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.54, 10), matScarf);
-    bedroll.rotation.z = Math.PI / 2;
-    bedroll.position.set(0, 1.72, 0.34);
-    bedroll.castShadow = true;
-    playerBodyPivot.add(bedroll);
-
-    const headGroup = new THREE.Group();
-    headGroup.position.y = 1.98;
-    playerBodyPivot.add(headGroup);
-
-    const cranium = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 16), matSkin);
-    cranium.scale.set(0.95, 1.08, 1.02);
-    cranium.castShadow = true;
-    headGroup.add(cranium);
-
-    const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.18, 0.34), matSkin);
-    jaw.position.set(0, -0.14, -0.03);
-    headGroup.add(jaw);
-
-    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 6), matSkin);
-    nose.rotation.x = -Math.PI / 2.3;
-    nose.position.set(0, -0.02, -0.28);
-    headGroup.add(nose);
-
-    [-0.26, 0.26].forEach((ex) => {
-      const ear = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 10), matSkin);
-      ear.scale.set(0.45, 0.9, 0.7);
-      ear.position.set(ex, -0.02, 0.0);
-      headGroup.add(ear);
-    });
-
-    [-0.095, 0.095].forEach((xPos) => {
-      const eyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), matEyeWhite);
-      eyeBall.position.set(xPos, 0.04, -0.23);
-      headGroup.add(eyeBall);
-
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.024, 8, 8), matPupil);
-      pupil.position.set(xPos, 0.04, -0.268);
-      headGroup.add(pupil);
-
-      const brow = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.025, 0.04), matHair);
-      brow.position.set(xPos, 0.105, -0.25);
-      brow.rotation.z = xPos < 0 ? -0.12 : 0.12;
-      headGroup.add(brow);
-    });
-
-    const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.275, 14, 14), matHair);
-    backHair.position.set(0, 0.02, 0.04);
-    backHair.scale.set(1.0, 1.02, 0.92);
-    headGroup.add(backHair);
-
-    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.47, 0.04, 20), matLeather);
-    hatBrim.position.set(0, 0.17, -0.02);
-    hatBrim.rotation.x = 0.06;
-    hatBrim.castShadow = true;
-    headGroup.add(hatBrim);
-
-    const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.23, 0.18, 16), matLeather);
-    hatCrown.position.set(0, 0.26, -0.02);
-    hatCrown.castShadow = true;
-    headGroup.add(hatCrown);
-
-    const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.232, 0.045, 16), matGold);
-    hatBand.position.set(0, 0.19, -0.02);
-    headGroup.add(hatBand);
-
-    function createHumanArm(side) {
-      const shoulder = new THREE.Group();
-      shoulder.position.set(side * 0.47, 1.65, 0);
-
-      const deltoid = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), matShirt);
-      shoulder.add(deltoid);
-
-      const upperArm = makeTaperedLimb(0.11, 0.09, 0.34, matShirt, -0.17);
-      shoulder.add(upperArm);
-
-      const elbow = new THREE.Group();
-      elbow.position.set(0, -0.34, 0);
-      shoulder.add(elbow);
-
-      const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.088, 10, 10), matSkin);
-      elbow.add(elbowJoint);
-
-      const forearm = makeTaperedLimb(0.09, 0.072, 0.32, matSkin, -0.16);
-      elbow.add(forearm);
-
-      const hand = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.13, 0.12), matSkin);
-      hand.position.set(0, -0.35, -0.02);
-      hand.castShadow = true;
-      elbow.add(hand);
-
-      return { shoulder, elbow, hand };
-    }
-
-    const leftArmRig = createHumanArm(-1);
-    const rightArmRig = createHumanArm(1);
-    playerBodyPivot.add(leftArmRig.shoulder);
-    playerBodyPivot.add(rightArmRig.shoulder);
-
-    function createHumanLeg(side) {
-      const hip = new THREE.Group();
-      hip.position.set(side * 0.19, 0.86, 0);
-
-      const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), matPants);
-      hip.add(hipJoint);
-
-      const thigh = makeTaperedLimb(0.14, 0.105, 0.42, matPants, -0.21);
-      hip.add(thigh);
-
-      const knee = new THREE.Group();
-      knee.position.set(0, -0.42, 0);
-      hip.add(knee);
-
-      const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(0.102, 10, 10), matPants);
-      knee.add(kneeJoint);
-
-      const shin = makeTaperedLimb(0.105, 0.082, 0.38, matPants, -0.19);
-      knee.add(shin);
-
-      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, 0.28), matBoot);
-      boot.position.set(0, -0.4, -0.05);
-      boot.castShadow = true;
-      knee.add(boot);
-
-      return { hip, knee, boot };
-    }
-
-    const leftLegRig = createHumanLeg(-1);
-    const rightLegRig = createHumanLeg(1);
-    playerBodyPivot.add(leftLegRig.hip);
-    playerBodyPivot.add(rightLegRig.hip);
-
-    const heldGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.22, 0), matEmerald);
-    heldGem.position.set(0, -0.38, -0.14);
-    heldGem.visible = false;
-    rightArmRig.elbow.add(heldGem);
-
-    const shieldBubble = new THREE.Mesh(
-      new THREE.SphereGeometry(1.45, 24, 24),
-      new THREE.MeshBasicMaterial({
-        color: 0x34d399,
-        transparent: true,
-        opacity: 0.0,
-        wireframe: true
-      })
-    );
-    shieldBubble.position.y = 1.25;
-    playerGroup.add(shieldBubble);
-
-    // ------------------------------------------
-    // 5B. FEROCIOUS DEMON GORILLA-BEAST GUARDIAN
-    // ------------------------------------------
-    const beastGroup = new THREE.Group();
-    beastGroup.position.set(0, 0, 12.2);
-    beastGroup.scale.setScalar(0.84);
-    scene.add(beastGroup);
-
-    const beastBodyPivot = new THREE.Group();
-    beastGroup.add(beastBodyPivot);
-
-    const beastChest = new THREE.Mesh(new THREE.SphereGeometry(1.55, 16, 16), matBeastFur);
-    beastChest.scale.set(1.28, 1.05, 1.05);
-    beastChest.position.set(0, 2.75, -0.25);
-    beastChest.rotation.x = 0.38;
-    beastChest.castShadow = true;
-    beastBodyPivot.add(beastChest);
-
-    const beastAbdomen = new THREE.Mesh(new THREE.CylinderGeometry(1.18, 0.98, 1.35, 14), matBeastMuscle);
-    beastAbdomen.position.set(0, 1.75, 0.25);
-    beastAbdomen.rotation.x = 0.22;
-    beastAbdomen.castShadow = true;
-    beastBodyPivot.add(beastAbdomen);
-
-    for (let i = 0; i < 4; i++) {
-      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.95 - i * 0.12, 7), matFang);
-      spike.position.set(0, 3.35 - i * 0.38, 0.85 + i * 0.22);
-      spike.rotation.x = 0.85;
-      spike.castShadow = true;
-      beastBodyPivot.add(spike);
-    }
-
-    const beastHead = new THREE.Group();
-    beastHead.position.set(0, 3.65, -1.25);
-    beastBodyPivot.add(beastHead);
-
-    const beastCranium = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.05, 1.35), matBeastFur);
-    beastCranium.position.set(0, 0.15, -0.15);
-    beastCranium.castShadow = true;
-    beastHead.add(beastCranium);
-
-    const browRidge = new THREE.Mesh(new THREE.BoxGeometry(1.38, 0.32, 0.55), matBeastMuscle);
-    browRidge.position.set(0, 0.42, -0.62);
-    beastHead.add(browRidge);
-
-    [-0.68, 0.68].forEach((hx) => {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.22, 1.25, 8), matFang);
-      horn.position.set(hx, 0.88, 0.05);
-      horn.rotation.z = hx < 0 ? 0.55 : -0.55;
-      horn.rotation.x = 0.25;
-      horn.castShadow = true;
-      beastHead.add(horn);
-    });
-
-    const eyeMatInstance = matBeastEye.clone();
-    eyeMatInstance.emissiveIntensity = 0.05;
-    [-0.36, 0.36].forEach((ex) => {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), eyeMatInstance);
-      eye.position.set(ex, 0.24, -0.78);
-      beastHead.add(eye);
-    });
-
-    const mouthVoid = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.45, 0.7), matMouthInside);
-    mouthVoid.position.set(0, -0.25, -0.52);
-    beastHead.add(mouthVoid);
-
-    [-0.35, 0.35].forEach((fx) => {
-      const upperFang = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.42, 6), matFang);
-      upperFang.rotation.x = Math.PI;
-      upperFang.position.set(fx, -0.28, -0.82);
-      beastHead.add(upperFang);
-    });
-
-    const beastJaw = new THREE.Group();
-    beastJaw.position.set(0, -0.35, -0.25);
-    const jawMesh = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.28, 0.85), matBeastMuscle);
-    jawMesh.position.set(0, -0.1, -0.32);
-    beastJaw.add(jawMesh);
-
-    [-0.28, 0.28].forEach((fx) => {
-      const lowerFang = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.32, 6), matFang);
-      lowerFang.position.set(fx, 0.08, -0.66);
-      beastJaw.add(lowerFang);
-    });
-    beastHead.add(beastJaw);
-
-    function createBeastArm(side) {
-      const shoulder = new THREE.Group();
-      shoulder.position.set(side * 1.95, 3.15, -0.35);
-
-      const pauldron = new THREE.Mesh(new THREE.DodecahedronGeometry(0.72, 1), matBeastFur);
-      pauldron.castShadow = true;
-      shoulder.add(pauldron);
-
-      const upperArm = makeTaperedLimb(0.52, 0.44, 1.35, matBeastMuscle, -0.68);
-      shoulder.add(upperArm);
-
-      const elbow = new THREE.Group();
-      elbow.position.set(0, -1.35, 0);
-      shoulder.add(elbow);
-
-      const forearm = makeTaperedLimb(0.45, 0.38, 1.25, matBeastFur, -0.62);
-      elbow.add(forearm);
-
-      const fist = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.56, 0.72), matBeastMuscle);
-      fist.position.set(0, -1.35, -0.1);
-      fist.castShadow = true;
-      elbow.add(fist);
-
-      for (let c = -1; c <= 1; c++) {
-        const claw = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.42, 5), matFang);
-        claw.rotation.x = -Math.PI / 2.4;
-        claw.position.set(c * 0.2, -1.52, -0.52);
-        elbow.add(claw);
-      }
-
-      return { shoulder, elbow };
-    }
-
-    const beastArmLRig = createBeastArm(-1);
-    const beastArmRRig = createBeastArm(1);
-    beastBodyPivot.add(beastArmLRig.shoulder);
-    beastBodyPivot.add(beastArmRRig.shoulder);
-
-    function createBeastLeg(side) {
-      const hip = new THREE.Group();
-      hip.position.set(side * 0.75, 1.25, 0.25);
-
-      const thigh = makeTaperedLimb(0.56, 0.44, 0.72, matBeastFur, -0.36);
-      hip.add(thigh);
-
-      const knee = new THREE.Group();
-      knee.position.set(0, -0.72, 0);
-      hip.add(knee);
-
-      const shin = makeTaperedLimb(0.42, 0.34, 0.62, matBeastMuscle, -0.31);
-      knee.add(shin);
-
-      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.26, 0.85), matBeastFur);
-      foot.position.set(0, -0.62, -0.18);
-      foot.castShadow = true;
-      knee.add(foot);
-
-      return { hip, knee };
-    }
-
-    const beastLegLRig = createBeastLeg(-1);
-    const beastLegRRig = createBeastLeg(1);
-    beastBodyPivot.add(beastLegLRig.hip);
-    beastBodyPivot.add(beastLegRRig.hip);
-
-    // ==========================================
-    // 5C. ANCIENT CAVE & ALTAR SETPIECE
-    // ==========================================
-    const caveGroup = new THREE.Group();
-    scene.add(caveGroup);
-
-    const caveArchGeo = new THREE.CylinderGeometry(7.2, 7.2, 18, 16, 1, true, 0, Math.PI);
-    const caveMat = new THREE.MeshStandardMaterial({
-      map: stoneTex,
-      color: 0x2b302d,
-      roughness: 0.95,
-      side: THREE.BackSide
-    });
-    const caveTunnel = new THREE.Mesh(caveArchGeo, caveMat);
-    caveTunnel.rotation.z = Math.PI / 2;
-    caveTunnel.rotation.y = Math.PI / 2;
-    caveTunnel.position.set(0, 1.2, 6);
-    caveGroup.add(caveTunnel);
-
-    const caveBackWall = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 2), caveMat);
-    caveBackWall.position.set(0, 5, 15.5);
-    caveGroup.add(caveBackWall);
-
-    const altarBase = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.15, 1.3, 8), matStone);
-    altarBase.position.set(0, 0.65, 8.2);
-    altarBase.castShadow = true;
-    altarBase.receiveShadow = true;
-    caveGroup.add(altarBase);
-
-    const altarGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.36, 0), matEmerald);
-    altarGem.position.set(0, 1.75, 8.2);
-    caveGroup.add(altarGem);
-
-    [-4.2, 4.2].forEach((xPos) => {
-      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), matStone);
-      pillar.position.set(xPos, 1.8, 6);
-      caveGroup.add(pillar);
-
-      const flame = new THREE.Mesh(
-        new THREE.ConeGeometry(0.35, 0.85, 8),
-        new THREE.MeshBasicMaterial({ color: 0xff8800 })
-      );
-      flame.position.set(xPos, 4.0, 6);
-      caveGroup.add(flame);
-    });
-
-    // ==========================================
-    // 6. ENDLESS FOREST TRACK & OBSTACLE POOL
-    // ==========================================
-    const segments = [];
-    const obstacles = [];
-    const collectibles = [];
-
-    const matPath = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 0.95 });
-    const matCurb = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 });
-    const matForestFloor = new THREE.MeshStandardMaterial({ map: mossTex, roughness: 1.0 });
-    const matTrunk = new THREE.MeshStandardMaterial({ map: barkTex, roughness: 0.9 });
-    const matFoliage = new THREE.MeshStandardMaterial({ color: 0x1e4628, roughness: 0.85 });
-    const matFoliageLight = new THREE.MeshStandardMaterial({ color: 0x2d6a3e, roughness: 0.8 });
-
-    function createTree() {
-      const tree = new THREE.Group();
-      const height = 8 + Math.random() * 6;
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.7, height, 7), matTrunk);
-      trunk.position.y = height / 2;
-      trunk.castShadow = true;
-      tree.add(trunk);
-
-      for (let i = 0; i < 3; i++) {
-        const radius = 2.6 - i * 0.55;
-        const cone = new THREE.Mesh(
-          new THREE.ConeGeometry(radius, 3.6, 7),
-          i % 2 === 0 ? matFoliage : matFoliageLight
-        );
-        cone.position.y = height - 1.2 + i * 1.9;
-        cone.castShadow = true;
-        tree.add(cone);
-      }
-      return tree;
-    }
-
-    function createSegment(zPos) {
-      const seg = new THREE.Group();
-      seg.position.z = zPos;
-
-      const path = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.6, SEGMENT_LENGTH), matPath);
-      path.position.y = -0.3;
-      path.receiveShadow = true;
-      seg.add(path);
-
-      [-4.4, 4.4].forEach((x) => {
-        const curb = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.85, SEGMENT_LENGTH), matCurb);
-        curb.position.set(x, -0.15, 0);
-        curb.receiveShadow = true;
-        curb.castShadow = true;
-        seg.add(curb);
-      });
-
-      [-26, 26].forEach((x) => {
-        const ground = new THREE.Mesh(new THREE.BoxGeometry(42, 0.5, SEGMENT_LENGTH), matForestFloor);
-        ground.position.set(x, -0.35, 0);
-        ground.receiveShadow = true;
-        seg.add(ground);
-      });
-
-      for (let i = 0; i < 4; i++) {
-        const zLocal = -SEGMENT_LENGTH / 2 + i * 5 + Math.random() * 2;
-        const leftTree = createTree();
-        leftTree.position.set(-7.5 - Math.random() * 14, 0, zLocal);
-        seg.add(leftTree);
-
-        const rightTree = createTree();
-        rightTree.position.set(7.5 + Math.random() * 14, 0, zLocal);
-        seg.add(rightTree);
-      }
-
-      if (Math.random() > 0.45) {
-        const side = Math.random() > 0.5 ? 1 : -1;
-        const ruin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.2, 1.2), matStone);
-        ruin.position.set(side * 5.6, 2.1, (Math.random() - 0.5) * 12);
-        ruin.castShadow = true;
-        ruin.receiveShadow = true;
-        seg.add(ruin);
-      }
-
-      scene.add(seg);
-      segments.push(seg);
-      return seg;
-    }
-
-    for (let i = 0; i < NUM_SEGMENTS; i++) {
-      createSegment(10 - i * SEGMENT_LENGTH);
-    }
-
-    const particleCount = 160;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePos = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      particlePos[i * 3] = (Math.random() - 0.5) * 32;
-      particlePos[i * 3 + 1] = 0.5 + Math.random() * 7;
-      particlePos[i * 3 + 2] = -Math.random() * 120;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0xa7f3d0,
-      size: 0.22,
-      transparent: true,
-      opacity: 0.75
-    });
-    const fireflies = new THREE.Points(particleGeo, particleMat);
-    scene.add(fireflies);
-
-    // ==========================================
-    // 7. OBSTACLE & COLLECTIBLE SPAWNING
-    // ==========================================
-    function clearEntities() {
-      obstacles.forEach((o) => scene.remove(o.mesh));
-      obstacles.length = 0;
-      collectibles.forEach((c) => scene.remove(c.mesh));
-      collectibles.length = 0;
-    }
-
-    function spawnCoinLine(laneIdx, startZ, count, arcJump = false) {
-      const x = LANES[laneIdx];
-      for (let i = 0; i < count; i++) {
-        const isGem = i === count - 1 && Math.random() > 0.78;
-        const mesh = isGem
-          ? new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), matEmerald)
-          : new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.1, 14), matGold);
-
-        if (!isGem) mesh.rotation.x = Math.PI / 2;
-        const z = startZ - i * 2.4;
-        let y = 1.05;
-        if (arcJump) {
-          const t = i / Math.max(1, count - 1);
-          y = 1.05 + Math.sin(t * Math.PI) * 2.1;
-        }
-        mesh.position.set(x, y, z);
-        mesh.castShadow = true;
-        scene.add(mesh);
-        collectibles.push({
-          mesh,
-          lane: laneIdx,
-          isGem,
-          collected: false
-        });
-      }
-    }
-
-    function spawnRow(zPos) {
-      const pattern = Math.random();
-
-      if (pattern < 0.26) {
-        const group = new THREE.Group();
-        const log = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 8.2, 12), matTrunk);
-        log.rotation.z = Math.PI / 2;
-        log.position.y = 0.55;
-        log.castShadow = true;
-        log.receiveShadow = true;
-        group.add(log);
-
-        const moss = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, 0.7), matFoliage);
-        moss.position.set(-1.2, 1.05, 0);
-        group.add(moss);
-
-        group.position.set(0, 0, zPos);
-        scene.add(group);
-        obstacles.push({
-          mesh: group,
-          type: 'JUMP',
-          lanes: [0, 1, 2],
-          zDepth: 0.75
-        });
-
-        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.5, 4, true);
-      } else if (pattern < 0.52) {
-        const group = new THREE.Group();
-        [-4.1, 4.1].forEach((x) => {
-          const col = new THREE.Mesh(new THREE.BoxGeometry(0.85, 3.8, 0.95), matStone);
-          col.position.set(x, 1.9, 0);
-          col.castShadow = true;
-          group.add(col);
-        });
-
-        const lintel = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.85, 1.1), matStone);
-        lintel.position.set(0, 2.65, 0);
-        lintel.castShadow = true;
-        group.add(lintel);
-
-        for (let vx = -3.2; vx <= 3.2; vx += 0.8) {
-          const vine = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 0.14), matFoliageLight);
-          vine.position.set(vx, 1.55, 0.45);
-          group.add(vine);
-        }
-
-        group.position.set(0, 0, zPos);
-        scene.add(group);
-        obstacles.push({
-          mesh: group,
-          type: 'SLIDE',
-          lanes: [0, 1, 2],
-          zDepth: 0.85
-        });
-
-        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 4, 4, false);
-      } else if (pattern < 0.78) {
-        const openLane = Math.floor(Math.random() * 3);
-        const blockedLanes = [0, 1, 2].filter((l) => l !== openLane);
-        if (Math.random() > 0.55) {
-          blockedLanes.pop();
-        }
-
-        blockedLanes.forEach((laneIdx) => {
-          const totem = new THREE.Group();
-          const body = new THREE.Mesh(new THREE.BoxGeometry(1.75, 3.6, 1.6), matStone);
-          body.position.y = 1.8;
-          body.castShadow = true;
-          body.receiveShadow = true;
-          totem.add(body);
-
-          const carving = new THREE.Mesh(
-            new THREE.BoxGeometry(1.1, 0.35, 0.1),
-            new THREE.MeshBasicMaterial({ color: 0xff9900 })
-          );
-          carving.position.set(0, 2.3, 0.82);
-          totem.add(carving);
-
-          totem.position.set(LANES[laneIdx], 0, zPos);
-          scene.add(totem);
-          obstacles.push({
-            mesh: totem,
-            type: 'BLOCK',
-            lanes: [laneIdx],
-            zDepth: 0.95
-          });
-        });
-
-        spawnCoinLine(openLane, zPos + 4, 5, false);
-      } else {
-        const group = new THREE.Group();
-
-        const pit = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.72, 3.8), matAbyss);
-        pit.position.set(0, -0.32, 0);
-        group.add(pit);
-
-        const nearDeck = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.25, 0.85), matCurb);
-        nearDeck.position.set(0, 0.04, 1.5);
-        nearDeck.castShadow = true;
-        nearDeck.receiveShadow = true;
-        group.add(nearDeck);
-
-        const farDeck = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.25, 0.85), matCurb);
-        farDeck.position.set(0, 0.04, -1.5);
-        farDeck.castShadow = true;
-        farDeck.receiveShadow = true;
-        group.add(farDeck);
-
-        for (let bx = -3.4; bx <= 3.4; bx += 1.7) {
-          const tooth = new THREE.Mesh(
-            new THREE.BoxGeometry(1.15, 0.22, 0.45 + Math.random() * 0.35),
-            matStone
-          );
-          tooth.position.set(bx + (Math.random() - 0.5) * 0.3, 0.03, (Math.random() - 0.5) * 1.4);
-          tooth.rotation.y = (Math.random() - 0.5) * 0.25;
-          group.add(tooth);
-        }
-
-        group.position.set(0, 0, zPos);
-        scene.add(group);
-        obstacles.push({
-          mesh: group,
-          type: 'BRIDGE',
-          lanes: [0, 1, 2],
-          zDepth: 1.55
-        });
-
-        spawnCoinLine(Math.floor(Math.random() * 3), zPos + 3.2, 4, true);
-      }
-    }
-
-    // ==========================================
-    // 8. UI & CINEMATIC HELPERS
-    // ==========================================
-    const hud = document.getElementById('hud');
-    const scoreVal = document.getElementById('score-val');
-    const coinsVal = document.getElementById('coins-val');
-    const shieldBar = document.getElementById('shield-bar');
-    const shieldStatus = document.getElementById('shield-status');
-    const banner = document.getElementById('cinematic-banner');
-    const startScreen = document.getElementById('start-screen');
-    const gameoverScreen = document.getElementById('gameover-screen');
-    const screenFlash = document.getElementById('screen-flash');
-    const camBtn = document.getElementById('cam-btn');
-    const padBtn = document.getElementById('pad-btn');
-    const voiceBtn = document.getElementById('voice-btn');
-    const touchPad = document.getElementById('touch-pad');
-
-    function showBanner(text, isBeast = false) {
-      banner.textContent = text;
-      banner.classList.toggle('beast-speech', isBeast);
-      banner.classList.add('visible');
-    }
-
-    function hideBanner() {
-      banner.classList.remove('visible');
-      banner.classList.remove('beast-speech');
-    }
-
-    function triggerFlash(color) {
-      screenFlash.style.background = color;
-      screenFlash.style.opacity = '0.55';
-      setTimeout(() => {
-        screenFlash.style.opacity = '0';
-      }, 180);
-    }
-
-    function updateTouchPadVisibility() {
-      if (gameState === 'PLAYING' && touchPadEnabled) {
-        touchPad.classList.add('visible');
-      } else {
-        touchPad.classList.remove('visible');
-      }
-    }
-
-    function updateHUD() {
-      scoreVal.textContent = `${Math.floor(distance)}m`;
-      coinsVal.textContent = coins;
-      shieldBar.style.width = `${shieldCharge}%`;
-      if (shieldCharge >= 100) {
-        shieldStatus.textContent = 'ACTIVE';
-        shieldBubble.material.opacity = 0.22;
-      } else {
-        shieldStatus.textContent = `${Math.floor(shieldCharge)}%`;
-        shieldBubble.material.opacity = 0.0;
-      }
-    }
-
-    function toggleCameraAngle() {
-      cameraMode = cameraMode === 'chase' ? 'overhead' : 'chase';
-      camBtn.textContent = cameraMode === 'chase' ? '📷 Chase' : '📷 High';
-    }
-
-    function toggleTouchPad() {
-      touchPadEnabled = !touchPadEnabled;
-      padBtn.classList.toggle('active-toggle', touchPadEnabled);
-      updateTouchPadVisibility();
-    }
-
-    function toggleVoice() {
-      const enabled = voice.toggle();
-      voiceBtn.classList.toggle('active-toggle', enabled);
-      voiceBtn.textContent = enabled ? '🗣 Voice' : '🤫 Muted';
-    }
-
-    // ==========================================
-    // 9. GAME FLOW & INTRO SEQUENCE
-    // ==========================================
-    function resetPositionsForMenu() {
-      currentLane = 1;
-      playerX = 0;
-      playerY = 0;
-      velocityY = 0;
-      isJumping = false;
-      isSliding = false;
-      slideTimer = 0;
-      beastProximity = 0.28;
-      beastLungeBoost = 0;
-
-      playerGroup.position.set(0, 0, 6.2);
-      playerGroup.rotation.set(0, Math.PI, 0);
-      playerBodyPivot.position.set(0, 0, 0);
-      playerBodyPivot.rotation.set(0, 0, 0);
-      playerBodyPivot.scale.set(1, 1, 1);
-
-      leftArmRig.shoulder.rotation.set(0, 0, 0);
-      leftArmRig.elbow.rotation.set(0, 0, 0);
-      rightArmRig.shoulder.rotation.set(0, 0, 0);
-      rightArmRig.elbow.rotation.set(0, 0, 0);
-      leftLegRig.hip.rotation.set(0, 0, 0);
-      leftLegRig.knee.rotation.set(0, 0, 0);
-      rightLegRig.hip.rotation.set(0, 0, 0);
-      rightLegRig.knee.rotation.set(0, 0, 0);
-
-      altarGem.visible = true;
-      heldGem.visible = false;
-
-      caveGroup.position.z = 0;
-      beastGroup.position.set(0, 0, 12.2);
-      beastGroup.rotation.set(0, 0, 0);
-      beastHead.rotation.set(0, 0, 0);
-      beastJaw.rotation.x = 0.05;
-      eyeMatInstance.emissiveIntensity = 0.05;
-
-      for (let i = 0; i < NUM_SEGMENTS; i++) {
-        segments[i].position.z = 10 - i * SEGMENT_LENGTH;
-      }
-      clearEntities();
-      updateTouchPadVisibility();
-    }
-
-    function startIntroSequence() {
-      sound.init();
-      voice.unlock();
-      resetPositionsForMenu();
-      startScreen.classList.add('hidden');
-      gameoverScreen.classList.add('hidden');
-      hud.classList.remove('visible');
-
-      distance = 0;
-      coins = 0;
-      shieldCharge = 0;
-      runSpeed = 22;
-      updateHUD();
-
-      gameState = 'INTRO_STEAL';
-      introTimer = 0;
-      showBanner('Stealing the Emerald Heart...', false);
-    }
-
-    function beginActiveRun() {
-      gameState = 'PLAYING';
-      hideBanner();
-      hud.classList.add('visible');
-      updateTouchPadVisibility();
-
-      for (let z = -38; z >= -160; z -= 26) {
-        spawnRow(z);
-      }
-    }
-
-    function triggerGameOver() {
-      gameState = 'GAMEOVER';
-      beastProximity = 1.0;
-      beastLungeBoost = 1.2;
-      updateTouchPadVisibility();
-      sound.playCrash();
-      screenShake = 0.75;
-      triggerFlash('rgba(239, 68, 68, 0.75)');
-
-      voice.beastSpeak('I told you... waking me was your final mistake!', {
-        priority: true,
-        withRumble: true
-      });
-
-      const finalDist = Math.floor(distance);
-      if (finalDist > bestScore) {
-        bestScore = finalDist;
-        localStorage.setItem('temple_escape_best', bestScore.toString());
-      }
-
-      document.getElementById('final-score').textContent = `${finalDist}m`;
-      document.getElementById('best-score').textContent = `${bestScore}m`;
-      document.getElementById('final-coins').textContent = coins;
-
-      setTimeout(() => {
-        hud.classList.remove('visible');
-        gameoverScreen.classList.remove('hidden');
-      }, 650);
-    }
-
-    // ==========================================
-    // 10. PLAYER INPUTS (KEYBOARD, SWIPE & TOUCH PAD)
-    // ==========================================
-    function moveLeft() {
-      if (gameState !== 'PLAYING') return;
-      if (currentLane > 0) currentLane--;
-    }
-
-    function moveRight() {
-      if (gameState !== 'PLAYING') return;
-      if (currentLane < 2) currentLane++;
-    }
-
-    function jump() {
-      if (gameState !== 'PLAYING') return;
-      if (!isJumping) {
-        isJumping = true;
-        isSliding = false;
-        velocityY = 14.5;
-        sound.playJump();
-      }
-    }
-
-    function slide() {
-      if (gameState !== 'PLAYING') return;
-      if (isJumping) {
-        velocityY = -22;
-      }
-      if (!isSliding) {
-        isSliding = true;
-        slideTimer = 0.68;
-        sound.playSlide();
-      }
-    }
-
-    window.addEventListener('keydown', (e) => {
-      if (['ArrowLeft', 'KeyA'].includes(e.code)) moveLeft();
-      if (['ArrowRight', 'KeyD'].includes(e.code)) moveRight();
-      if (['ArrowUp', 'KeyW', 'Space'].includes(e.code)) {
-        e.preventDefault();
-        jump();
-      }
-      if (['ArrowDown', 'KeyS'].includes(e.code)) {
-        e.preventDefault();
-        slide();
-      }
-      if (e.code === 'KeyC') {
-        toggleCameraAngle();
-      }
-    });
-
-    let swipeStartX = 0;
-    let swipeStartY = 0;
-    let swipeTriggered = false;
-
-    canvas.addEventListener(
-      'touchstart',
-      (e) => {
-        if (!e.touches.length) return;
-        swipeStartX = e.touches[0].clientX;
-        swipeStartY = e.touches[0].clientY;
-        swipeTriggered = false;
-      },
-      { passive: true }
-    );
-
-    canvas.addEventListener(
-      'touchmove',
-      (e) => {
-        if (gameState !== 'PLAYING' || swipeTriggered || !e.touches.length) return;
-        const dx = e.touches[0].clientX - swipeStartX;
-        const dy = e.touches[0].clientY - swipeStartY;
-        const threshold = 24;
-
-        if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy)) {
-          swipeTriggered = true;
-          dx > 0 ? moveRight() : moveLeft();
-        } else if (Math.abs(dy) > threshold && Math.abs(dy) > Math.abs(dx)) {
-          swipeTriggered = true;
-          dy < 0 ? jump() : slide();
-        }
-      },
-      { passive: true }
-    );
-
-    let mouseDown = false;
-    let mouseStartX = 0;
-    let mouseStartY = 0;
-    canvas.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'touch') return;
-      mouseDown = true;
-      mouseStartX = e.clientX;
-      mouseStartY = e.clientY;
-    });
-    window.addEventListener('pointerup', (e) => {
-      if (!mouseDown || e.pointerType === 'touch') return;
-      mouseDown = false;
-      const dx = e.clientX - mouseStartX;
-      const dy = e.clientY - mouseStartY;
-      if (Math.abs(dx) < 26 && Math.abs(dy) < 26) return;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        dx > 0 ? moveRight() : moveLeft();
-      } else {
-        dy < 0 ? jump() : slide();
-      }
-    });
-
-    function bindPadButton(id, action) {
-      const btn = document.getElementById(id);
-      btn.addEventListener(
-        'touchstart',
-        (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          action();
-        },
-        { passive: false }
-      );
-      btn.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-        action();
-      });
-    }
-
-    bindPadButton('pad-left', moveLeft);
-    bindPadButton('pad-right', moveRight);
-    bindPadButton('pad-jump', jump);
-    bindPadButton('pad-slide', slide);
-
-    document.getElementById('start-btn').addEventListener('click', startIntroSequence);
-    document.getElementById('restart-btn').addEventListener('click', startIntroSequence);
-    camBtn.addEventListener('click', toggleCameraAngle);
-    padBtn.addEventListener('click', toggleTouchPad);
-    voiceBtn.addEventListener('click', toggleVoice);
-
-    const audioBtn = document.getElementById('audio-btn');
-    audioBtn.addEventListener('click', () => {
-      sound.init();
-      const isMuted = sound.toggleMute();
-      audioBtn.textContent = isMuted ? '🔇' : '🔊';
-    });
-
-    window.addEventListener('resize', applyResponsiveCameraFraming);
-    applyResponsiveCameraFraming();
-
-    // ==========================================
-    // 11. MAIN ANIMATION & PHYSICS LOOP
-    // ==========================================
-    resetPositionsForMenu();
-    const clock = new THREE.Clock();
-
-    function animateHumanRun(cycle) {
-      const s = Math.sin(cycle);
-      const c = Math.cos(cycle);
-
-      leftLegRig.hip.rotation.x = s * 0.85;
-      leftLegRig.knee.rotation.x = Math.max(0, -c * 1.15);
-
-      rightLegRig.hip.rotation.x = -s * 0.85;
-      rightLegRig.knee.rotation.x = Math.max(0, c * 1.15);
-
-      leftArmRig.shoulder.rotation.x = -s * 0.75;
-      leftArmRig.elbow.rotation.x = -0.65 - Math.max(0, c * 0.45);
-
-      rightArmRig.shoulder.rotation.x = s * 0.75;
-      rightArmRig.elbow.rotation.x = -0.65 - Math.max(0, -c * 0.45);
-
-      playerBodyPivot.position.y = Math.abs(c) * 0.13;
-      scarfTail.rotation.x = 0.35 + Math.sin(cycle * 1.8) * 0.25;
-    }
-
-    function animateBeastGallop(cycle) {
-      const g = Math.sin(cycle);
-      const gc = Math.cos(cycle);
-
-      beastGroup.position.y = Math.abs(g) * 0.32;
-      beastBodyPivot.rotation.x = 0.14 + gc * 0.08;
-
-      beastArmLRig.shoulder.rotation.x = -0.85 + g * 0.65;
-      beastArmLRig.elbow.rotation.x = -0.35 + Math.max(0, -gc * 0.4);
-
-      beastArmRRig.shoulder.rotation.x = -0.85 - g * 0.65;
-      beastArmRRig.elbow.rotation.x = -0.35 + Math.max(0, gc * 0.4);
-
-      beastLegLRig.hip.rotation.x = -g * 0.65;
-      beastLegLRig.knee.rotation.x = Math.max(0, gc * 0.75);
-
-      beastLegRRig.hip.rotation.x = g * 0.65;
-      beastLegRRig.knee.rotation.x = Math.max(0, -gc * 0.75);
-
-      beastJaw.rotation.x = 0.32 + Math.abs(Math.sin(cycle * 0.5)) * 0.24;
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const elapsed = clock.getElapsedTime();
-
-      if (altarGem.visible) {
-        altarGem.rotation.y += dt * 2.2;
-        altarGem.position.y = 1.75 + Math.sin(elapsed * 3) * 0.1;
-      }
-
-      caveTorchLeft.intensity = 2.7 + Math.sin(elapsed * 18) * 0.4;
-      caveTorchRight.intensity = 2.7 + Math.cos(elapsed * 16) * 0.4;
-
-      const posAttr = fireflies.geometry.attributes.position;
-      for (let i = 0; i < particleCount; i++) {
-        posAttr.array[i * 3 + 1] += Math.sin(elapsed * 2 + i) * 0.005;
-        if (gameState === 'PLAYING') {
-          posAttr.array[i * 3 + 2] += runSpeed * dt * 0.6;
-          if (posAttr.array[i * 3 + 2] > 10) {
-            posAttr.array[i * 3 + 2] = -120;
-          }
-        }
-      }
-      posAttr.needsUpdate = true;
-
-      const isPortrait = window.innerWidth / window.innerHeight < 0.8;
-
-      if (gameState === 'MENU') {
-        const camX = Math.sin(elapsed * 0.5) * 1.3;
-        camera.position.set(camX, 2.8, isPortrait ? 3.2 : 2.4);
-        camera.lookAt(0, 2.0, 9.2);
-        playerBodyPivot.position.y = Math.sin(elapsed * 2.4) * 0.03;
-        beastJaw.rotation.x = 0.08 + Math.sin(elapsed * 1.8) * 0.04;
-      } else if (gameState === 'INTRO_STEAL') {
-        introTimer += dt;
-        rightArmRig.shoulder.rotation.x = THREE.MathUtils.lerp(rightArmRig.shoulder.rotation.x, -1.35, dt * 6);
-        rightArmRig.elbow.rotation.x = THREE.MathUtils.lerp(rightArmRig.elbow.rotation.x, -0.25, dt * 6);
-        headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, -0.2, dt * 6);
-
-        camera.position.lerp(new THREE.Vector3(2.0, 2.45, isPortrait ? 5.2 : 4.3), dt * 4);
-        camera.lookAt(0, 1.75, 8.5);
-
-        if (introTimer >= 0.85 && altarGem.visible) {
-          altarGem.visible = false;
-          heldGem.visible = true;
-          sound.playGemChime();
-          triggerFlash('rgba(16, 185, 129, 0.45)');
-        }
-
-        if (introTimer >= 1.3) {
-          gameState = 'INTRO_WAKE';
-          introTimer = 0;
-          sound.playBeastRoar();
-          screenShake = 0.85;
-          showBanner('"YOU HAVE MADE A VERY BIG MISTAKE TO WAKE ME!"', true);
-          voice.beastSpeak('You have made a very big mistake to wake me!', {
-            priority: true,
-            withRumble: true
-          });
-        }
-      } else if (gameState === 'INTRO_WAKE') {
-        introTimer += dt;
-        eyeMatInstance.emissiveIntensity = THREE.MathUtils.lerp(eyeMatInstance.emissiveIntensity, 3.8, dt * 5);
-        beastGroup.position.y = Math.sin(Math.min(introTimer / 1.8, 1) * Math.PI) * 0.55;
-        beastHead.rotation.x = -0.22 + Math.sin(introTimer * 22) * 0.07;
-        beastJaw.rotation.x = 0.48 + Math.sin(introTimer * 18) * 0.16;
-        beastArmLRig.shoulder.rotation.x = -1.25;
-        beastArmRRig.shoulder.rotation.x = -1.25;
-
-        camera.position.lerp(new THREE.Vector3(-2.3, 3.3, isPortrait ? 4.0 : 3.1), dt * 4.5);
-        camera.lookAt(0, 2.7, 11.2);
-
-        if (introTimer >= 2.2) {
-          gameState = 'INTRO_TURN';
-          introTimer = 0;
-          showBanner('RUN!', false);
-        }
-      } else if (gameState === 'INTRO_TURN') {
-        introTimer += dt;
-        const t = Math.min(introTimer / 0.75, 1);
-        playerGroup.rotation.y = Math.PI * (1 - t);
-        headGroup.rotation.x = 0;
-        playerGroup.position.z -= 14 * dt;
-        beastGroup.position.z -= 11 * dt;
-
-        stepCycle += dt * 16;
-        animateHumanRun(stepCycle);
-        animateBeastGallop(stepCycle * 0.75);
-
-        camera.position.lerp(new THREE.Vector3(0, 5.1, playerGroup.position.z + (isPortrait ? 8.6 : 7.4)), dt * 6);
-        camera.lookAt(0, 1.5, playerGroup.position.z - 12);
-
-        if (t >= 1) {
-          playerGroup.rotation.y = 0;
-          playerGroup.position.z = 0;
-          beastGroup.position.z = 9.4;
-          beginActiveRun();
-        }
-      } else if (gameState === 'PLAYING') {
-        runSpeed = Math.min(42, runSpeed + dt * 0.38);
-        const moveDelta = runSpeed * dt;
-        distance += moveDelta * 0.45;
-
-        const speedRelief = Math.min(0.22, ((runSpeed - 22) / 20) * 0.22);
-        beastProximity = Math.max(0.08, beastProximity - dt * (0.045 + speedRelief * 0.05));
-        beastLungeBoost = Math.max(0, beastLungeBoost - dt * 1.4);
-
-        if (beastProximity > 0.68) {
-          voice.warnCloseBeast();
-        }
-
-        if (caveGroup.position.z < 45) {
-          caveGroup.position.z += moveDelta;
-        }
-
-        for (let i = 0; i < segments.length; i++) {
-          segments[i].position.z += moveDelta;
-          if (segments[i].position.z > SEGMENT_LENGTH * 1.5) {
-            segments[i].position.z -= SEGMENT_LENGTH * NUM_SEGMENTS;
-          }
-        }
-
-        const targetX = LANES[currentLane];
-        playerX = THREE.MathUtils.lerp(playerX, targetX, dt * 14);
-        playerGroup.position.x = playerX;
-        playerBodyPivot.rotation.z = (playerX - targetX) * 0.14;
-
-        if (isJumping) {
-          playerY += velocityY * dt;
-          velocityY -= 38 * dt;
-          if (playerY <= 0) {
-            playerY = 0;
-            velocityY = 0;
-            isJumping = false;
-            sound.playFootstep();
-          }
-        }
-        playerGroup.position.y = playerY;
-
-        if (isSliding) {
-          slideTimer -= dt;
-          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 0.5, dt * 18);
-          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, -0.6, dt * 15);
-          leftLegRig.hip.rotation.x = -1.25;
-          leftLegRig.knee.rotation.x = 0.25;
-          rightLegRig.hip.rotation.x = -0.35;
-          rightLegRig.knee.rotation.x = 1.15;
-          if (slideTimer <= 0) {
-            isSliding = false;
-          }
-        } else {
-          playerBodyPivot.scale.y = THREE.MathUtils.lerp(playerBodyPivot.scale.y, 1.0, dt * 15);
-          playerBodyPivot.rotation.x = THREE.MathUtils.lerp(playerBodyPivot.rotation.x, 0.08, dt * 15);
-        }
-
-        if (!isJumping && !isSliding) {
-          stepCycle += dt * (runSpeed * 0.72);
-          const s = Math.sin(stepCycle);
-          animateHumanRun(stepCycle);
-
-          if (Math.sign(s) !== lastStepSign) {
-            lastStepSign = Math.sign(s);
-            sound.playFootstep();
-          }
-        } else if (isJumping && !isSliding) {
-          leftLegRig.hip.rotation.x = 0.65;
-          leftLegRig.knee.rotation.x = 0.85;
-          rightLegRig.hip.rotation.x = -0.45;
-          rightLegRig.knee.rotation.x = 0.5;
-          leftArmRig.shoulder.rotation.x = -1.1;
-          leftArmRig.elbow.rotation.x = -0.4;
-          rightArmRig.shoulder.rotation.x = -1.1;
-          rightArmRig.elbow.rotation.x = -0.4;
-        }
-
-        const shieldBuffer = shieldCharge >= 100 ? 1.3 : 0;
-        const baseBeastZ = THREE.MathUtils.lerp(10.8, 5.2, beastProximity) + shieldBuffer - beastLungeBoost * 1.4;
-        const beastTargetZ = baseBeastZ + Math.sin(elapsed * 3.2) * 0.28;
-        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, beastTargetZ, dt * 4.5);
-        beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX * 0.72, dt * 5);
-        animateBeastGallop(stepCycle * (0.72 + beastProximity * 0.35));
-
-        for (let i = collectibles.length - 1; i >= 0; i--) {
-          const c = collectibles[i];
-          c.mesh.position.z += moveDelta;
-          c.mesh.rotation.y += dt * 3.5;
-
-          if (!c.collected) {
-            const dx = Math.abs(c.mesh.position.x - playerX);
-            const dy = Math.abs(c.mesh.position.y - (playerY + 1.1));
-            const dz = Math.abs(c.mesh.position.z - 0);
-
-            if (dx < 0.95 && dy < 1.35 && dz < 1.1) {
-              c.collected = true;
-              c.mesh.visible = false;
-              if (c.isGem) {
-                coins += 5;
-                shieldCharge = Math.min(100, shieldCharge + 35);
-                beastProximity = Math.max(0.05, beastProximity - 0.16);
-                sound.playGemChime();
-                triggerFlash('rgba(16, 185, 129, 0.3)');
-              } else {
-                coins += 1;
-                shieldCharge = Math.min(100, shieldCharge + 8);
-                beastProximity = Math.max(0.05, beastProximity - 0.03);
-                sound.playCoin();
-              }
+    grid.innerHTML = games.map(game => `
+        <article class="game-wallpaper-card" data-game-id="${game.id}" tabindex="0" role="button" aria-label="Play ${game.title}">
+            <div class="wallpaper-frame">
+                ${renderWallpaperArtwork(game.wallpaperType)}
+                <div class="wallpaper-scrim"></div>
+                <span class="wallpaper-badge">${game.badge}</span>
+                <span class="wallpaper-status ${game.url ? "is-linked" : "is-demo"}">
+                    ${game.url ? "● Connected" : "◈ Demo Ready"}
+                </span>
+                <div class="wallpaper-play-cta">
+                    <span class="play-ring">▶</span>
+                    <strong>Tap to Play</strong>
+                </div>
+            </div>
+
+            <div class="game-card-body">
+                <div class="game-card-top">
+                    <h3>${game.title}</h3>
+                    <button type="button" class="game-link-btn" data-edit-game="${game.id}" title="Connect game file/URL">
+                        Link
+                    </button>
+                </div>
+                <p>${game.subtitle}</p>
+            </div>
+        </article>
+    `).join("");
+
+    grid.querySelectorAll(".game-wallpaper-card").forEach(card => {
+        const id = card.getAttribute("data-game-id");
+        const launch = () => openGameModal(id);
+        card.addEventListener("click", launch);
+        card.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                launch();
             }
-          }
+        });
+    });
 
-          if (c.mesh.position.z > 12) {
-            if (!c.collected) {
-              beastProximity = Math.min(0.95, beastProximity + (c.isGem ? 0.07 : 0.022));
+    grid.querySelectorAll("[data-edit-game]").forEach(btn => {
+        btn.addEventListener("click", e => {
+            e.stopPropagation();
+            openConnectModal(btn.getAttribute("data-edit-game"));
+        });
+    });
+}
+
+function mountBuiltInDemo(stage, game) {
+    stage.innerHTML = `
+        <div class="demo-wrapper">
+            <canvas id="nexaDemoCanvas" width="760" height="420"></canvas>
+            <div class="demo-hud">
+                <span id="demoStatusText">
+                    ${game.category === "running"
+                        ? "Press Space / Tap to Jump • Avoid obstacles"
+                        : "A/D or Left/Right to Move • Space or Tap to Strike"}
+                </span>
+                <button type="button" class="demo-connect-inline" id="inlineConnectBtn">
+                    Connect Your Game File
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("inlineConnectBtn").addEventListener("click", () => {
+        closeGameModal();
+        openConnectModal(game.id);
+    });
+
+    const canvas = document.getElementById("nexaDemoCanvas");
+    const ctx = canvas.getContext("2d");
+    let animId = null;
+
+    if (game.category === "running") {
+        let runnerY = 300;
+        let vy = 0;
+        let jumping = false;
+        let obsX = 760;
+        let score = 0;
+        const groundY = 330;
+
+        const jump = () => {
+            if (!jumping) {
+                vy = -13.5;
+                jumping = true;
             }
-            scene.remove(c.mesh);
-            collectibles.splice(i, 1);
-          }
-        }
+        };
 
-        let furthestZ = -40;
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-          const obs = obstacles[i];
-          obs.mesh.position.z += moveDelta;
-          if (obs.mesh.position.z < furthestZ) {
-            furthestZ = obs.mesh.position.z;
-          }
+        const onKey = e => {
+            if (e.code === "Space" || e.code === "ArrowUp") {
+                e.preventDefault();
+                jump();
+            }
+        };
 
-          if (!obs.hit && Math.abs(obs.mesh.position.z) < obs.zDepth) {
-            const inBlockedLane = obs.lanes.includes(currentLane);
-            if (inBlockedLane) {
-              let collided = false;
-              if ((obs.type === 'JUMP' || obs.type === 'BRIDGE') && playerY < 0.95) collided = true;
-              if (obs.type === 'SLIDE' && !isSliding) collided = true;
-              if (obs.type === 'BLOCK') collided = true;
+        window.addEventListener("keydown", onKey);
+        canvas.addEventListener("pointerdown", jump);
 
-              if (collided) {
-                obs.hit = true;
-                if (shieldCharge >= 100) {
-                  shieldCharge = 0;
-                  beastProximity = Math.min(0.95, beastProximity + 0.42);
-                  beastLungeBoost = 0.85;
-                  sound.playShieldBreak();
-                  screenShake = 0.55;
-                  triggerFlash('rgba(52, 211, 153, 0.55)');
-                  voice.beastSpeak('Your little shield will not save you!', {
-                    priority: true,
-                    withRumble: true
-                  });
-                  if (obs.type !== 'BRIDGE') obs.mesh.visible = false;
-                } else {
-                  triggerGameOver();
+        const loop = () => {
+            ctx.fillStyle = "#061322";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // ground
+            ctx.fillStyle = "#55baff";
+            ctx.fillRect(0, groundY, canvas.width, 3);
+
+            // runner physics
+            vy += 0.65;
+            runnerY += vy;
+            if (runnerY >= groundY - 36) {
+                runnerY = groundY - 36;
+                vy = 0;
+                jumping = false;
+            }
+
+            ctx.fillStyle = "#80f2ff";
+            ctx.fillRect(110, runnerY, 28, 36);
+
+            // obstacle
+            obsX -= 6.5;
+            if (obsX < -30) {
+                obsX = canvas.width + 40;
+                score += 1;
+            }
+            if (obsX < 138 && obsX + 26 > 110 && runnerY + 36 > groundY - 32) {
+                score = 0;
+                obsX = canvas.width + 60;
+            }
+
+            ctx.fillStyle = "#ff8293";
+            ctx.fillRect(obsX, groundY - 32, 26, 32);
+
+            ctx.fillStyle = "#edf7ff";
+            ctx.font = "600 16px 'Space Grotesk', sans-serif";
+            ctx.fillText(`SCORE: ${score}`, 24, 34);
+
+            animId = requestAnimationFrame(loop);
+        };
+        loop();
+
+        demoCleanup = () => {
+            cancelAnimationFrame(animId);
+            window.removeEventListener("keydown", onKey);
+            canvas.removeEventListener("pointerdown", jump);
+        };
+    } else {
+        let p1X = 190;
+        let p2X = 540;
+        let p2Dir = -1;
+        let punchTimer = 0;
+        let hits = 0;
+
+        const keys = {};
+        const onKeyDown = e => {
+            keys[e.code] = true;
+            if (e.code === "Space") {
+                e.preventDefault();
+                punchTimer = 10;
+            }
+        };
+        const onKeyUp = e => {
+            keys[e.code] = false;
+        };
+        const onTap = () => {
+            punchTimer = 10;
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+        canvas.addEventListener("pointerdown", onTap);
+
+        const loop = () => {
+            ctx.fillStyle = "#061322";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#8bd5ff";
+            ctx.fillRect(40, 330, canvas.width - 80, 3);
+
+            if (keys["ArrowLeft"] || keys["KeyA"]) p1X = Math.max(60, p1X - 5);
+            if (keys["ArrowRight"] || keys["KeyD"]) p1X = Math.min(canvas.width - 90, p1X + 5);
+
+            p2X += p2Dir * 2.2;
+            if (p2X < 380) p2Dir = 1;
+            if (p2X > canvas.width - 100) p2Dir = -1;
+
+            // Player 1
+            ctx.fillStyle = "#55baff";
+            ctx.fillRect(p1X, 280, 30, 50);
+
+            if (punchTimer > 0) {
+                punchTimer -= 1;
+                ctx.fillStyle = "#80f2ff";
+                ctx.fillRect(p1X + 30, 292, 34, 12);
+                if (Math.abs((p1X + 64) - p2X) < 36 && punchTimer === 8) {
+                    hits += 1;
                 }
-              }
             }
-          }
 
-          if (obs.mesh.position.z > 14) {
-            scene.remove(obs.mesh);
-            obstacles.splice(i, 1);
-          }
-        }
+            // Rival
+            ctx.fillStyle = "#ff8293";
+            ctx.fillRect(p2X, 280, 30, 50);
 
-        if (furthestZ > -145) {
-          const gap = Math.max(21, 28 - runSpeed * 0.15);
-          spawnRow(furthestZ - gap);
-        }
+            ctx.fillStyle = "#edf7ff";
+            ctx.font = "600 16px 'Space Grotesk', sans-serif";
+            ctx.fillText(`COMBO HITS: ${hits}`, 24, 34);
 
-        const portraitPullBack = isPortrait ? 1.5 : 0;
-        const desiredCamY = (cameraMode === 'overhead' ? 7.45 : 4.95) + playerY * 0.4 + (isPortrait ? 0.65 : 0);
-        const desiredCamZ = (cameraMode === 'overhead' ? 7.6 : 7.2) + portraitPullBack;
-        const desiredLookY = (cameraMode === 'overhead' ? 0.95 : 1.45) + playerY * 0.25;
-        const desiredLookZ = cameraMode === 'overhead' ? -12.5 : -14;
+            animId = requestAnimationFrame(loop);
+        };
+        loop();
 
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerX * 0.55, dt * 8);
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredCamY, dt * 8);
-        camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredCamZ, dt * 8);
-        camera.lookAt(playerX * 0.4, desiredLookY, desiredLookZ);
+        demoCleanup = () => {
+            cancelAnimationFrame(animId);
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+            canvas.removeEventListener("pointerdown", onTap);
+        };
+    }
+}
 
-        sunLight.position.set(playerX + 18, 36, -25);
-        sunLight.target.position.set(playerX, 0, -15);
+function openGameModal(gameId) {
+    const game = loadGamesConfig().find(g => g.id === gameId);
+    if (!game) return;
 
-        updateHUD();
-      } else if (gameState === 'GAMEOVER') {
-        beastGroup.position.z = THREE.MathUtils.lerp(beastGroup.position.z, 2.2, dt * 7);
-        beastGroup.position.x = THREE.MathUtils.lerp(beastGroup.position.x, playerX, dt * 7);
-        animateBeastGallop(elapsed * 14);
-      }
-
-      if (screenShake > 0) {
-        camera.position.x += (Math.random() - 0.5) * screenShake;
-        camera.position.y += (Math.random() - 0.5) * screenShake;
-        screenShake = Math.max(0, screenShake - dt * 2.2);
-      }
-
-      renderer.render(scene, camera);
+    if (demoCleanup) {
+        demoCleanup();
+        demoCleanup = null;
     }
 
-    animate();
-  </script>
+    const modal = document.getElementById("gamePlayerModal");
+    const stage = document.getElementById("gameStage");
+    const extLink = document.getElementById("gameExternalLink");
+
+    document.getElementById("gameModalTag").textContent = game.category.toUpperCase();
+    document.getElementById("gameModalTitle").textContent = game.title;
+
+    if (game.url) {
+        extLink.href = game.url;
+        extLink.style.display = "inline-flex";
+        stage.innerHTML = `<iframe src="${game.url}" title="${game.title}" class="game-iframe" allowfullscreen></iframe>`;
+    } else {
+        extLink.style.display = "none";
+        mountBuiltInDemo(stage, game);
+    }
+
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+}
+
+function closeGameModal() {
+    if (demoCleanup) {
+        demoCleanup();
+        demoCleanup = null;
+    }
+    const modal = document.getElementById("gamePlayerModal");
+    document.getElementById("gameStage").innerHTML = "";
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+}
+
+function openConnectModal(gameId) {
+    const games = loadGamesConfig();
+    const target = games.find(g => g.id === gameId) || games[0];
+    document.getElementById("connectGameSelect").value = target.id;
+    document.getElementById("connectGameUrl").value = target.url || "";
+
+    const modal = document.getElementById("connectGameModal");
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+}
+
+function closeConnectModal() {
+    const modal = document.getElementById("connectGameModal");
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderGamesGrid();
+
+    document.querySelectorAll(".filter-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("is-active"));
+            tab.classList.add("is-active");
+            activeFilter = tab.getAttribute("data-filter");
+            renderGamesGrid();
+        });
+    });
+
+    document.getElementById("gameSearchInput").addEventListener("input", e => {
+        searchQuery = e.target.value;
+        renderGamesGrid();
+    });
+
+    document.getElementById("quickPlayRunnerBtn").addEventListener("click", () => openGameModal("temple-sprint"));
+    document.getElementById("quickPlayFighterBtn").addEventListener("click", () => openGameModal("cyber-clash"));
+
+    document.getElementById("closeGameModalBtn").addEventListener("click", closeGameModal);
+    document.getElementById("gameModalBackdrop").addEventListener("click", closeGameModal);
+
+    document.getElementById("openConnectModalBtn").addEventListener("click", () => openConnectModal("temple-sprint"));
+    document.getElementById("closeConnectModalBtn").addEventListener("click", closeConnectModal);
+    document.getElementById("connectModalBackdrop").addEventListener("click", closeConnectModal);
+
+    document.getElementById("connectGameSelect").addEventListener("change", e => {
+        const game = loadGamesConfig().find(g => g.id === e.target.value);
+        document.getElementById("connectGameUrl").value = game && game.url ? game.url : "";
+    });
+
+    document.getElementById("connectGameForm").addEventListener("submit", e => {
+        e.preventDefault();
+        const id = document.getElementById("connectGameSelect").value;
+        const url = document.getElementById("connectGameUrl").value;
+        saveGameUrl(id, url);
+        renderGamesGrid();
+        closeConnectModal();
+    });
+
+    document.getElementById("resetGameUrlBtn").addEventListener("click", () => {
+        const id = document.getElementById("connectGameSelect").value;
+        saveGameUrl(id, "");
+        document.getElementById("connectGameUrl").value = "";
+        renderGamesGrid();
+    });
+
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+            closeGameModal();
+            closeConnectModal();
+        }
+    });
+});
+</script>
+
 </body>
+
 </html>
