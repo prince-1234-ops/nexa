@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#06101b">
+    <title>NEXA — Sound</title>
+    <link rel="icon" type="image/jpeg" href="images/hub.jpg">
+
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="Nexa nav.css">
+    <link rel="stylesheet" href="reels.css">
+    <link rel="stylesheet" href="sound.css">
+    <link rel="stylesheet" href="nexa-theme.css">
+</head>
+
+<body>
+
+<div class="nexa-app">
+
+    <!-- ================= SHARED SIDEBAR ================= -->
+
+    <aside class="sidebar" aria-label="Main navigation">
+
+        <div class="sidebar-brand">
+            <a href="home.html" class="logo">NEXA</a>
+            <span class="brand-status">SOCIAL</span>
+        </div>
+
+        <nav class="main-nav">
+
+            <a href="home.html" class="nav-item">
+                <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
+            </a>
+
+            <a href="people.html" class="nav-item">
+                <span class="nav-icon">◉</span><span class="nav-label">People</span>
+            </a>
+
+            <a href="messages.html" class="nav-item">
+                <span class="nav-icon">✉</span><span class="nav-label">Messages</span>
+                <span class="nav-badge" data-unread-badge hidden>0</span>
+            </a>
+
+            <a href="reels.html" class="nav-item active" aria-current="page">
+                <span class="nav-icon">📽️</span><span class="nav-label">Reels</span>
+            </a>
+
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">●</span><span class="nav-label">Profile</span>
+            </a>
+
+            <a href="games.html" class="nav-item">
+                <span class="nav-icon">🎮</span><span class="nav-label">Games</span>
+            </a>
+
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a href="about.html" class="nav-item">
+                <span class="nav-icon">ⓘ</span><span class="nav-label">About</span>
+            </a>
+
+            <a href="contact.html" class="nav-item">
+                <span class="nav-icon">☏</span><span class="nav-label">Contact</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-promo">
+                <span class="promo-icon">✦</span>
+                <div>
+                    <strong>Welcome to NEXA</strong>
+                    <small>Connect. Share. Discover.</small>
+                </div>
+            </div>
+
+            <button id="logoutButton" class="logout-btn" type="button">
+                <span class="logout-icon">↪</span><span>Logout</span>
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <a href="home.html" class="mobile-logo">NEXA</a>
+
+            <div class="sound-topbar-title">
+                <button type="button" class="topbar-btn" id="soundBack" aria-label="Go back">←</button>
+                <strong>Sound</strong>
+            </div>
+
+            <div class="topbar-actions">
+                <a href="messages.html" class="topbar-btn" title="Messages" aria-label="Messages">✉</a>
+                <a href="profile.html" class="mini-profile" aria-label="Open profile">
+                    <div class="mini-avatar" id="miniAvatar">N</div>
+                </a>
+            </div>
+
+        </header>
+
+        <div id="notificationArea" class="notification-area" aria-live="polite"></div>
+
+
+        <div class="sound-page">
+
+            <section class="sound-hero">
+
+                <button type="button" class="sound-cover" id="soundCover" aria-label="Play sound">
+                    <span id="soundCoverIcon">♪</span>
+                </button>
+
+                <div class="sound-info">
+
+                    <span class="home-eyebrow">SOUND</span>
+
+                    <h1 id="soundTitle">Original sound</h1>
+
+                    <a class="sound-owner" id="soundOwner" href="profile.html">
+                        <span class="rl-avatar" id="soundOwnerAvatar">N</span>
+                        <span>Original by <b id="soundOwnerName">…</b></span>
+                    </a>
+
+                    <p id="soundCount">Loading…</p>
+
+                    <div class="sound-actions">
+                        <button type="button" class="intro-action secondary" id="soundPlay">▶ Play sound</button>
+                        <a class="intro-action primary" id="useSoundButton" href="camera.html">🎬 Use this sound</a>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <h2 class="sound-heading">Original video</h2>
+            <div class="rl-grid sound-grid" id="soundOriginal"></div>
+
+            <h2 class="sound-heading">Videos using this sound <span id="soundUsesCount"></span></h2>
+            <div class="rl-grid sound-grid" id="soundGrid"></div>
+
+            <section class="empty-feed" id="soundEmpty" hidden>
+                <div class="empty-feed-icon">♪</div>
+                <h2>No one has used this sound yet</h2>
+                <p>Be the first. Tap “Use this sound” to record your own video.</p>
+            </section>
+
+            <div class="sound-note" id="soundNote" hidden></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<nav class="mobile-nav" aria-label="Mobile navigation">
+
+    <a href="home.html" class="mobile-nav-item"><span>⌂</span><small>Home</small></a>
+
+    <a href="people.html" class="mobile-nav-item"><span>◉</span><small>People</small></a>
+
+    <a href="messages.html" class="mobile-nav-item">
+        <span>✉</span><small>Messages</small>
+        <span class="mobile-nav-badge" data-unread-badge hidden>0</span>
+    </a>
+
+    <a href="profile.html" class="mobile-nav-item"><span>●</span><small>Profile</small></a>
+
+</nav>
+
+
+<audio id="soundAudio" preload="none"></audio>
+
+
+<!-- simple player for a video from this sound -->
+
+<div class="sp" id="soundPlayer" hidden>
+
+    <button type="button" class="rv-close" id="soundPlayerClose" aria-label="Close">×</button>
+
+    <div class="sp-stage">
+
+        <video id="soundPlayerVideo" controls playsinline loop></video>
+
+        <div class="sp-info">
+            <strong id="soundPlayerName">NEXA User</strong>
+            <p id="soundPlayerCaption"></p>
+            <a class="intro-action primary" id="soundPlayerUse" href="camera.html">🎬 Use this sound</a>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="nexa-theme.js"></script>
+<script src="Nexa-nav.js"></script>
+<script src="sound.js"></script>
+
+</body>
+
+</html>
