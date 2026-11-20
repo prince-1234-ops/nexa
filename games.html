@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Ancient Forest Runner</title>
+  <title>Temple Escape 3D — Ancient Forest Runner</title>
   <style>
     * {
       box-sizing: border-box;
@@ -425,6 +425,7 @@
               </div>
             </div>
           </div>
+          <button id="voice-btn" class="hud-btn active-toggle" title="Toggle AI Voice Commentary">🗣 Voice</button>
           <button id="pad-btn" class="hud-btn active-toggle" title="Toggle Touch Pad">🎮 Pad</button>
           <button id="cam-btn" class="hud-btn" title="Toggle Camera Angle">📷 Chase</button>
           <button id="audio-btn" class="hud-btn icon-only" title="Toggle Sound">🔊</button>
@@ -678,6 +679,89 @@
     const sound = new SoundEngine();
 
     // ==========================================
+    // 1B. FUN AI VOICE COMMENTARY ENGINE
+    // ==========================================
+    class VoiceGuide {
+      constructor() {
+        this.enabled = true;
+        this.lastSpeakTime = 0;
+        this.lastDangerSpeak = 0;
+      }
+
+      unlock() {
+        if (!('speechSynthesis' in window)) return;
+        const utter = new SpeechSynthesisUtterance('');
+        utter.volume = 0;
+        window.speechSynthesis.speak(utter);
+      }
+
+      toggle() {
+        this.enabled = !this.enabled;
+        if (!this.enabled && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        } else if (this.enabled) {
+          this.say('Voice commentary on!', { priority: true, rate: 1.1, pitch: 1.08 });
+        }
+        return this.enabled;
+      }
+
+      pickVoice() {
+        if (!('speechSynthesis' in window)) return null;
+        const voices = window.speechSynthesis.getVoices() || [];
+        return (
+          voices.find((v) => /en/i.test(v.lang) && /natural|google|samantha|daniel|alex/i.test(v.name)) ||
+          voices.find((v) => /en/i.test(v.lang)) ||
+          voices[0] ||
+          null
+        );
+      }
+
+      say(text, { priority = false, cooldown = 2.6, rate = 1.12, pitch = 1.05 } = {}) {
+        if (!this.enabled || sound.muted || !('speechSynthesis' in window)) return;
+        const now = performance.now() / 1000;
+        if (!priority && now - this.lastSpeakTime < cooldown) return;
+
+        this.lastSpeakTime = now;
+        try {
+          if (priority) {
+            window.speechSynthesis.cancel();
+          }
+          const utter = new SpeechSynthesisUtterance(text);
+          const voice = this.pickVoice();
+          if (voice) utter.voice = voice;
+          utter.rate = rate;
+          utter.pitch = pitch;
+          utter.volume = 0.95;
+          window.speechSynthesis.speak(utter);
+        } catch (err) {
+          // Ignore speech synthesis errors on restricted devices
+        }
+      }
+
+      warnCloseBeast() {
+        const now = performance.now() / 1000;
+        if (now - this.lastDangerSpeak < 6.5) return;
+        this.lastDangerSpeak = now;
+        const lines = [
+          'Watch out, the beast is right behind you!',
+          'He is breathing down your neck! Keep moving!',
+          'Danger close! Don’t miss that jump!'
+        ];
+        this.say(lines[Math.floor(Math.random() * lines.length)], {
+          priority: false,
+          cooldown: 2.2,
+          rate: 1.2,
+          pitch: 1.12
+        });
+      }
+    }
+
+    const voice = new VoiceGuide();
+    if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = () => voice.pickVoice();
+    }
+
+    // ==========================================
     // 2. PROCEDURAL TEXTURES
     // ==========================================
     function createNoiseTexture(baseHex, accentHex, scale = 4) {
@@ -783,6 +867,8 @@
     let coins = 0;
     let bestScore = parseInt(localStorage.getItem('temple_escape_best') || '0', 10);
     let shieldCharge = 0;
+    let shieldAnnounced = false;
+    let nextMilestone = 50;
     let screenShake = 0;
     let stepCycle = 0;
     let lastStepSign = 1;
@@ -1531,6 +1617,7 @@
     const screenFlash = document.getElementById('screen-flash');
     const camBtn = document.getElementById('cam-btn');
     const padBtn = document.getElementById('pad-btn');
+    const voiceBtn = document.getElementById('voice-btn');
     const touchPad = document.getElementById('touch-pad');
 
     function showBanner(text) {
@@ -1565,21 +1652,41 @@
       if (shieldCharge >= 100) {
         shieldStatus.textContent = 'ACTIVE';
         shieldBubble.material.opacity = 0.22;
+        if (!shieldAnnounced) {
+          shieldAnnounced = true;
+          voice.say('Relic shield charged! You have a safety net!', {
+            priority: true,
+            rate: 1.15,
+            pitch: 1.1
+          });
+        }
       } else {
         shieldStatus.textContent = `${Math.floor(shieldCharge)}%`;
         shieldBubble.material.opacity = 0.0;
+        if (shieldCharge < 50) shieldAnnounced = false;
       }
     }
 
     function toggleCameraAngle() {
       cameraMode = cameraMode === 'chase' ? 'overhead' : 'chase';
       camBtn.textContent = cameraMode === 'chase' ? '📷 Chase' : '📷 High';
+      voice.say(cameraMode === 'overhead' ? 'High camera!' : 'Chase camera!', {
+        priority: false,
+        cooldown: 1.4,
+        rate: 1.18
+      });
     }
 
     function toggleTouchPad() {
       touchPadEnabled = !touchPadEnabled;
       padBtn.classList.toggle('active-toggle', touchPadEnabled);
       updateTouchPadVisibility();
+    }
+
+    function toggleVoice() {
+      const enabled = voice.toggle();
+      voiceBtn.classList.toggle('active-toggle', enabled);
+      voiceBtn.textContent = enabled ? '🗣 Voice' : '🤫 Muted';
     }
 
     // ==========================================
@@ -1593,6 +1700,8 @@
       isJumping = false;
       isSliding = false;
       slideTimer = 0;
+      shieldAnnounced = false;
+      nextMilestone = 50;
       beastProximity = 0.28;
       beastLungeBoost = 0;
 
@@ -1630,6 +1739,7 @@
 
     function startIntroSequence() {
       sound.init();
+      voice.unlock();
       resetPositionsForMenu();
       startScreen.classList.add('hidden');
       gameoverScreen.classList.add('hidden');
@@ -1644,6 +1754,7 @@
       gameState = 'INTRO_STEAL';
       introTimer = 0;
       showBanner('Stealing the Emerald Heart...');
+      voice.say('Quietly snatch that gem...', { priority: true, rate: 1.05, pitch: 1.02 });
     }
 
     function beginActiveRun() {
@@ -1670,6 +1781,17 @@
       if (finalDist > bestScore) {
         bestScore = finalDist;
         localStorage.setItem('temple_escape_best', bestScore.toString());
+        voice.say(`New record! ${finalDist} meters, but the beast still got you!`, {
+          priority: true,
+          rate: 1.08,
+          pitch: 1.05
+        });
+      } else {
+        voice.say(`Ouch! Caught at ${finalDist} meters. Ready for revenge?`, {
+          priority: true,
+          rate: 1.08,
+          pitch: 0.98
+        });
       }
 
       document.getElementById('final-score').textContent = `${finalDist}m`;
@@ -1733,7 +1855,6 @@
       }
     });
 
-    // Touch / Pointer Swipe Gestures (tuned for phones)
     let swipeStartX = 0;
     let swipeStartY = 0;
     let swipeTriggered = false;
@@ -1768,7 +1889,6 @@
       { passive: true }
     );
 
-    // Mouse drag fallback on desktop
     let mouseDown = false;
     let mouseStartX = 0;
     let mouseStartY = 0;
@@ -1791,7 +1911,6 @@
       }
     });
 
-    // On-Screen Touch Pad Bindings
     function bindPadButton(id, action) {
       const btn = document.getElementById(id);
       btn.addEventListener(
@@ -1818,6 +1937,7 @@
     document.getElementById('restart-btn').addEventListener('click', startIntroSequence);
     camBtn.addEventListener('click', toggleCameraAngle);
     padBtn.addEventListener('click', toggleTouchPad);
+    voiceBtn.addEventListener('click', toggleVoice);
 
     const audioBtn = document.getElementById('audio-btn');
     audioBtn.addEventListener('click', () => {
@@ -1924,6 +2044,7 @@
           heldGem.visible = true;
           sound.playGemChime();
           triggerFlash('rgba(16, 185, 129, 0.45)');
+          voice.say('Got it!', { priority: true, rate: 1.25, pitch: 1.15 });
         }
 
         if (introTimer >= 1.35) {
@@ -1932,6 +2053,7 @@
           sound.playBeastRoar();
           screenShake = 0.85;
           showBanner('THE DEMON GUARDIAN AWAKENS!');
+          voice.say('Uh oh! The guardian woke up! Run!', { priority: true, rate: 1.22, pitch: 1.12 });
         }
       } else if (gameState === 'INTRO_WAKE') {
         introTimer += dt;
@@ -1976,9 +2098,23 @@
         const moveDelta = runSpeed * dt;
         distance += moveDelta * 0.45;
 
+        if (Math.floor(distance) >= nextMilestone) {
+          voice.say(`${nextMilestone} meters! Keep flying!`, {
+            priority: false,
+            cooldown: 3.0,
+            rate: 1.15,
+            pitch: 1.12
+          });
+          nextMilestone += nextMilestone < 200 ? 50 : 150;
+        }
+
         const speedRelief = Math.min(0.22, ((runSpeed - 22) / 20) * 0.22);
         beastProximity = Math.max(0.08, beastProximity - dt * (0.045 + speedRelief * 0.05));
         beastLungeBoost = Math.max(0, beastLungeBoost - dt * 1.4);
+
+        if (beastProximity > 0.68) {
+          voice.warnCloseBeast();
+        }
 
         if (caveGroup.position.z < 45) {
           caveGroup.position.z += moveDelta;
@@ -2070,6 +2206,7 @@
                 beastProximity = Math.max(0.05, beastProximity - 0.16);
                 sound.playGemChime();
                 triggerFlash('rgba(16, 185, 129, 0.3)');
+                voice.say('Emerald boost!', { priority: false, cooldown: 3.5, rate: 1.2, pitch: 1.15 });
               } else {
                 coins += 1;
                 shieldCharge = Math.min(100, shieldCharge + 8);
@@ -2108,11 +2245,17 @@
                 obs.hit = true;
                 if (shieldCharge >= 100) {
                   shieldCharge = 0;
+                  shieldAnnounced = false;
                   beastProximity = Math.min(0.95, beastProximity + 0.42);
                   beastLungeBoost = 0.85;
                   sound.playShieldBreak();
                   screenShake = 0.55;
                   triggerFlash('rgba(52, 211, 153, 0.55)');
+                  voice.say('Shield saved you! Careful, he is charging!', {
+                    priority: true,
+                    rate: 1.18,
+                    pitch: 1.05
+                  });
                   if (obs.type !== 'BRIDGE') obs.mesh.visible = false;
                 } else {
                   triggerGameOver();
