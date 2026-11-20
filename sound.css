@@ -1,0 +1,190 @@
+/* =========================================================
+   NEXA SOUND PAGE — load after home.css, Nexa nav.css, reels.css
+========================================================= */
+
+.sound-topbar-title {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 12px;
+}
+
+.sound-topbar-title strong {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sound-page {
+    width: min(var(--home-content, 1120px), calc(100% - 40px));
+    margin: 0 auto;
+    padding: 26px 0 60px;
+}
+
+.sound-hero {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    padding: 26px 30px;
+    border: 1px solid rgba(144, 208, 255, 0.18);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 88% 0%, rgba(52, 158, 250, 0.22), transparent 46%),
+        linear-gradient(112deg, rgba(17, 43, 66, 0.94), rgba(10, 27, 44, 0.74) 54%, rgba(12, 37, 61, 0.86));
+    box-shadow: var(--shadow);
+}
+
+.sound-cover {
+    display: grid;
+    width: 128px;
+    height: 128px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(146, 220, 255, 0.55);
+    border-radius: 34px;
+    background:
+        linear-gradient(145deg, rgba(116, 211, 255, 0.3), rgba(32, 110, 186, 0.3)),
+        rgba(12, 38, 61, 0.85);
+    box-shadow: 0 0 45px rgba(70, 179, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: #eaf8ff;
+    font-size: 48px;
+    transition: transform 0.2s ease;
+}
+
+.sound-cover:hover { transform: scale(1.04); }
+
+.sound-cover.is-playing { animation: sound-pulse 1.4s ease-in-out infinite; }
+
+@keyframes sound-pulse {
+    0%, 100% { box-shadow: 0 0 35px rgba(70, 179, 255, 0.3); }
+    50%      { box-shadow: 0 0 70px rgba(70, 179, 255, 0.65); }
+}
+
+.sound-info { min-width: 0; flex: 1; }
+
+.sound-info h1 {
+    margin: 8px 0 10px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(24px, 3.2vw, 34px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+}
+
+.sound-owner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #cfe3f2;
+    font-size: 13px;
+}
+
+.sound-owner b { color: #fff; }
+
+.sound-owner .rl-avatar { width: 30px; height: 30px; }
+
+.sound-info p {
+    margin: 10px 0 0;
+    color: #91aabe;
+    font-size: 12px;
+}
+
+.sound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.sound-heading {
+    margin: 34px 0 14px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+}
+
+.sound-heading span { color: #8bd5ff; font-size: 14px; }
+
+.sound-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 9px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2589e8, #55baff);
+    color: #03111e;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.sound-note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 190, 120, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 170, 70, 0.08);
+    color: #ffd9a8;
+    font-size: 12px;
+}
+
+/* simple player */
+
+.sp {
+    position: fixed;
+    z-index: 6000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(2, 7, 14, 0.95);
+    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(22px);
+}
+
+.sp[hidden] { display: none !important; }
+
+.sp-stage {
+    display: flex;
+    width: min(430px, 100%);
+    max-height: 100%;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sp-stage video {
+    width: 100%;
+    max-height: 68vh;
+    border: 1px solid rgba(144, 208, 255, 0.2);
+    border-radius: 22px;
+    background: #000;
+    object-fit: contain;
+}
+
+.sp-info strong { font-size: 15px; }
+
+.sp-info p {
+    margin: 6px 0 12px;
+    color: #bfd0df;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 650px) {
+
+    .sound-page { width: 100%; padding: 12px 12px 24px; }
+
+    .sound-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .sound-cover { width: 96px; height: 96px; border-radius: 28px; font-size: 38px; }
+
+    .sound-actions { width: 100%; }
+    .sound-actions .intro-action { flex: 1; }
+
+    .sound-topbar-title strong { display: none; }
+}
