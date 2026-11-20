@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Temple Escape 3D — Ancient Forest Runner</title>
+  <title>Ancient Forest Runner</title>
   <style>
     * {
       box-sizing: border-box;
@@ -727,6 +727,7 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.12;
     container.appendChild(renderer.domElement);
+    const canvas = renderer.domElement;
 
     const hemiLight = new THREE.HemisphereLight(0x88c999, 0x261d14, 0.8);
     scene.add(hemiLight);
@@ -797,6 +798,7 @@
       camera.aspect = aspect;
       camera.fov = aspect < 0.8 ? 74 : 66;
       camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     // ==========================================
