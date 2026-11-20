@@ -215,20 +215,25 @@
       left: 50%;
       transform: translateX(-50%);
       width: 92%;
-      max-width: 540px;
-      background: linear-gradient(90deg, transparent, rgba(10, 18, 12, 0.88), transparent);
+      max-width: 580px;
+      background: linear-gradient(90deg, transparent, rgba(10, 18, 12, 0.9), transparent);
       padding: 12px 24px;
       color: #ffdf73;
       font-size: clamp(14px, 4vw, 18px);
-      font-weight: 700;
-      letter-spacing: 2px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
       text-transform: uppercase;
       text-align: center;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.4s ease;
       z-index: 15;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+    }
+
+    #cinematic-banner.beast-speech {
+      color: #ff5544;
+      text-shadow: 0 0 16px rgba(255, 40, 20, 0.8), 0 2px 10px rgba(0, 0, 0, 0.95);
     }
 
     #cinematic-banner.visible {
@@ -425,7 +430,7 @@
               </div>
             </div>
           </div>
-          <button id="voice-btn" class="hud-btn active-toggle" title="Toggle AI Voice Commentary">🗣 Voice</button>
+          <button id="voice-btn" class="hud-btn active-toggle" title="Toggle Voice">🗣 Voice</button>
           <button id="pad-btn" class="hud-btn active-toggle" title="Toggle Touch Pad">🎮 Pad</button>
           <button id="cam-btn" class="hud-btn" title="Toggle Camera Angle">📷 Chase</button>
           <button id="audio-btn" class="hud-btn icon-only" title="Toggle Sound">🔊</button>
@@ -543,18 +548,18 @@
 
         osc1.type = 'sawtooth';
         osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(98, now);
-        osc1.frequency.exponentialRampToValueAtTime(36, now + 1.65);
-        osc2.frequency.setValueAtTime(64, now);
-        osc2.frequency.exponentialRampToValueAtTime(26, now + 1.65);
+        osc1.frequency.setValueAtTime(92, now);
+        osc1.frequency.exponentialRampToValueAtTime(34, now + 1.5);
+        osc2.frequency.setValueAtTime(58, now);
+        osc2.frequency.exponentialRampToValueAtTime(24, now + 1.5);
 
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(460, now);
-        filter.frequency.linearRampToValueAtTime(135, now + 1.65);
+        filter.frequency.setValueAtTime(420, now);
+        filter.frequency.linearRampToValueAtTime(125, now + 1.5);
 
         gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.48, now + 0.18);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.75);
+        gain.gain.linearRampToValueAtTime(0.45, now + 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
 
         osc1.connect(filter);
         osc2.connect(filter);
@@ -563,8 +568,44 @@
 
         osc1.start(now);
         osc2.start(now);
-        osc1.stop(now + 1.8);
-        osc2.stop(now + 1.8);
+        osc1.stop(now + 1.65);
+        osc2.stop(now + 1.65);
+      }
+
+      // Deep sub-bass rumble that plays under the monster's voice
+      playBeastRumble(duration = 2.6) {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const sub = this.ctx.createOscillator();
+        const growl = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(46, now);
+        sub.frequency.linearRampToValueAtTime(32, now + duration);
+
+        growl.type = 'sawtooth';
+        growl.frequency.setValueAtTime(54, now);
+        growl.frequency.linearRampToValueAtTime(38, now + duration);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(140, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.26, now + 0.2);
+        gain.gain.setValueAtTime(0.22, now + duration - 0.45);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        sub.connect(gain);
+        growl.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        sub.start(now);
+        growl.start(now);
+        sub.stop(now + duration + 0.05);
+        growl.stop(now + duration + 0.05);
       }
 
       playCoin() {
@@ -679,7 +720,7 @@
     const sound = new SoundEngine();
 
     // ==========================================
-    // 1B. FUN AI VOICE COMMENTARY ENGINE
+    // 1B. DEEP DEMON BEAST & COMMENTARY VOICE ENGINE
     // ==========================================
     class VoiceGuide {
       constructor() {
@@ -700,38 +741,43 @@
         if (!this.enabled && 'speechSynthesis' in window) {
           window.speechSynthesis.cancel();
         } else if (this.enabled) {
-          this.say('Voice commentary on!', { priority: true, rate: 1.1, pitch: 1.08 });
+          this.beastSpeak('You cannot escape me!', { priority: true, withRumble: false });
         }
         return this.enabled;
       }
 
-      pickVoice() {
+      pickDeepBeastVoice() {
         if (!('speechSynthesis' in window)) return null;
         const voices = window.speechSynthesis.getVoices() || [];
         return (
-          voices.find((v) => /en/i.test(v.lang) && /natural|google|samantha|daniel|alex/i.test(v.name)) ||
+          voices.find((v) => /en/i.test(v.lang) && /daniel|fred|aaron|guy|male|david|mark|alex|bruce/i.test(v.name)) ||
           voices.find((v) => /en/i.test(v.lang)) ||
           voices[0] ||
           null
         );
       }
 
-      say(text, { priority = false, cooldown = 2.6, rate = 1.12, pitch = 1.05 } = {}) {
+      // Ultra-deep, slow, scary monster voice
+      beastSpeak(text, { priority = true, cooldown = 2.0, withRumble = true } = {}) {
         if (!this.enabled || sound.muted || !('speechSynthesis' in window)) return;
         const now = performance.now() / 1000;
         if (!priority && now - this.lastSpeakTime < cooldown) return;
 
         this.lastSpeakTime = now;
+        if (withRumble) {
+          sound.playBeastRumble(2.8);
+        }
+
         try {
           if (priority) {
             window.speechSynthesis.cancel();
           }
           const utter = new SpeechSynthesisUtterance(text);
-          const voice = this.pickVoice();
+          const voice = this.pickDeepBeastVoice();
           if (voice) utter.voice = voice;
-          utter.rate = rate;
-          utter.pitch = pitch;
-          utter.volume = 0.95;
+          utter.rate = 0.78;
+          utter.pitch = 0.25;
+          utter.volume = 1.0;
           window.speechSynthesis.speak(utter);
         } catch (err) {
           // Ignore speech synthesis errors on restricted devices
@@ -740,25 +786,24 @@
 
       warnCloseBeast() {
         const now = performance.now() / 1000;
-        if (now - this.lastDangerSpeak < 6.5) return;
+        if (now - this.lastDangerSpeak < 7.5) return;
         this.lastDangerSpeak = now;
         const lines = [
-          'Watch out, the beast is right behind you!',
-          'He is breathing down your neck! Keep moving!',
-          'Danger close! Don’t miss that jump!'
+          'I can smell your fear... Run faster!',
+          'You will never leave this forest alive!',
+          'Give me back my emerald!'
         ];
-        this.say(lines[Math.floor(Math.random() * lines.length)], {
+        this.beastSpeak(lines[Math.floor(Math.random() * lines.length)], {
           priority: false,
-          cooldown: 2.2,
-          rate: 1.2,
-          pitch: 1.12
+          cooldown: 2.5,
+          withRumble: true
         });
       }
     }
 
     const voice = new VoiceGuide();
     if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = () => voice.pickVoice();
+      window.speechSynthesis.onvoiceschanged = () => voice.pickDeepBeastVoice();
     }
 
     // ==========================================
@@ -867,8 +912,6 @@
     let coins = 0;
     let bestScore = parseInt(localStorage.getItem('temple_escape_best') || '0', 10);
     let shieldCharge = 0;
-    let shieldAnnounced = false;
-    let nextMilestone = 50;
     let screenShake = 0;
     let stepCycle = 0;
     let lastStepSign = 1;
@@ -1620,13 +1663,15 @@
     const voiceBtn = document.getElementById('voice-btn');
     const touchPad = document.getElementById('touch-pad');
 
-    function showBanner(text) {
+    function showBanner(text, isBeast = false) {
       banner.textContent = text;
+      banner.classList.toggle('beast-speech', isBeast);
       banner.classList.add('visible');
     }
 
     function hideBanner() {
       banner.classList.remove('visible');
+      banner.classList.remove('beast-speech');
     }
 
     function triggerFlash(color) {
@@ -1652,29 +1697,15 @@
       if (shieldCharge >= 100) {
         shieldStatus.textContent = 'ACTIVE';
         shieldBubble.material.opacity = 0.22;
-        if (!shieldAnnounced) {
-          shieldAnnounced = true;
-          voice.say('Relic shield charged! You have a safety net!', {
-            priority: true,
-            rate: 1.15,
-            pitch: 1.1
-          });
-        }
       } else {
         shieldStatus.textContent = `${Math.floor(shieldCharge)}%`;
         shieldBubble.material.opacity = 0.0;
-        if (shieldCharge < 50) shieldAnnounced = false;
       }
     }
 
     function toggleCameraAngle() {
       cameraMode = cameraMode === 'chase' ? 'overhead' : 'chase';
       camBtn.textContent = cameraMode === 'chase' ? '📷 Chase' : '📷 High';
-      voice.say(cameraMode === 'overhead' ? 'High camera!' : 'Chase camera!', {
-        priority: false,
-        cooldown: 1.4,
-        rate: 1.18
-      });
     }
 
     function toggleTouchPad() {
@@ -1700,8 +1731,6 @@
       isJumping = false;
       isSliding = false;
       slideTimer = 0;
-      shieldAnnounced = false;
-      nextMilestone = 50;
       beastProximity = 0.28;
       beastLungeBoost = 0;
 
@@ -1753,8 +1782,7 @@
 
       gameState = 'INTRO_STEAL';
       introTimer = 0;
-      showBanner('Stealing the Emerald Heart...');
-      voice.say('Quietly snatch that gem...', { priority: true, rate: 1.05, pitch: 1.02 });
+      showBanner('Stealing the Emerald Heart...', false);
     }
 
     function beginActiveRun() {
@@ -1777,21 +1805,15 @@
       screenShake = 0.75;
       triggerFlash('rgba(239, 68, 68, 0.75)');
 
+      voice.beastSpeak('I told you... waking me was your final mistake!', {
+        priority: true,
+        withRumble: true
+      });
+
       const finalDist = Math.floor(distance);
       if (finalDist > bestScore) {
         bestScore = finalDist;
         localStorage.setItem('temple_escape_best', bestScore.toString());
-        voice.say(`New record! ${finalDist} meters, but the beast still got you!`, {
-          priority: true,
-          rate: 1.08,
-          pitch: 1.05
-        });
-      } else {
-        voice.say(`Ouch! Caught at ${finalDist} meters. Ready for revenge?`, {
-          priority: true,
-          rate: 1.08,
-          pitch: 0.98
-        });
       }
 
       document.getElementById('final-score').textContent = `${finalDist}m`;
@@ -2044,33 +2066,35 @@
           heldGem.visible = true;
           sound.playGemChime();
           triggerFlash('rgba(16, 185, 129, 0.45)');
-          voice.say('Got it!', { priority: true, rate: 1.25, pitch: 1.15 });
         }
 
-        if (introTimer >= 1.35) {
+        if (introTimer >= 1.3) {
           gameState = 'INTRO_WAKE';
           introTimer = 0;
           sound.playBeastRoar();
           screenShake = 0.85;
-          showBanner('THE DEMON GUARDIAN AWAKENS!');
-          voice.say('Uh oh! The guardian woke up! Run!', { priority: true, rate: 1.22, pitch: 1.12 });
+          showBanner('"YOU HAVE MADE A VERY BIG MISTAKE TO WAKE ME!"', true);
+          voice.beastSpeak('You have made a very big mistake to wake me!', {
+            priority: true,
+            withRumble: true
+          });
         }
       } else if (gameState === 'INTRO_WAKE') {
         introTimer += dt;
         eyeMatInstance.emissiveIntensity = THREE.MathUtils.lerp(eyeMatInstance.emissiveIntensity, 3.8, dt * 5);
-        beastGroup.position.y = Math.sin(Math.min(introTimer / 1.4, 1) * Math.PI) * 0.55;
-        beastHead.rotation.x = -0.22 + Math.sin(introTimer * 26) * 0.08;
-        beastJaw.rotation.x = 0.48 + Math.sin(introTimer * 22) * 0.14;
+        beastGroup.position.y = Math.sin(Math.min(introTimer / 1.8, 1) * Math.PI) * 0.55;
+        beastHead.rotation.x = -0.22 + Math.sin(introTimer * 22) * 0.07;
+        beastJaw.rotation.x = 0.48 + Math.sin(introTimer * 18) * 0.16;
         beastArmLRig.shoulder.rotation.x = -1.25;
         beastArmRRig.shoulder.rotation.x = -1.25;
 
         camera.position.lerp(new THREE.Vector3(-2.3, 3.3, isPortrait ? 4.0 : 3.1), dt * 4.5);
         camera.lookAt(0, 2.7, 11.2);
 
-        if (introTimer >= 1.55) {
+        if (introTimer >= 2.2) {
           gameState = 'INTRO_TURN';
           introTimer = 0;
-          showBanner('RUN!');
+          showBanner('RUN!', false);
         }
       } else if (gameState === 'INTRO_TURN') {
         introTimer += dt;
@@ -2097,16 +2121,6 @@
         runSpeed = Math.min(42, runSpeed + dt * 0.38);
         const moveDelta = runSpeed * dt;
         distance += moveDelta * 0.45;
-
-        if (Math.floor(distance) >= nextMilestone) {
-          voice.say(`${nextMilestone} meters! Keep flying!`, {
-            priority: false,
-            cooldown: 3.0,
-            rate: 1.15,
-            pitch: 1.12
-          });
-          nextMilestone += nextMilestone < 200 ? 50 : 150;
-        }
 
         const speedRelief = Math.min(0.22, ((runSpeed - 22) / 20) * 0.22);
         beastProximity = Math.max(0.08, beastProximity - dt * (0.045 + speedRelief * 0.05));
@@ -2206,7 +2220,6 @@
                 beastProximity = Math.max(0.05, beastProximity - 0.16);
                 sound.playGemChime();
                 triggerFlash('rgba(16, 185, 129, 0.3)');
-                voice.say('Emerald boost!', { priority: false, cooldown: 3.5, rate: 1.2, pitch: 1.15 });
               } else {
                 coins += 1;
                 shieldCharge = Math.min(100, shieldCharge + 8);
@@ -2245,16 +2258,14 @@
                 obs.hit = true;
                 if (shieldCharge >= 100) {
                   shieldCharge = 0;
-                  shieldAnnounced = false;
                   beastProximity = Math.min(0.95, beastProximity + 0.42);
                   beastLungeBoost = 0.85;
                   sound.playShieldBreak();
                   screenShake = 0.55;
                   triggerFlash('rgba(52, 211, 153, 0.55)');
-                  voice.say('Shield saved you! Careful, he is charging!', {
+                  voice.beastSpeak('Your little shield will not save you!', {
                     priority: true,
-                    rate: 1.18,
-                    pitch: 1.05
+                    withRumble: true
                   });
                   if (obs.type !== 'BRIDGE') obs.mesh.visible = false;
                 } else {
