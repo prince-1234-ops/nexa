@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>NEXA — Camera</title>
+    <link rel="icon" type="image/jpeg" href="images/hub.jpg">
+
+    <link rel="stylesheet" href="camera.css">
+</head>
+
+<body>
+
+<div class="cam" id="cam">
+
+    <canvas id="camCanvas" width="720" height="1280"></canvas>
+
+    <video id="camVideo" playsinline muted></video>
+
+
+    <!-- top: progress + close + sound -->
+
+    <div class="cam-top">
+
+        <div class="cam-progress" id="camProgress"></div>
+
+        <div class="cam-top-row">
+
+            <button type="button" class="cam-round" id="camClose" aria-label="Close camera">✕</button>
+
+            <div class="cam-sound" id="camSound" hidden>
+                <span class="cam-sound-icon">♪</span>
+                <span class="cam-sound-text" id="camSoundText">Original sound</span>
+            </div>
+
+            <span class="cam-time" id="camTime">00:00</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- right tools -->
+
+    <div class="cam-tools">
+
+        <button type="button" class="cam-tool" id="camFlip">
+            <span>🔄</span><small>Flip</small>
+        </button>
+
+        <button type="button" class="cam-tool" id="camEffectsButton">
+            <span>🐶</span><small>Effects</small>
+        </button>
+
+        <button type="button" class="cam-tool" id="camFiltersButton">
+            <span>🎨</span><small>Filters</small>
+        </button>
+
+    </div>
+
+
+    <!-- effects / filters tray -->
+
+    <div class="cam-tray" id="camTray" hidden>
+        <div class="cam-tray-title" id="camTrayTitle">Effects</div>
+        <div class="cam-tray-row" id="camTrayRow"></div>
+    </div>
+
+
+    <!-- bottom controls -->
+
+    <div class="cam-bottom">
+
+        <button type="button" class="cam-side" id="camUndo" disabled>
+            <span>↶</span><small>Undo clip</small>
+        </button>
+
+        <button type="button" class="cam-record" id="camRecord" aria-label="Record">
+            <span></span>
+        </button>
+
+        <button type="button" class="cam-side cam-next" id="camNext" disabled>
+            <span>✓</span><small>Next</small>
+        </button>
+
+        <button type="button" class="cam-restart" id="camRestart" disabled>⟲ Restart</button>
+
+    </div>
+
+
+    <!-- messages (permissions, loading effects) -->
+
+    <div class="cam-message" id="camMessage" hidden>
+        <div>
+            <h2 id="camMessageTitle">Starting camera…</h2>
+            <p id="camMessageText">Please allow camera and microphone access.</p>
+            <button type="button" class="cam-primary" id="camRetry" hidden>Try again</button>
+        </div>
+    </div>
+
+    <div class="cam-toast" id="camToast"></div>
+
+</div>
+
+
+<!-- review + post -->
+
+<div class="cam-review" id="camReview" hidden>
+
+    <div class="cam-review-box">
+
+        <div class="cam-review-video">
+            <video id="camReviewVideo" playsinline controls></video>
+        </div>
+
+        <div class="cam-review-side">
+
+            <h2>Ready to post?</h2>
+
+            <p class="cam-review-note" id="camReviewNote"></p>
+
+            <textarea id="camCaption" maxlength="300" placeholder="Write a caption..."></textarea>
+
+            <div class="cam-review-actions">
+                <button type="button" class="cam-secondary" id="camBack">← Back to camera</button>
+                <button type="button" class="cam-primary" id="camPost">Post reel</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="cam-busy" id="camBusy" hidden>
+    <div class="cam-spinner"></div>
+    <strong id="camBusyTitle">Preparing your reel…</strong>
+    <span id="camBusyText">Please keep this page open.</span>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="camera.js"></script>
+
+</body>
+
+</html>
