@@ -68,7 +68,6 @@ const profileFilters = $("profileFilters");
 const editProfileButton = $("editProfileButton");
 const addFriendProfileButton = $("addFriendProfileButton");
 const messageProfileButton = $("messageProfileButton");
-const profileBackButton = $("profileBackButton");
 const profileMenuButton = $("profileMenuButton");
 const profileStatusCloud = $("profileStatusCloud");
 const profileStatusPreview = $("profileStatusPreview");
@@ -116,15 +115,7 @@ function saveCurrentUser() {
     localStorage.setItem("nexaCurrentUser", JSON.stringify(currentUser));
 }
 
-function showLoading(visible) {
 
-    if (!profilePageLoading) {
-        return;
-    }
-
-    profilePageLoading.classList.toggle("hidden", !visible);
-    profilePageLoading.style.display = visible ? "" : "none";
-}
 
 function formatCount(number) {
 
@@ -632,23 +623,18 @@ function applyFilter() {
         return true;
     });
 }
-
 function renderPosts() {
-
     applyFilter();
 
     if (profilePostsLoading) {
         profilePostsLoading.style.display = "none";
     }
 
-    if (!profilePostsGrid) {
-        return;
-    }
+    if (!profilePostsGrid) return;
 
     profilePostsGrid.innerHTML = "";
 
     if (!profilePosts.length) {
-
         profilePostsGrid.style.display = "none";
 
         if (profileEmptyPosts) {
@@ -665,37 +651,55 @@ function renderPosts() {
     profilePostsGrid.style.display = "";
 
     profilePosts.forEach(post => {
-
         const kind = getPostKind(post);
         const media = getPostMedia(post);
+        const tile = document.createElement("article");
 
-        const tile = document.createElement("button");
-
-        tile.type = "button";
         tile.className = "profile-post";
         tile.dataset.postId = String(post.id);
+        tile.tabIndex = 0;
+        tile.setAttribute("role", "button");
+        tile.setAttribute("aria-label", "Open post");
 
         let mediaHTML = "";
         let badge = "";
 
         if (kind === "photo") {
-
             mediaHTML = `<img src="${escapeHTML(media)}" alt="NEXA post" loading="lazy">`;
-
         } else if (isVideoKind(kind)) {
-
-            mediaHTML = `<video src="${escapeHTML(media)}#t=0.1" muted playsinline preload="metadata"></video>`;
+            mediaHTML = `<video src="${escapeHTML(media)}#t=0.1"
+                muted playsinline preload="metadata"></video>`;
 
             badge = `
                 <span class="profile-post-badge">
                     <i class="fa-solid ${kind === "reel" ? "fa-clapperboard" : "fa-play"}"></i>
-                </span>
-            `;
-
+                </span>`;
         } else {
-
             mediaHTML = `<span class="profile-post-text">${escapeHTML(post.text || "")}</span>`;
         }
+
+        const menuHTML = isOwnProfile ? `
+            <div class="profile-post-menu">
+                <button type="button"
+                        class="profile-post-menu-trigger"
+                        data-post-menu-trigger
+                        aria-label="Post options"
+                        aria-expanded="false">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+
+                <div class="profile-post-menu-panel" data-post-menu-panel hidden>
+                    <button type="button" data-post-act="download">
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                    <button type="button" data-post-act="share">
+                        <i class="fa-solid fa-share"></i> Share
+                    </button>
+                    <button type="button" class="danger" data-post-act="delete">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>` : "";
 
         tile.innerHTML = `
             ${mediaHTML}
@@ -704,39 +708,101 @@ function renderPosts() {
                 <span><i class="fa-solid fa-heart"></i> ${formatCount(likeCount(post))}</span>
                 <span><i class="fa-regular fa-comment"></i> ${formatCount(commentCount(post))}</span>
             </span>
+            ${menuHTML}
         `;
-
-        tile.addEventListener("click", () => openViewer(post.id));
 
         profilePostsGrid.appendChild(tile);
     });
 }
 
-profileFilters?.addEventListener("click", event => {
+profilePostsGrid?.addEventListener("click", async event => {
+    const tile = event.target.closest(".profile-post");
+    if (!tile) return;
 
-    const button = event.target.closest("[data-filter]");
+    const post = findPost(tile.dataset.postId);
+    if (!post) return;
 
-    if (!button) {
+    const trigger = event.target.closest("[data-post-menu-trigger]");
+    if (trigger) {
+        event.stopPropagation();
+
+        const panel = tile.querySelector("[data-post-menu-panel]");
+        const opening = panel.hidden;
+
+        profilePostsGrid.querySelectorAll("[data-post-menu-panel]").forEach(item => {
+            item.hidden = true;
+        });
+
+        profilePostsGrid.querySelectorAll("[data-post-menu-trigger]").forEach(item => {
+            item.setAttribute("aria-expanded", "false");
+        });
+
+        panel.hidden = !opening;
+        trigger.setAttribute("aria-expanded", String(opening));
         return;
     }
 
-    activeFilter = button.dataset.filter;
+    const action = event.target.closest("[data-post-act]");
+    if (action) {
+        event.stopPropagation();
 
-    profileFilters.querySelectorAll(".profile-filter").forEach(item => {
-        item.classList.toggle("active", item === button);
-    });
+        if (action.dataset.postAct === "download") {
+            await downloadPost(post);
+        } else if (action.dataset.postAct === "share") {
+            await sharePost(post);
+        } else if (action.dataset.postAct === "delete") {
+            await deleteOwnPost(post);
+        }
 
-    renderPosts();
+        return;
+    }
+
+    openViewer(post.id);
 });
 
-profilePostsViewButton?.addEventListener("click", () => {
+profilePostsGrid?.addEventListener("keydown", event => {
+    if (!["Enter", " "].includes(event.key)) return;
+    if (event.target.closest("button")) return;
 
-    const list = profilePostsGrid.classList.toggle("list-view");
+    const tile = event.target.closest(".profile-post");
+    if (!tile) return;
 
-    profilePostsViewButton.innerHTML = list
-        ? `<i class="fa-solid fa-table-cells-large"></i>`
-        : `<i class="fa-solid fa-grip"></i>`;
+    event.preventDefault();
+    openViewer(tile.dataset.postId);
 });
+async function deleteOwnPost(post) {
+    if (!isOwnProfile || String(profileUser?.id) !== String(currentUser.id)) {
+        return;
+    }
+
+    if (!confirm("Delete this post? This cannot be undone.")) {
+        return;
+    }
+
+    try {
+        const { error } = await nexaSupabase
+            .from("posts")
+            .delete()
+            .eq("id", post.id)
+            .eq("author_id", String(currentUser.id));
+
+        if (error) throw error;
+
+        allPosts = allPosts.filter(item => String(item.id) !== String(post.id));
+        profilePosts = profilePosts.filter(item => String(item.id) !== String(post.id));
+
+        if (profilePostsCount) {
+            profilePostsCount.textContent = String(allPosts.length);
+        }
+
+        refreshTotalLikes();
+        renderPosts();
+        toast("Post deleted.");
+    } catch (error) {
+        console.error("NEXA post delete error:", error);
+        toast("Could not delete this post.");
+    }
+}
 
 
 /* =========================================================
@@ -751,6 +817,13 @@ function slideHTML(post) {
     const name = post.author_name || getDisplayName(profileUser);
     const picture = getProfilePicture(profileUser);
     const liked = isLikedByMe(post);
+   const soundId =
+    post.sound_id ||
+    post.original_sound_id ||
+    post.audio_id ||
+    post.sound_url ||
+    post.audio_url ||
+    post.id;
 
     let mediaHTML;
 
@@ -813,6 +886,12 @@ function slideHTML(post) {
                         <span class="pv-action-icon"><i class="fa-solid fa-download"></i></span>
                         <small>Save</small>
                     </button>
+                    ${isVideoKind(kind) ? `
+    <button type="button" class="pv-action" data-act="use-sound" aria-label="Use sound">
+        <span class="pv-action-icon"><i class="fa-solid fa-music"></i></span>
+        <small>Use sound</small>
+    </button>
+` : ""}
 
                 </div>
 
@@ -1032,6 +1111,19 @@ postViewerScroller?.addEventListener("click", async event => {
         } else if (act === "download") {
             await downloadPost(post);
         }
+       } else if (act === "use-sound") {
+    const soundId =
+        post.sound_id ||
+        post.original_sound_id ||
+        post.audio_id ||
+        post.sound_url ||
+        post.audio_url ||
+        post.id;
+
+    window.location.href =
+        "sounds.html?sound=" + encodeURIComponent(String(soundId)) +
+        "&sourcePost=" + encodeURIComponent(String(post.id));
+}
 
         return;
     }
@@ -1879,14 +1971,6 @@ messageProfileButton?.addEventListener("click", messageProfile);
 profileStatusCloud?.addEventListener("click", openStatusModal);
 saveProfileStatusButton?.addEventListener("click", saveStatus);
 
-profileBackButton?.addEventListener("click", () => {
-
-    if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        window.location.href = "home.html";
-    }
-});
 
 profileMenuButton?.addEventListener("click", () => {
 
