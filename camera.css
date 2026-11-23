@@ -1,0 +1,501 @@
+/* =========================================================
+   NEXA CAMERA — full-screen recorder, frozen-glass blue
+========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+* { box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+    font-family: "DM Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; -webkit-tap-highlight-color: transparent; }
+
+[hidden] { display: none !important; }
+
+.cam {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(25, 115, 192, 0.25), transparent 55%),
+        #02060d;
+}
+
+#camCanvas {
+    width: min(100vw, calc(100dvh * 9 / 16));
+    height: min(100dvh, calc(100vw * 16 / 9));
+    object-fit: cover;
+    background: #000;
+    box-shadow: 0 0 80px rgba(52, 158, 250, 0.12);
+}
+
+#camVideo {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* ---------- top ---------- */
+
+.cam-top {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    width: min(100vw, calc(100dvh * 9 / 16));
+    padding: max(12px, env(safe-area-inset-top)) 14px 0;
+}
+
+.cam-progress {
+    display: flex;
+    height: 4px;
+    gap: 3px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cam-progress i {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #55baff, #80f2ff);
+    box-shadow: 0 0 10px rgba(128, 242, 255, 0.6);
+}
+
+.cam-progress i.live { background: linear-gradient(90deg, #ff4d6a, #ff8293); box-shadow: 0 0 10px rgba(255, 77, 106, 0.6); }
+
+.cam-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.cam-round, .cam-tool, .cam-side {
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+.cam-round {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(190, 230, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(8, 20, 34, 0.55);
+    font-size: 16px;
+}
+
+.cam-sound {
+    display: flex;
+    min-width: 0;
+    max-width: 62%;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid rgba(128, 207, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(8, 20, 34, 0.6);
+    font-size: 12px;
+    font-weight: 600;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+.cam-sound-icon { color: #80f2ff; }
+
+.cam-sound-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cam-time {
+    min-width: 54px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(8, 20, 34, 0.55);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 12px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ---------- tools ---------- */
+
+.cam-tools {
+    position: absolute;
+    z-index: 5;
+    top: 50%;
+    right: max(10px, calc((100vw - min(100vw, calc(100dvh * 9 / 16))) / 2 + 10px));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transform: translateY(-60%);
+}
+
+.cam-tool {
+    display: flex;
+    width: 54px;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.cam-tool span {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border: 1px solid rgba(190, 230, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(8, 20, 34, 0.55);
+    font-size: 20px;
+    transition: 160ms ease;
+}
+
+.cam-tool:hover span, .cam-tool.active span {
+    border-color: rgba(128, 207, 255, 0.7);
+    background: rgba(37, 137, 232, 0.4);
+}
+
+.cam-tool small { font-size: 10px; font-weight: 600; }
+
+
+/* ---------- tray ---------- */
+
+.cam-tray {
+    position: absolute;
+    z-index: 6;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    width: min(100vw, calc(100dvh * 9 / 16));
+    padding: 0 14px;
+}
+
+.cam-tray-title {
+    margin: 0 0 8px 4px;
+    color: #8bd5ff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 6px #000;
+}
+
+.cam-tray-row {
+    display: flex;
+    gap: 10px;
+    padding: 8px 4px 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.cam-tray-row::-webkit-scrollbar { display: none; }
+
+.cam-chip {
+    display: flex;
+    min-width: 62px;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-shadow: 0 1px 6px #000;
+}
+
+.cam-chip span {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    border: 2px solid rgba(190, 230, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(8, 20, 34, 0.6);
+    font-size: 25px;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    transition: 160ms ease;
+}
+
+.cam-chip small { font-size: 10px; font-weight: 600; }
+
+.cam-chip.selected span {
+    border-color: #80f2ff;
+    box-shadow: 0 0 18px rgba(128, 242, 255, 0.55);
+    transform: scale(1.08);
+}
+
+
+/* ---------- bottom ---------- */
+
+.cam-bottom {
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
+    display: flex;
+    width: min(100vw, calc(100dvh * 9 / 16));
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px calc(34px + env(safe-area-inset-bottom));
+}
+
+.cam-side {
+    display: flex;
+    width: 66px;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.cam-side span {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    place-items: center;
+    border: 1px solid rgba(190, 230, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(8, 20, 34, 0.55);
+    font-size: 22px;
+}
+
+.cam-side small { font-size: 10px; font-weight: 600; }
+
+.cam-side:disabled { opacity: 0.35; cursor: default; }
+
+.cam-next span {
+    border-color: transparent;
+    background: linear-gradient(135deg, #2589e8, #55baff);
+    color: #03111e;
+    font-weight: 800;
+}
+
+.cam-record {
+    display: grid;
+    width: 84px;
+    height: 84px;
+    place-items: center;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    transition: transform 0.15s ease;
+}
+
+.cam-record span {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: #ff4d6a;
+    box-shadow: 0 0 22px rgba(255, 77, 106, 0.6);
+    transition: all 0.18s ease;
+}
+
+.cam-record:active { transform: scale(0.94); }
+
+.cam-record.recording span {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+}
+
+.cam-record.recording { animation: cam-rec 1.2s ease-in-out infinite; }
+
+@keyframes cam-rec {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 106, 0.5); }
+    50% { box-shadow: 0 0 0 14px rgba(255, 77, 106, 0); }
+}
+
+.cam-restart {
+    position: absolute;
+    bottom: calc(138px + env(safe-area-inset-bottom));
+    left: 50%;
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 130, 147, 0.4);
+    border-radius: 999px;
+    background: rgba(255, 77, 106, 0.16);
+    color: #ffd1d8;
+    font-size: 11px;
+    font-weight: 700;
+    transform: translateX(-50%);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+.cam-restart:disabled { display: none; }
+
+.cam-tray:not([hidden]) ~ .cam-bottom .cam-restart { display: none; }
+
+
+/* ---------- messages / toast ---------- */
+
+.cam-message {
+    position: absolute;
+    z-index: 20;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    background: rgba(2, 7, 14, 0.9);
+    text-align: center;
+}
+
+.cam-message h2 { margin: 0 0 8px; font-family: "Space Grotesk", sans-serif; font-size: 22px; }
+.cam-message p { max-width: 320px; margin: 0 auto 18px; color: #a9c0d2; font-size: 13px; line-height: 1.6; }
+
+.cam-toast {
+    position: absolute;
+    z-index: 25;
+    top: 90px;
+    left: 50%;
+    max-width: 86vw;
+    padding: 10px 16px;
+    border: 1px solid rgba(133, 207, 255, 0.28);
+    border-radius: 13px;
+    background: rgba(12, 31, 49, 0.95);
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.cam-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+
+/* ---------- buttons ---------- */
+
+.cam-primary, .cam-secondary {
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 13px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cam-primary {
+    background: linear-gradient(135deg, #2589e8, #55baff);
+    color: #03111e;
+    box-shadow: 0 8px 22px rgba(37, 137, 232, 0.35);
+}
+
+.cam-primary:disabled { opacity: 0.6; cursor: default; }
+
+.cam-secondary {
+    border: 1px solid rgba(170, 214, 255, 0.25);
+    background: rgba(136, 196, 255, 0.08);
+}
+
+
+/* ---------- review ---------- */
+
+.cam-review {
+    position: fixed;
+    z-index: 30;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(2, 7, 14, 0.96);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+}
+
+.cam-review-box {
+    display: flex;
+    width: min(760px, 100%);
+    align-items: center;
+    gap: 26px;
+}
+
+.cam-review-video {
+    width: min(300px, 46vw);
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid rgba(144, 208, 255, 0.22);
+    border-radius: 22px;
+    background: #000;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+}
+
+.cam-review-video video { display: block; width: 100%; aspect-ratio: 9 / 16; object-fit: cover; }
+
+.cam-review-side { min-width: 0; flex: 1; }
+
+.cam-review-side h2 { margin: 0 0 6px; font-family: "Space Grotesk", sans-serif; font-size: 24px; }
+
+.cam-review-note { margin: 0 0 14px; color: #8bd5ff; font-size: 12px; }
+
+.cam-review-side textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 13px 15px;
+    resize: vertical;
+    outline: none;
+    border: 1px solid rgba(168, 213, 255, 0.18);
+    border-radius: 14px;
+    background: rgba(142, 201, 255, 0.06);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+}
+
+.cam-review-side textarea:focus {
+    border-color: rgba(94, 190, 255, 0.6);
+    box-shadow: 0 0 0 3px rgba(69, 164, 239, 0.1);
+}
+
+.cam-review-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+.cam-busy {
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(2, 7, 14, 0.94);
+    text-align: center;
+}
+
+.cam-busy span { color: #91aabe; font-size: 12px; }
+
+.cam-spinner {
+    width: 46px;
+    height: 46px;
+    border: 3px solid rgba(112, 195, 255, 0.18);
+    border-top-color: #8bd5ff;
+    border-radius: 50%;
+    animation: cam-spin 0.8s linear infinite;
+}
+
+@keyframes cam-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+
+    .cam-review-box { flex-direction: column; gap: 16px; }
+
+    .cam-review-video { width: min(220px, 56vw); }
+
+    .cam-review-side { width: 100%; }
+
+    .cam-primary, .cam-secondary { flex: 1; }
+}
