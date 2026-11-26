@@ -637,3 +637,129 @@ body > .pv[hidden] {
 .ps-viewer { z-index: 6000; }
 .profile-page-loading { z-index: 7000; }
 .pv-toast { z-index: 7100; }
+
+
+/* =========================================================
+   TOP BAR (no back arrow) + SETTINGS GEAR
+========================================================= */
+
+.profile-top-title { text-align: left; }
+
+.profile-nav-button { text-decoration: none; }
+
+.profile-nav-button i { transition: transform 0.4s ease; }
+
+.profile-nav-button:hover i { transform: rotate(60deg); }
+
+
+/* =========================================================
+   THREE VERTICAL DOTS
+========================================================= */
+
+.kebab {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.5px;
+}
+
+.kebab i {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.profile-post-menu {
+    position: absolute;
+    z-index: 3;
+    top: 8px;
+    left: 8px;
+    display: grid;
+    width: 30px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(5, 15, 26, 0.62);
+    color: #fff;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.profile-post-menu:hover {
+    background: rgba(37, 137, 232, 0.5);
+    transform: scale(1.08);
+}
+
+.pv-menu-btn {
+    position: absolute;
+    z-index: 7;
+    top: 22px;
+    right: 12px;
+    display: grid;
+    width: 36px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid rgba(190, 230, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(8, 20, 34, 0.62);
+    color: #fff;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+.pv-menu-btn:hover {
+    border-color: rgba(128, 207, 255, 0.6);
+    background: rgba(37, 137, 232, 0.3);
+}
+
+.post-menu-pop {
+    position: fixed;
+    z-index: 7300;
+    min-width: 200px;
+    padding: 6px;
+    border: 1px solid rgba(144, 208, 255, 0.22);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(20, 46, 70, 0.98), rgba(9, 24, 39, 0.98));
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    animation: pm-in 0.14s ease both;
+}
+
+@keyframes pm-in {
+    from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+.post-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: #edf7ff;
+    font-size: 13px;
+    text-align: left;
+}
+
+.post-menu-item i {
+    width: 16px;
+    color: #8bd5ff;
+    text-align: center;
+}
+
+.post-menu-item:hover { background: rgba(136, 196, 255, 0.1); }
+
+.post-menu-item.danger { color: #ff8293; }
+.post-menu-item.danger i { color: #ff8293; }
+.post-menu-item.danger:hover { background: rgba(255, 130, 147, 0.1); }
+
+.pv-sound .pv-action-icon {
+    border-color: rgba(128, 242, 255, 0.4);
+    background: linear-gradient(135deg, rgba(37, 137, 232, 0.45), rgba(85, 186, 255, 0.3));
+}
