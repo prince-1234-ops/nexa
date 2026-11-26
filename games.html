@@ -18,7 +18,7 @@
 
 <div class="nexa-app">
 
-    <!-- ================= SHARED SIDEBAR (identical to home.html) ================= -->
+    <!-- ================= SHARED SIDEBAR ================= -->
 
     <aside class="sidebar" aria-label="Main navigation">
 
@@ -129,7 +129,7 @@
 
         <div class="home-page games-page">
 
-            <!-- HERO HEADER (matching home-intro) -->
+            <!-- HERO HEADER -->
             <section class="home-intro games-hero">
                 <div>
                     <span class="home-eyebrow">NEXA GAME PORTALS</span>
@@ -229,7 +229,7 @@
 
             <label class="connect-label">
                 <span>Wallpaper Image Path</span>
-                <input type="text" id="gameWallpaperInput" placeholder="e.g. images/runner-forest.jpg" required>
+                <input type="text" id="gameWallpaperInput" placeholder="e.g. images/pic.jpg" required>
             </label>
 
             <p class="connect-note">
@@ -257,27 +257,55 @@
  * NEXA GAME PORTALS
  * Each item renders as a full-bleed wallpaper window (`<a href="...">`).
  * Clicking it navigates straight into the game's HTML page.
- * To add future games permanently, just add an object to DEFAULT_PORTALS!
+ * Note: If `pic.jpg`–`pic4.jpg` are in the same folder as `games.html`
+ * instead of `images/`, change `"images/pic.jpg"` to `"pic.jpg"`.
  * =========================================================================
  */
 const DEFAULT_PORTALS = [
     {
-        id: "dark-forest-runner",
+        id: "shadow-forest-run",
         title: "Shadow Forest Run",
         category: "running",
-        tag: "RUNNING • 3D ENDLESS",
-        description: "Sprint through the cursed dark forest, leap broken bridges, and outrun the beast.",
+        tag: "RUNNING • ENDLESS",
+        description: "Sprint through the dark forest, jump obstacles, and launch the runner game.",
         page: "runner-game.html",
-        wallpaper: "images/runner-forest.jpg"
+        wallpaper: "images/pic.jpg"
     },
     {
-        id: "cyber-blade-clash",
-        title: "Cyber Blade Arena",
+        id: "cyber-arena-clash",
+        title: "Cyber Arena Clash",
         category: "fighting",
-        tag: "FIGHTING • 1V1 COMBAT",
-        description: "Enter the neon arena and clash blades with high-speed combos and energy finishers.",
+        tag: "FIGHTING • ARENA",
+        description: "Step into the arena wallpaper and enter the fighting game.",
         page: "fighting-game.html",
-        wallpaper: "images/fighter-arena.jpg"
+        wallpaper: "images/pic1.jpg"
+    },
+    {
+        id: "arena-combat-iii",
+        title: "Arena Combat III",
+        category: "fighting",
+        tag: "FIGHTING • DUEL",
+        description: "Click the wallpaper to launch your connected game page.",
+        page: "game-3.html",
+        wallpaper: "images/pic2.jpg"
+    },
+    {
+        id: "night-runner-iv",
+        title: "Night Runner IV",
+        category: "running",
+        tag: "RUNNING • SPRINT",
+        description: "Click the wallpaper to launch your connected game page.",
+        page: "game-4.html",
+        wallpaper: "images/pic3.jpg"
+    },
+    {
+        id: "showdown-v",
+        title: "Showdown V",
+        category: "fighting",
+        tag: "FIGHTING • SHOWDOWN",
+        description: "Click the wallpaper to launch your connected game page.",
+        page: "game-5.html",
+        wallpaper: "images/pic4.jpg"
     }
 ];
 
