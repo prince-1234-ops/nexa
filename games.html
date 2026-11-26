@@ -18,7 +18,7 @@
 
 <div class="nexa-app">
 
-    <!-- ================= SHARED SIDEBAR ================= -->
+    <!-- ================= SHARED SIDEBAR (identical to home.html) ================= -->
 
     <aside class="sidebar" aria-label="Main navigation">
 
@@ -99,15 +99,15 @@
 
             <div class="topbar-search">
                 <span class="search-icon">⌕</span>
-                <label for="gameSearchInput" class="sr-only">Search NEXA games</label>
-                <input type="search" id="gameSearchInput" placeholder="Search runner, fighting games and more..." autocomplete="off">
+                <label for="searchInput" class="sr-only">Search NEXA</label>
+                <input type="search" id="searchInput" placeholder="Search games, runner, fighting..." autocomplete="off">
                 <button class="search-shortcut" type="button" aria-label="Search">/</button>
             </div>
 
             <div class="topbar-actions">
 
-                <button class="top-create-button" id="openConnectModalBtn" type="button">
-                    <span>+</span><strong>Link Game</strong>
+                <button class="top-create-button" id="openAddGameModal" type="button">
+                    <span>+</span><strong>Connect Game</strong>
                 </button>
 
                 <button class="topbar-btn notification-trigger" id="notificationButton" type="button"
@@ -127,42 +127,38 @@
 
         <div id="notificationArea" class="notification-area" aria-live="polite" aria-atomic="true"></div>
 
-        <div class="games-page">
+        <div class="home-page games-page">
 
-            <!-- HERO BANNER -->
-            <section class="games-hero">
-                <div class="games-hero-copy">
-                    <span class="games-eyebrow">NEXA ARCADE</span>
-                    <h1>Tap any wallpaper to <span>start playing.</span></h1>
-                    <p>Sprint through collapsing ruins or clash in high-speed arena combat. Connect new game files anytime and launch them right inside NEXA.</p>
+            <!-- HERO HEADER (matching home-intro) -->
+            <section class="home-intro games-hero">
+                <div>
+                    <span class="home-eyebrow">NEXA GAME PORTALS</span>
+                    <h1>Step into a world &amp; <span>start playing.</span></h1>
+                    <p>Click any game wallpaper to enter its full-screen game page. Use the back arrow inside any game to return here anytime.</p>
                 </div>
 
-                <div class="games-hero-actions">
-                    <button type="button" class="hero-cta primary" id="quickPlayRunnerBtn">
-                        ▶ Play Runner
-                    </button>
-                    <button type="button" class="hero-cta secondary" id="quickPlayFighterBtn">
-                        ⚔ Play Fighting
-                    </button>
+                <div class="home-intro-actions">
+                    <button type="button" class="intro-action secondary" data-filter="all">All Worlds</button>
+                    <button type="button" class="intro-action primary" id="heroConnectBtn">+ Connect New Game</button>
                 </div>
             </section>
 
-            <!-- FILTER TABS -->
-            <div class="games-toolbar">
-                <div class="games-section-heading">
-                    <span class="section-eyebrow">GAME WALLPAPERS</span>
-                    <h2>Featured Worlds</h2>
+            <!-- FILTER TOOLBAR -->
+            <div class="feed-toolbar games-toolbar">
+                <div>
+                    <span class="section-eyebrow">SELECT A PORTAL</span>
+                    <h2>Game Wallpapers</h2>
                 </div>
 
-                <div class="games-filter-tabs" role="tablist" aria-label="Game categories">
-                    <button type="button" class="filter-tab is-active" data-filter="all">All Games</button>
-                    <button type="button" class="filter-tab" data-filter="running">Running</button>
-                    <button type="button" class="filter-tab" data-filter="fighting">Fighting</button>
+                <div class="feed-filter" id="gameFilterBar">
+                    <button type="button" class="feed-filter-active" data-filter="all">All</button>
+                    <button type="button" data-filter="running">Running</button>
+                    <button type="button" data-filter="fighting">Fighting</button>
                 </div>
             </div>
 
-            <!-- GAME WALLPAPER GRID (rendered dynamically from NEXA_GAMES) -->
-            <section class="games-grid" id="gamesGrid" aria-label="Games catalog"></section>
+            <!-- REAL WALLPAPER WINDOWS GRID -->
+            <section class="wallpaper-grid" id="wallpaperGrid" aria-label="Game wallpapers"></section>
 
         </div>
 
@@ -199,71 +195,53 @@
 </nav>
 
 
-<!-- ================= GAME LAUNCHER / PLAYER MODAL ================= -->
+<!-- ================= CONNECT NEW GAME MODAL ================= -->
 
-<div id="gamePlayerModal" class="game-modal" hidden aria-hidden="true">
-    <div class="game-modal-backdrop" id="gameModalBackdrop"></div>
+<div id="connectGameModal" class="comments-modal" hidden aria-hidden="true">
+    <div class="comments-modal-box connect-box" role="dialog" aria-modal="true" aria-labelledby="connectModalTitle">
 
-    <div class="game-modal-box" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
-        <div class="game-modal-bar">
-            <div class="game-modal-meta">
-                <span class="game-modal-tag" id="gameModalTag">RUNNING</span>
-                <h2 id="gameModalTitle">Game Title</h2>
+        <div class="comments-modal-header">
+            <div>
+                <span class="section-eyebrow">PORTAL CONNECTOR</span>
+                <h2 id="connectModalTitle">Connect a Game Page</h2>
             </div>
-
-            <div class="game-modal-controls">
-                <a id="gameExternalLink" href="#" target="_blank" rel="noopener" class="modal-pill-btn">
-                    Open Tab ↗
-                </a>
-                <button id="closeGameModalBtn" class="modal-close-btn" type="button" aria-label="Close game">×</button>
-            </div>
+            <button id="closeConnectModal" type="button" aria-label="Close">×</button>
         </div>
 
-        <div class="game-stage" id="gameStage">
-            <!-- Connected game iframe or built-in starter preview mounts here -->
-        </div>
-    </div>
-</div>
+        <form id="connectGameForm" class="connect-game-form">
+            <label class="connect-label">
+                <span>Game Title</span>
+                <input type="text" id="gameTitleInput" placeholder="e.g. Dark Forest Escape" required>
+            </label>
 
-
-<!-- ================= CONNECT / LINK GAME MODAL ================= -->
-
-<div id="connectGameModal" class="game-modal" hidden aria-hidden="true">
-    <div class="game-modal-backdrop" id="connectModalBackdrop"></div>
-
-    <div class="game-modal-box connect-modal-box" role="dialog" aria-modal="true" aria-labelledby="connectModalTitle">
-        <div class="game-modal-bar">
-            <div class="game-modal-meta">
-                <span class="section-eyebrow">PLUG &amp; PLAY</span>
-                <h2 id="connectModalTitle">Connect Game URL or File</h2>
-            </div>
-            <button id="closeConnectModalBtn" class="modal-close-btn" type="button" aria-label="Close">×</button>
-        </div>
-
-        <form id="connectGameForm" class="connect-form">
-            <label class="form-field">
-                <span>Game Slot</span>
-                <select id="connectGameSelect">
-                    <option value="temple-sprint">Temple Sprint (Running)</option>
-                    <option value="cyber-clash">Cyber Clash (Fighting)</option>
-                    <option value="blade-duel">Ronin Blade Duel (Fighting)</option>
+            <label class="connect-label">
+                <span>Category</span>
+                <select id="gameCategoryInput">
+                    <option value="running">Running</option>
+                    <option value="fighting">Fighting</option>
                 </select>
             </label>
 
-            <label class="form-field">
-                <span>Game File / URL</span>
-                <input type="text" id="connectGameUrl" placeholder="e.g. runner.html or games/fighter/index.html" required>
+            <label class="connect-label">
+                <span>Target Game HTML Page</span>
+                <input type="text" id="gamePageInput" placeholder="e.g. runner-game.html" required>
             </label>
 
-            <p class="form-hint">
-                Once saved, clicking that game's wallpaper automatically loads your file/URL in the player. You can also set defaults directly in <code>NEXA_GAMES</code> inside the script below.
+            <label class="connect-label">
+                <span>Wallpaper Image Path</span>
+                <input type="text" id="gameWallpaperInput" placeholder="e.g. images/runner-forest.jpg" required>
+            </label>
+
+            <p class="connect-note">
+                Clicking the wallpaper will open that HTML page directly and pass <code>?back=games.html</code> so its back arrow returns here.
             </p>
 
-            <div class="connect-form-actions">
-                <button type="button" class="hero-cta secondary" id="resetGameUrlBtn">Reset Slot</button>
-                <button type="submit" class="hero-cta primary">Save &amp; Connect</button>
+            <div class="connect-actions">
+                <button type="button" class="intro-action secondary" id="cancelConnectBtn">Cancel</button>
+                <button type="submit" class="intro-action primary">Add Wallpaper Portal</button>
             </div>
         </form>
+
     </div>
 </div>
 
@@ -276,482 +254,116 @@
 <script>
 /**
  * =========================================================================
- * NEXA GAMES REGISTRY
- * Drop your game file paths or URLs into `url` below (e.g., "runner.html",
- * "fighter.html"). When `url` is null, clicking the wallpaper opens a live
- * playable mini-preview so the hub feels alive right away.
+ * NEXA GAME PORTALS
+ * Each item renders as a full-bleed wallpaper window (`<a href="...">`).
+ * Clicking it navigates straight into the game's HTML page.
+ * To add future games permanently, just add an object to DEFAULT_PORTALS!
  * =========================================================================
  */
-const DEFAULT_GAMES = [
+const DEFAULT_PORTALS = [
     {
-        id: "temple-sprint",
-        title: "Temple Sprint",
+        id: "dark-forest-runner",
+        title: "Shadow Forest Run",
         category: "running",
-        badge: "RUNNING • ENDLESS",
-        subtitle: "Dash through ancient stone temples, vault gaps, and outrun the rising shadow.",
-        wallpaperType: "runner",
-        url: null,
-        accent: "#55baff"
+        tag: "RUNNING • 3D ENDLESS",
+        description: "Sprint through the cursed dark forest, leap broken bridges, and outrun the beast.",
+        page: "runner-game.html",
+        wallpaper: "images/runner-forest.jpg"
     },
     {
-        id: "cyber-clash",
-        title: "Cyber Clash",
+        id: "cyber-blade-clash",
+        title: "Cyber Blade Arena",
         category: "fighting",
-        badge: "FIGHTING • 1V1 ARENA",
-        subtitle: "High-speed neon melee combat with heavy strikes, blocks, and combo finishers.",
-        wallpaperType: "fighter-neon",
-        url: null,
-        accent: "#80f2ff"
-    },
-    {
-        id: "blade-duel",
-        title: "Frostblade Duel",
-        category: "fighting",
-        badge: "FIGHTING • DUEL",
-        subtitle: "Precision parry-and-strike duels across frozen cyber-dojo platforms.",
-        wallpaperType: "fighter-frost",
-        url: null,
-        accent: "#8bd5ff"
+        tag: "FIGHTING • 1V1 COMBAT",
+        description: "Enter the neon arena and clash blades with high-speed combos and energy finishers.",
+        page: "fighting-game.html",
+        wallpaper: "images/fighter-arena.jpg"
     }
 ];
 
-const STORAGE_KEY = "nexa_connected_game_urls_v1";
+const CUSTOM_PORTALS_KEY = "nexa_custom_game_portals_v1";
 
-function loadGamesConfig() {
-    let saved = {};
+function getAllPortals() {
+    let custom = [];
     try {
-        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        custom = JSON.parse(localStorage.getItem(CUSTOM_PORTALS_KEY) || "[]");
     } catch (_) {
-        saved = {};
+        custom = [];
     }
-    return DEFAULT_GAMES.map(game => ({
-        ...game,
-        url: Object.prototype.hasOwnProperty.call(saved, game.id) ? saved[game.id] : game.url
-    }));
+    return [...DEFAULT_PORTALS, ...custom];
 }
 
-function saveGameUrl(gameId, url) {
-    let saved = {};
+function saveCustomPortal(portal) {
+    let custom = [];
     try {
-        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        custom = JSON.parse(localStorage.getItem(CUSTOM_PORTALS_KEY) || "[]");
     } catch (_) {
-        saved = {};
+        custom = [];
     }
-    if (url && url.trim()) {
-        saved[gameId] = url.trim();
-    } else {
-        delete saved[gameId];
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    custom.push(portal);
+    localStorage.setItem(CUSTOM_PORTALS_KEY, JSON.stringify(custom));
 }
 
-function renderWallpaperArtwork(type) {
-    if (type === "runner") {
-        return `
-            <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                <defs>
-                    <linearGradient id="runSky" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#071a2d"/>
-                        <stop offset="65%" stop-color="#0e3759"/>
-                        <stop offset="100%" stop-color="#19699e"/>
-                    </linearGradient>
-                    <linearGradient id="runGlow" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#2589e8" stop-opacity="0.0"/>
-                        <stop offset="50%" stop-color="#80f2ff" stop-opacity="0.45"/>
-                        <stop offset="100%" stop-color="#55baff" stop-opacity="0.0"/>
-                    </linearGradient>
-                </defs>
-                <rect width="640" height="360" fill="url(#runSky)"/>
-                <!-- temple pillars -->
-                <polygon points="70,260 115,90 150,90 120,260" fill="#091d30" opacity="0.85"/>
-                <polygon points="490,260 520,90 555,90 580,260" fill="#091d30" opacity="0.85"/>
-                <!-- speed lines -->
-                <line x1="20" y1="120" x2="220" y2="120" stroke="#80f2ff" stroke-width="2" opacity="0.35"/>
-                <line x1="380" y1="150" x2="620" y2="150" stroke="#55baff" stroke-width="2" opacity="0.3"/>
-                <line x1="60" y1="190" x2="290" y2="190" stroke="#8bd5ff" stroke-width="1.5" opacity="0.25"/>
-                <!-- runner silhouette sprinting -->
-                <g transform="translate(310, 178)">
-                    <ellipse cx="10" cy="78" rx="46" ry="8" fill="#80f2ff" opacity="0.22"/>
-                    <circle cx="14" cy="-34" r="11" fill="#dff4ff"/>
-                    <path d="M 10 -22 L 22 6 L 4 32 L -16 54" stroke="#8bd5ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 18 -12 L 42 -2 L 56 14" stroke="#55baff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 12 -18 L -14 -8 L -28 8" stroke="#80f2ff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 22 6 L 46 28 L 36 58" stroke="#dff4ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </g>
-                <!-- track & gap -->
-                <rect x="0" y="256" width="275" height="104" fill="#05101c"/>
-                <rect x="355" y="256" width="285" height="104" fill="#05101c"/>
-                <rect x="0" y="254" width="275" height="4" fill="#80f2ff" opacity="0.7"/>
-                <rect x="355" y="254" width="285" height="4" fill="#80f2ff" opacity="0.7"/>
-                <rect x="0" y="246" width="640" height="16" fill="url(#runGlow)"/>
-            </svg>
-        `;
-    }
-
-    if (type === "fighter-neon") {
-        return `
-            <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-                <defs>
-                    <radialGradient id="fightArena" cx="50%" cy="45%" r="60%">
-                        <stop offset="0%" stop-color="#1d5b8c"/>
-                        <stop offset="65%" stop-color="#091d30"/>
-                        <stop offset="100%" stop-color="#040b14"/>
-                    </radialGradient>
-                </defs>
-                <rect width="640" height="360" fill="url(#fightArena)"/>
-                <!-- energy clash burst -->
-                <circle cx="320" cy="182" r="56" fill="#80f2ff" opacity="0.14"/>
-                <path d="M 255 155 L 320 182 L 385 148" stroke="#80f2ff" stroke-width="4" fill="none" opacity="0.85"/>
-                <path d="M 265 205 L 320 182 L 375 212" stroke="#55baff" stroke-width="3" fill="none" opacity="0.7"/>
-                <!-- left fighter -->
-                <g transform="translate(215, 145)">
-                    <circle cx="0" cy="-26" r="11" fill="#e6f6ff"/>
-                    <path d="M -2 -14 L 4 22 L -18 68" stroke="#55baff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 4 22 L 26 52 L 38 72" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 0 -8 L 48 16" stroke="#80f2ff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                </g>
-                <!-- right fighter -->
-                <g transform="translate(425, 148)">
-                    <circle cx="0" cy="-26" r="11" fill="#e6f6ff"/>
-                    <path d="M 2 -14 L -4 22 L 18 65" stroke="#2589e8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M -4 22 L -28 48 L -42 69" stroke="#80f2ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M 0 -8 L -46 14" stroke="#bfeaff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                </g>
-                <!-- arena floor -->
-                <rect x="60" y="256" width="520" height="8" rx="4" fill="#55baff" opacity="0.55"/>
-                <rect x="0" y="264" width="640" height="96" fill="#05101b"/>
-            </svg>
-        `;
-    }
-
-    return `
-        <svg class="wallpaper-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <defs>
-                <linearGradient id="frostBg" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#07192b"/>
-                    <stop offset="55%" stop-color="#10395c"/>
-                    <stop offset="100%" stop-color="#061220"/>
-                </linearGradient>
-            </defs>
-            <rect width="640" height="360" fill="url(#frostBg)"/>
-            <!-- angled ice shards -->
-            <polygon points="110,40 165,140 90,175" fill="#80f2ff" opacity="0.12"/>
-            <polygon points="510,50 565,155 485,180" fill="#55baff" opacity="0.14"/>
-            <!-- duelist left -->
-            <g transform="translate(225, 152)">
-                <circle cx="0" cy="-25" r="10" fill="#edf7ff"/>
-                <path d="M 0 -14 L 0 24 L -16 62" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                <path d="M 0 24 L 20 62" stroke="#55baff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                <!-- energy blade -->
-                <line x1="6" y1="2" x2="88" y2="-22" stroke="#80f2ff" stroke-width="5" stroke-linecap="round"/>
-            </g>
-            <!-- duelist right -->
-            <g transform="translate(415, 152)">
-                <circle cx="0" cy="-25" r="10" fill="#edf7ff"/>
-                <path d="M 0 -14 L 0 24 L 16 62" stroke="#55baff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                <path d="M 0 24 L -20 62" stroke="#8bd5ff" stroke-width="8" stroke-linecap="round" fill="none"/>
-                <!-- energy blade -->
-                <line x1="-6" y1="2" x2="-88" y2="-22" stroke="#bfeaff" stroke-width="5" stroke-linecap="round"/>
-            </g>
-            <rect x="0" y="256" width="640" height="4" fill="#80f2ff" opacity="0.6"/>
-            <rect x="0" y="260" width="640" height="100" fill="#05101d"/>
-        </svg>
-    `;
+function buildGameHref(pageUrl) {
+    const separator = pageUrl.includes("?") ? "&" : "?";
+    return `${pageUrl}${separator}back=games.html`;
 }
 
-let activeFilter = "all";
-let searchQuery = "";
-let demoCleanup = null;
+let currentFilter = "all";
+let currentSearch = "";
 
-function renderGamesGrid() {
-    const grid = document.getElementById("gamesGrid");
-    const games = loadGamesConfig().filter(g => {
-        const matchesCategory = activeFilter === "all" || g.category === activeFilter;
-        const q = searchQuery.trim().toLowerCase();
-        const matchesSearch = !q ||
-            g.title.toLowerCase().includes(q) ||
-            g.category.toLowerCase().includes(q) ||
-            g.subtitle.toLowerCase().includes(q);
-        return matchesCategory && matchesSearch;
+function renderWallpaperGrid() {
+    const grid = document.getElementById("wallpaperGrid");
+    const portals = getAllPortals().filter(item => {
+        const matchFilter = currentFilter === "all" || item.category === currentFilter;
+        const q = currentSearch.trim().toLowerCase();
+        const matchSearch = !q ||
+            item.title.toLowerCase().includes(q) ||
+            item.category.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q);
+        return matchFilter && matchSearch;
     });
 
-    if (!games.length) {
+    if (!portals.length) {
         grid.innerHTML = `
-            <div class="games-empty">
-                <strong>No matching games found</strong>
-                <p>Try another filter or search term.</p>
+            <div class="empty-feed" style="grid-column: 1 / -1;">
+                <div class="empty-feed-icon">🎮</div>
+                <h2>No game worlds match your filter</h2>
+                <p>Switch filters or connect a new game wallpaper.</p>
             </div>
         `;
         return;
     }
 
-    grid.innerHTML = games.map(game => `
-        <article class="game-wallpaper-card" data-game-id="${game.id}" tabindex="0" role="button" aria-label="Play ${game.title}">
-            <div class="wallpaper-frame">
-                ${renderWallpaperArtwork(game.wallpaperType)}
-                <div class="wallpaper-scrim"></div>
-                <span class="wallpaper-badge">${game.badge}</span>
-                <span class="wallpaper-status ${game.url ? "is-linked" : "is-demo"}">
-                    ${game.url ? "● Connected" : "◈ Demo Ready"}
-                </span>
-                <div class="wallpaper-play-cta">
-                    <span class="play-ring">▶</span>
-                    <strong>Tap to Play</strong>
-                </div>
+    grid.innerHTML = portals.map(game => `
+        <a href="${buildGameHref(game.page)}" class="wallpaper-portal" aria-label="Enter ${game.title}">
+            <img
+                src="${game.wallpaper}"
+                alt="${game.title} wallpaper"
+                class="wallpaper-img"
+                loading="lazy"
+            >
+            <div class="wallpaper-glass-veil"></div>
+
+            <div class="wallpaper-top-row">
+                <span class="portal-pill">${game.tag}</span>
+                <span class="portal-file-pill">${game.page} ↗</span>
             </div>
 
-            <div class="game-card-body">
-                <div class="game-card-top">
-                    <h3>${game.title}</h3>
-                    <button type="button" class="game-link-btn" data-edit-game="${game.id}" title="Connect game file/URL">
-                        Link
-                    </button>
-                </div>
-                <p>${game.subtitle}</p>
+            <div class="wallpaper-center-play">
+                <span class="portal-play-circle">▶</span>
+                <span class="portal-play-text">ENTER WORLD</span>
             </div>
-        </article>
+
+            <div class="wallpaper-bottom-info">
+                <h3>${game.title}</h3>
+                <p>${game.description}</p>
+            </div>
+        </a>
     `).join("");
-
-    grid.querySelectorAll(".game-wallpaper-card").forEach(card => {
-        const id = card.getAttribute("data-game-id");
-        const launch = () => openGameModal(id);
-        card.addEventListener("click", launch);
-        card.addEventListener("keydown", e => {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                launch();
-            }
-        });
-    });
-
-    grid.querySelectorAll("[data-edit-game]").forEach(btn => {
-        btn.addEventListener("click", e => {
-            e.stopPropagation();
-            openConnectModal(btn.getAttribute("data-edit-game"));
-        });
-    });
 }
 
-function mountBuiltInDemo(stage, game) {
-    stage.innerHTML = `
-        <div class="demo-wrapper">
-            <canvas id="nexaDemoCanvas" width="760" height="420"></canvas>
-            <div class="demo-hud">
-                <span id="demoStatusText">
-                    ${game.category === "running"
-                        ? "Press Space / Tap to Jump • Avoid obstacles"
-                        : "A/D or Left/Right to Move • Space or Tap to Strike"}
-                </span>
-                <button type="button" class="demo-connect-inline" id="inlineConnectBtn">
-                    Connect Your Game File
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.getElementById("inlineConnectBtn").addEventListener("click", () => {
-        closeGameModal();
-        openConnectModal(game.id);
-    });
-
-    const canvas = document.getElementById("nexaDemoCanvas");
-    const ctx = canvas.getContext("2d");
-    let animId = null;
-
-    if (game.category === "running") {
-        let runnerY = 300;
-        let vy = 0;
-        let jumping = false;
-        let obsX = 760;
-        let score = 0;
-        const groundY = 330;
-
-        const jump = () => {
-            if (!jumping) {
-                vy = -13.5;
-                jumping = true;
-            }
-        };
-
-        const onKey = e => {
-            if (e.code === "Space" || e.code === "ArrowUp") {
-                e.preventDefault();
-                jump();
-            }
-        };
-
-        window.addEventListener("keydown", onKey);
-        canvas.addEventListener("pointerdown", jump);
-
-        const loop = () => {
-            ctx.fillStyle = "#061322";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // ground
-            ctx.fillStyle = "#55baff";
-            ctx.fillRect(0, groundY, canvas.width, 3);
-
-            // runner physics
-            vy += 0.65;
-            runnerY += vy;
-            if (runnerY >= groundY - 36) {
-                runnerY = groundY - 36;
-                vy = 0;
-                jumping = false;
-            }
-
-            ctx.fillStyle = "#80f2ff";
-            ctx.fillRect(110, runnerY, 28, 36);
-
-            // obstacle
-            obsX -= 6.5;
-            if (obsX < -30) {
-                obsX = canvas.width + 40;
-                score += 1;
-            }
-            if (obsX < 138 && obsX + 26 > 110 && runnerY + 36 > groundY - 32) {
-                score = 0;
-                obsX = canvas.width + 60;
-            }
-
-            ctx.fillStyle = "#ff8293";
-            ctx.fillRect(obsX, groundY - 32, 26, 32);
-
-            ctx.fillStyle = "#edf7ff";
-            ctx.font = "600 16px 'Space Grotesk', sans-serif";
-            ctx.fillText(`SCORE: ${score}`, 24, 34);
-
-            animId = requestAnimationFrame(loop);
-        };
-        loop();
-
-        demoCleanup = () => {
-            cancelAnimationFrame(animId);
-            window.removeEventListener("keydown", onKey);
-            canvas.removeEventListener("pointerdown", jump);
-        };
-    } else {
-        let p1X = 190;
-        let p2X = 540;
-        let p2Dir = -1;
-        let punchTimer = 0;
-        let hits = 0;
-
-        const keys = {};
-        const onKeyDown = e => {
-            keys[e.code] = true;
-            if (e.code === "Space") {
-                e.preventDefault();
-                punchTimer = 10;
-            }
-        };
-        const onKeyUp = e => {
-            keys[e.code] = false;
-        };
-        const onTap = () => {
-            punchTimer = 10;
-        };
-
-        window.addEventListener("keydown", onKeyDown);
-        window.addEventListener("keyup", onKeyUp);
-        canvas.addEventListener("pointerdown", onTap);
-
-        const loop = () => {
-            ctx.fillStyle = "#061322";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#8bd5ff";
-            ctx.fillRect(40, 330, canvas.width - 80, 3);
-
-            if (keys["ArrowLeft"] || keys["KeyA"]) p1X = Math.max(60, p1X - 5);
-            if (keys["ArrowRight"] || keys["KeyD"]) p1X = Math.min(canvas.width - 90, p1X + 5);
-
-            p2X += p2Dir * 2.2;
-            if (p2X < 380) p2Dir = 1;
-            if (p2X > canvas.width - 100) p2Dir = -1;
-
-            // Player 1
-            ctx.fillStyle = "#55baff";
-            ctx.fillRect(p1X, 280, 30, 50);
-
-            if (punchTimer > 0) {
-                punchTimer -= 1;
-                ctx.fillStyle = "#80f2ff";
-                ctx.fillRect(p1X + 30, 292, 34, 12);
-                if (Math.abs((p1X + 64) - p2X) < 36 && punchTimer === 8) {
-                    hits += 1;
-                }
-            }
-
-            // Rival
-            ctx.fillStyle = "#ff8293";
-            ctx.fillRect(p2X, 280, 30, 50);
-
-            ctx.fillStyle = "#edf7ff";
-            ctx.font = "600 16px 'Space Grotesk', sans-serif";
-            ctx.fillText(`COMBO HITS: ${hits}`, 24, 34);
-
-            animId = requestAnimationFrame(loop);
-        };
-        loop();
-
-        demoCleanup = () => {
-            cancelAnimationFrame(animId);
-            window.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("keyup", onKeyUp);
-            canvas.removeEventListener("pointerdown", onTap);
-        };
-    }
-}
-
-function openGameModal(gameId) {
-    const game = loadGamesConfig().find(g => g.id === gameId);
-    if (!game) return;
-
-    if (demoCleanup) {
-        demoCleanup();
-        demoCleanup = null;
-    }
-
-    const modal = document.getElementById("gamePlayerModal");
-    const stage = document.getElementById("gameStage");
-    const extLink = document.getElementById("gameExternalLink");
-
-    document.getElementById("gameModalTag").textContent = game.category.toUpperCase();
-    document.getElementById("gameModalTitle").textContent = game.title;
-
-    if (game.url) {
-        extLink.href = game.url;
-        extLink.style.display = "inline-flex";
-        stage.innerHTML = `<iframe src="${game.url}" title="${game.title}" class="game-iframe" allowfullscreen></iframe>`;
-    } else {
-        extLink.style.display = "none";
-        mountBuiltInDemo(stage, game);
-    }
-
-    modal.hidden = false;
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-}
-
-function closeGameModal() {
-    if (demoCleanup) {
-        demoCleanup();
-        demoCleanup = null;
-    }
-    const modal = document.getElementById("gamePlayerModal");
-    document.getElementById("gameStage").innerHTML = "";
-    modal.hidden = true;
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-}
-
-function openConnectModal(gameId) {
-    const games = loadGamesConfig();
-    const target = games.find(g => g.id === gameId) || games[0];
-    document.getElementById("connectGameSelect").value = target.id;
-    document.getElementById("connectGameUrl").value = target.url || "";
-
+function openConnectModal() {
     const modal = document.getElementById("connectGameModal");
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
@@ -764,58 +376,50 @@ function closeConnectModal() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderGamesGrid();
+    renderWallpaperGrid();
 
-    document.querySelectorAll(".filter-tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-            document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("is-active"));
-            tab.classList.add("is-active");
-            activeFilter = tab.getAttribute("data-filter");
-            renderGamesGrid();
+    document.querySelectorAll("[data-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            currentFilter = btn.getAttribute("data-filter");
+            document.querySelectorAll("#gameFilterBar button").forEach(b => {
+                b.classList.toggle("feed-filter-active", b.getAttribute("data-filter") === currentFilter);
+            });
+            renderWallpaperGrid();
         });
     });
 
-    document.getElementById("gameSearchInput").addEventListener("input", e => {
-        searchQuery = e.target.value;
-        renderGamesGrid();
+    document.getElementById("searchInput").addEventListener("input", e => {
+        currentSearch = e.target.value;
+        renderWallpaperGrid();
     });
 
-    document.getElementById("quickPlayRunnerBtn").addEventListener("click", () => openGameModal("temple-sprint"));
-    document.getElementById("quickPlayFighterBtn").addEventListener("click", () => openGameModal("cyber-clash"));
-
-    document.getElementById("closeGameModalBtn").addEventListener("click", closeGameModal);
-    document.getElementById("gameModalBackdrop").addEventListener("click", closeGameModal);
-
-    document.getElementById("openConnectModalBtn").addEventListener("click", () => openConnectModal("temple-sprint"));
-    document.getElementById("closeConnectModalBtn").addEventListener("click", closeConnectModal);
-    document.getElementById("connectModalBackdrop").addEventListener("click", closeConnectModal);
-
-    document.getElementById("connectGameSelect").addEventListener("change", e => {
-        const game = loadGamesConfig().find(g => g.id === e.target.value);
-        document.getElementById("connectGameUrl").value = game && game.url ? game.url : "";
-    });
+    document.getElementById("openAddGameModal").addEventListener("click", openConnectModal);
+    document.getElementById("heroConnectBtn").addEventListener("click", openConnectModal);
+    document.getElementById("closeConnectModal").addEventListener("click", closeConnectModal);
+    document.getElementById("cancelConnectBtn").addEventListener("click", closeConnectModal);
 
     document.getElementById("connectGameForm").addEventListener("submit", e => {
         e.preventDefault();
-        const id = document.getElementById("connectGameSelect").value;
-        const url = document.getElementById("connectGameUrl").value;
-        saveGameUrl(id, url);
-        renderGamesGrid();
+        const title = document.getElementById("gameTitleInput").value.trim();
+        const category = document.getElementById("gameCategoryInput").value;
+        const page = document.getElementById("gamePageInput").value.trim();
+        const wallpaper = document.getElementById("gameWallpaperInput").value.trim();
+
+        if (!title || !page || !wallpaper) return;
+
+        saveCustomPortal({
+            id: "portal-" + Date.now(),
+            title,
+            category,
+            tag: `${category.toUpperCase()} • CONNECTED`,
+            description: `Click wallpaper to launch ${page} in full screen.`,
+            page,
+            wallpaper
+        });
+
+        e.target.reset();
         closeConnectModal();
-    });
-
-    document.getElementById("resetGameUrlBtn").addEventListener("click", () => {
-        const id = document.getElementById("connectGameSelect").value;
-        saveGameUrl(id, "");
-        document.getElementById("connectGameUrl").value = "";
-        renderGamesGrid();
-    });
-
-    document.addEventListener("keydown", e => {
-        if (e.key === "Escape") {
-            closeGameModal();
-            closeConnectModal();
-        }
+        renderWallpaperGrid();
     });
 });
 </script>
