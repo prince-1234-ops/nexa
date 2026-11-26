@@ -11,6 +11,177 @@
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="profile-extra.css">
     <link rel="stylesheet" href="Nexa nav.css">
+    <style id="nexa-nav-inline">
+/* =========================================================
+   NEXA SHARED MENU — used by home.html AND messages.html
+   Same sidebar, same mobile bar, same red unread badge.
+========================================================= */
+
+:root { --nexa-nav-width: 232px; }
+@media (max-width: 1080px) { :root { --nexa-nav-width: 200px; } }
+@media (max-width: 900px)  { :root { --nexa-nav-width: 76px; } }
+@media (max-width: 650px)  { :root { --nexa-nav-width: 0px; } }
+
+/* ---------- sidebar ---------- */
+
+.sidebar {
+    position: fixed; z-index: 1000; inset: 0 auto 0 0;
+    display: flex; width: var(--nexa-nav-width); flex-direction: column;
+    padding: 24px 15px 18px; overflow-y: auto;
+    border-right: 1px solid rgba(170, 214, 255, 0.13);
+    background: linear-gradient(180deg, rgba(14, 33, 51, 0.88), rgba(5, 15, 26, 0.95));
+    box-shadow: 12px 0 50px rgba(0, 0, 0, 0.22);
+    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+}
+.sidebar-brand { padding: 6px 11px 26px; }
+.sidebar .logo {
+    display: block; font-family: "Space Grotesk", sans-serif; font-size: 27px;
+    font-weight: 700; letter-spacing: -0.04em;
+    background: linear-gradient(100deg, #bfeaff, #55baff, #80f2ff, #55baff);
+    background-size: 220% auto; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; animation: nexa-nav-drift 7s ease-in-out infinite;
+}
+@keyframes nexa-nav-drift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.sidebar .brand-status { display: block; margin-top: 4px; color: #647f94; font-size: 8px; font-weight: 700; letter-spacing: 0.2em; }
+
+.sidebar .main-nav { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+.sidebar .nav-item {
+    position: relative; display: flex; min-height: 46px; align-items: center; gap: 12px;
+    padding: 0 13px; border: 1px solid transparent; border-radius: 13px;
+    color: #a9bdcd; font-size: 13px; font-weight: 600; transition: 180ms ease;
+}
+.sidebar .nav-item:hover {
+    color: #eaf8ff; border-color: rgba(98, 185, 255, 0.2);
+    background: linear-gradient(100deg, rgba(47, 145, 222, 0.16), rgba(51, 132, 194, 0.04));
+    transform: translateX(2px);
+}
+.sidebar .nav-item.active {
+    color: #eaf8ff; border-color: rgba(98, 185, 255, 0.24);
+    background: linear-gradient(100deg, rgba(47, 145, 222, 0.24), rgba(51, 132, 194, 0.06));
+    box-shadow: inset 2px 0 0 #8bd5ff, 0 0 24px rgba(57, 168, 255, 0.1);
+}
+.sidebar .nav-icon { display: grid; width: 22px; place-items: center; color: #8bd5ff; font-size: 17px; line-height: 1; }
+@media (min-width: 901px) { .sidebar .nav-label { display: inline; } }
+.sidebar .nav-divider { height: 1px; margin: 13px 5px; background: rgba(170, 214, 255, 0.13); }
+.sidebar-bottom { margin-top: auto; }
+.sidebar-promo {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 12px;
+    border: 1px solid rgba(170, 214, 255, 0.13); border-radius: 14px; background: rgba(141, 203, 255, 0.045);
+}
+.promo-icon {
+    display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border-radius: 10px;
+    background: linear-gradient(135deg, #2589e8, #55baff); color: #03111e; font-size: 13px;
+    box-shadow: 0 0 18px rgba(68, 179, 255, 0.3);
+}
+.sidebar-promo strong { display: block; font-size: 11px; }
+.sidebar-promo small { display: block; margin-top: 2px; color: #91aabe; font-size: 9px; line-height: 1.35; }
+.logout-btn {
+    display: flex; width: 100%; min-height: 42px; align-items: center; justify-content: center; gap: 9px;
+    border: 1px solid transparent; border-radius: 12px; background: transparent;
+    color: #a9bdcd; font-size: 12px; font-weight: 600; transition: 180ms ease;
+}
+.logout-btn:hover { color: #ffc4cc; border-color: rgba(255, 130, 147, 0.2); background: rgba(255, 130, 147, 0.07); }
+.logout-icon { color: #ff8293; font-size: 17px; }
+
+/* ---------- red unread badge ---------- */
+
+.nav-badge, .mobile-nav-badge {
+    display: grid; min-width: 20px; height: 20px; place-items: center; padding: 0 6px;
+    border: 1px solid rgba(255, 190, 200, 0.55); border-radius: 999px;
+    background: linear-gradient(135deg, #ff4d6a, #e11d48); color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.55);
+}
+.nav-badge { margin-left: auto; }
+.nav-badge[hidden], .mobile-nav-badge[hidden] { display: none !important; }
+.mobile-nav-badge { position: absolute; top: 3px; right: calc(50% - 26px); min-width: 17px; height: 17px; font-size: 9px; }
+
+/* ---------- icon rail (tablet) ---------- */
+
+@media (max-width: 900px) {
+    .sidebar { align-items: center; padding: 18px 9px; }
+    .sidebar .sidebar-brand { padding: 5px 0 22px; text-align: center; }
+    .sidebar .logo { font-size: 19px; }
+    .sidebar .brand-status, .sidebar .nav-label, .sidebar-promo, .logout-btn span:last-child { display: none; }
+    .sidebar .main-nav { align-items: center; }
+    .sidebar .nav-item { width: 50px; justify-content: center; padding: 0; }
+    .sidebar .nav-divider { width: 38px; }
+    .logout-btn { width: 46px; padding: 0; }
+    .sidebar .nav-badge:not([hidden]) {
+        display: grid; position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; font-size: 9px; padding: 0 4px;
+    }
+}
+
+/* ---------- mobile bottom bar ---------- */
+
+body .mobile-nav { display: none; }
+
+@media (max-width: 650px) {
+    .sidebar { display: none; }
+
+    body .mobile-nav {
+        position: fixed; z-index: 3000; right: 0; bottom: 0; left: 0;
+        display: grid; height: 64px; grid-template-columns: repeat(4, 1fr);
+        margin: 0; padding: 6px 10px; border: 0; border-radius: 0;
+        border-top: 1px solid rgba(151, 210, 255, 0.2);
+        background: rgba(8, 22, 36, 0.92); box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
+        -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+    }
+    body .mobile-nav-item {
+        position: relative; display: flex; min-width: 0; flex-direction: column; align-items: center;
+        justify-content: center; gap: 3px; border-radius: 13px; color: #829caf; font-size: 18px; transition: 160ms ease;
+    }
+    body .mobile-nav-item small { font-size: 9px; font-weight: 600; }
+    body .mobile-nav-item.active { background: rgba(66, 155, 220, 0.14); color: #dff5ff; }
+    body .mobile-nav-item.active span:first-child { color: #8bd5ff; text-shadow: 0 0 12px rgba(103, 204, 255, 0.55); }
+    body:has(.messages-shell.chat-open) .mobile-nav { display: none; }
+}
+
+/* ---------- MESSAGES PAGE LAYOUT (header removed, sidebar added) ---------- */
+
+body .nexa-messages-app {
+    margin-left: var(--nexa-nav-width);
+    grid-template-rows: minmax(0, 1fr);
+}
+.nexa-messages-app .messages-page { padding-top: 18px; }
+
+@media (max-width: 650px) {
+    body .nexa-messages-app { padding-bottom: 64px; }
+    body:has(.messages-shell.chat-open) .nexa-messages-app { padding-bottom: 0; }
+}
+
+
+/* ---------- PEOPLE PAGE (old sidebar removed, shared sidebar added) ---------- */
+
+.people-sidebar { display: none !important; }
+
+body .people-main { margin-left: var(--nexa-nav-width); }
+
+.top-action { position: relative; }
+
+.topbar-badge {
+    position: absolute; top: -5px; right: -5px;
+    display: grid; min-width: 18px; height: 18px; place-items: center;
+    padding: 0 5px; border: 2px solid #06101b; border-radius: 999px;
+    background: linear-gradient(135deg, #ff4d6a, #e11d48); color: #fff;
+    font-size: 9px; font-weight: 700; line-height: 1;
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.55);
+}
+.topbar-badge[hidden] { display: none !important; }
+
+/* the shared sidebar already shows the NEXA logo on tablets/desktops */
+@media (min-width: 651px) { .mobile-brand { display: none !important; } }
+
+
+/* ---------- ANY OTHER PAGE: add class="nexa-shell" to <body> ---------- */
+
+body.nexa-shell { padding-left: var(--nexa-nav-width); }
+
+@media (max-width: 650px) {
+    body.nexa-shell { padding-bottom: 70px; }
+}
+
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
@@ -99,18 +270,11 @@
 
     <header class="profile-topbar">
 
-        <a href="settings.html"
-           class="profile-nav-button"
-           id="profileSettingsButton"
-           aria-label="Settings">
-            <i class="fa-solid fa-gear"></i>
-        </a>
-
         <div class="profile-top-title"><span id="profileUsernameTitle">NEXA</span></div>
 
-        <button type="button" class="profile-nav-button" id="profileMenuButton" aria-label="Profile menu">
-            <i class="fa-solid fa-ellipsis"></i>
-        </button>
+        <a href="settings.html" class="profile-nav-button" id="profileSettingsButton" aria-label="Settings" title="Settings">
+            <i class="fa-solid fa-gear"></i>
+        </a>
 
     </header>
 
@@ -231,6 +395,8 @@
 
     </section>
 
+    
+
 </main>
 
 
@@ -256,6 +422,7 @@
     </a>
 
 </nav>
+
 
 
 <!-- WHAT'S NEW MODAL -->
@@ -342,7 +509,7 @@
 </div>
 
 
-<!-- POST VIEWER: focused, scrollable, like / comment / share / download / use sound -->
+<!-- POST VIEWER: focused, scrollable, like / comment / share / download -->
 
 <div class="pv" id="postViewer" hidden aria-hidden="true">
 
