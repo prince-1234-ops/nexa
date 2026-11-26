@@ -4,949 +4,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="theme-color" content="#06101b">
     <title>NEXA — Settings</title>
+    <link rel="icon" type="image/jpeg" href="images/hub.jpg">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="Nexa nav.css">
     <link rel="stylesheet" href="settings.css">
     <link rel="stylesheet" href="nexa-theme.css">
 </head>
 
 <body>
 
-    <div class="background-glow glow-one"></div>
-    <div class="background-glow glow-two"></div>
+<div class="nexa-app">
 
-    <div class="settings-page">
+    <!-- ================= SHARED SIDEBAR ================= -->
 
-        <!-- =========================
-             TOP BAR
-        ========================== -->
-        <header class="settings-header">
+    <aside class="sidebar" aria-label="Main navigation">
 
-            <button class="back-button" id="backButton" aria-label="Go back">
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
+        <div class="sidebar-brand">
+            <a href="home.html" class="logo">NEXA</a>
+            <span class="brand-status">SOCIAL</span>
+        </div>
 
-            <div class="header-title">
-                <span class="small-title">NEXA</span>
-                <h1>Settings</h1>
+        <nav class="main-nav">
+
+            <a href="home.html" class="nav-item">
+                <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
+            </a>
+
+            <a href="people.html" class="nav-item">
+                <span class="nav-icon">◉</span><span class="nav-label">People</span>
+            </a>
+
+            <a href="messages.html" class="nav-item">
+                <span class="nav-icon">✉</span><span class="nav-label">Messages</span>
+                <span class="nav-badge" data-unread-badge hidden>0</span>
+            </a>
+
+            <a href="reels.html" class="nav-item">
+                <span class="nav-icon">📽️</span><span class="nav-label">Reels</span>
+            </a>
+
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">●</span><span class="nav-label">Profile</span>
+            </a>
+
+            <a href="games.html" class="nav-item">
+                <span class="nav-icon">🎮</span><span class="nav-label">Games</span>
+            </a>
+
+            <a href="settings.html" class="nav-item active" aria-current="page">
+                <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a href="about.html" class="nav-item">
+                <span class="nav-icon">ⓘ</span><span class="nav-label">About</span>
+            </a>
+
+            <a href="contact.html" class="nav-item">
+                <span class="nav-icon">☏</span><span class="nav-label">Contact</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-promo">
+                <span class="promo-icon">✦</span>
+                <div>
+                    <strong>Welcome to NEXA</strong>
+                    <small>Connect. Share. Discover.</small>
+                </div>
             </div>
 
-            <div class="header-icon">
-                <i class="fa-solid fa-sliders"></i>
+            <button id="logoutButton" class="logout-btn" type="button">
+                <span class="logout-icon">↪</span><span>Logout</span>
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <a href="home.html" class="mobile-logo">NEXA</a>
+
+            <div class="st-topbar-title">
+                <strong>Settings</strong>
+            </div>
+
+            <div class="topbar-actions">
+                <a href="messages.html" class="topbar-btn" title="Messages" aria-label="Messages">✉</a>
+                <a href="profile.html" class="mini-profile" aria-label="Open profile">
+                    <div class="mini-avatar" id="miniAvatar">N</div>
+                </a>
             </div>
 
         </header>
 
+        <div id="notificationArea" class="notification-area" aria-live="polite"></div>
 
-        <!-- =========================
-             MAIN CONTENT
-        ========================== -->
-        <main class="settings-container">
 
-            <!-- =========================
-                 PROFILE CARD
-            ========================== -->
-            <section class="profile-card">
+        <div class="settings-page">
 
-                <div class="profile-avatar">
-                    <img id="profileImage" src="https://i.pravatar.cc/150?img=12" alt="Profile picture">
+            <!-- HERO -->
 
-                    <button class="camera-button" id="changePhotoButton" aria-label="Change profile photo">
-                        <i class="fa-solid fa-camera"></i>
-                    </button>
+            <section class="st-hero">
 
-                    <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+                <div class="st-hero-avatar keep-color" id="heroAvatar">N</div>
+
+                <div class="st-hero-text">
+                    <span class="home-eyebrow">YOUR ACCOUNT</span>
+                    <h1 id="heroName">Settings</h1>
+                    <p><span id="heroUsername">@nexa</span> · <span id="heroSince">Member of NEXA</span></p>
                 </div>
 
-                <div class="profile-info">
-                    <h2 id="profileName">NEXA User</h2>
-                    <p id="profileUsername">@nexauser</p>
-                </div>
-
-                <button class="edit-profile-button" id="editProfileButton">
-                    <i class="fa-solid fa-pen"></i>
-                    <span>Edit</span>
-                </button>
-
-            </section>
-
-
-            <!-- =========================
-                 ACCOUNT
-            ========================== -->
-            <section class="settings-section">
-
-                <div class="section-heading">
-                    <i class="fa-solid fa-user"></i>
-                    <h2>Account</h2>
-                </div>
-
-                <div class="settings-card">
-
-                    <button class="setting-item" id="editProfileItem">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-user-pen"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Edit Profile</h3>
-                            <p>Change your name, username and profile photo</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
-
-                    <button class="setting-item" id="changePasswordButton">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-lock"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Password</h3>
-                            <p>Change your account password</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
-
-                    <button class="setting-item" id="emailButton">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-envelope"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Email</h3>
-                            <p id="emailText">Manage your email address</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
+                <div class="st-hero-actions">
+                    <a class="intro-action secondary" href="profile.html">View profile</a>
+                    <button type="button" class="intro-action primary" id="heroLogout">Log out</button>
                 </div>
 
             </section>
 
 
-            <!-- =========================
-                 PRIVACY
-            ========================== -->
-            <section class="settings-section">
+            <div class="st-layout">
 
-                <div class="section-heading">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <h2>Privacy</h2>
-                </div>
+                <!-- TABS -->
 
-                <div class="settings-card">
+                <nav class="st-tabs" id="stTabs" aria-label="Settings sections">
+                    <button type="button" class="st-tab active" data-tab="profile"><span>👤</span>Profile</button>
+                    <button type="button" class="st-tab" data-tab="account"><span>🔐</span>Account</button>
+                    <button type="button" class="st-tab" data-tab="appearance"><span>🎨</span>Appearance</button>
+                    <button type="button" class="st-tab" data-tab="chat"><span>💬</span>Chat</button>
+                    <button type="button" class="st-tab" data-tab="notifications"><span>🔔</span>Notifications</button>
+                    <button type="button" class="st-tab" data-tab="data"><span>🗂️</span>Data &amp; account</button>
+                </nav>
 
-                    <button class="setting-item" id="messagePrivacyButton">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-message"></i>
+
+                <div class="st-panels">
+
+                    <!-- ============ PROFILE ============ -->
+
+                    <section class="st-card" data-panel="profile">
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">PROFILE</span>
+                            <h2>Edit your profile</h2>
+                            <p>This is what other people see on NEXA.</p>
+                        </header>
+
+                        <div class="st-photo">
+
+                            <div class="st-photo-preview keep-color" id="photoPreview">N</div>
+
+                            <div class="st-photo-actions">
+                                <label for="photoInput" class="st-btn secondary">📷 Change photo</label>
+                                <button type="button" class="st-btn ghost" id="photoRemove">Remove photo</button>
+                                <input type="file" id="photoInput" accept="image/*" hidden>
+                            </div>
+
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Message Privacy</h3>
-                            <p>Control who can message you</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
-
-                    <button class="setting-item" id="profileVisibilityButton">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-eye"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Profile Visibility</h3>
-                            <p>Control who can see your profile</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
-
-                    <div class="setting-item no-button">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-circle"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Online Status</h3>
-                            <p>Show when you are online</p>
-                        </div>
-
-                        <label class="switch">
-                            <input type="checkbox" id="onlineStatusToggle" checked>
-                            <span class="slider"></span>
+                        <label class="st-field">
+                            <span>Name</span>
+                            <input type="text" id="nameInput" maxlength="80" autocomplete="name" placeholder="Your name">
                         </label>
 
-                    </div>
-
-
-                    <div class="setting-item no-button">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-check-double"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Read Receipts</h3>
-                            <p>Show when you've read messages</p>
-                        </div>
-
-                        <label class="switch">
-                            <input type="checkbox" id="readReceiptsToggle" checked>
-                            <span class="slider"></span>
+                        <label class="st-field">
+                            <span>Username</span>
+                            <div class="st-input-wrap">
+                                <em>@</em>
+                                <input type="text" id="usernameInput" maxlength="30" autocomplete="username" placeholder="username">
+                                <b id="usernameStatus"></b>
+                            </div>
+                            <small id="usernameHint">Letters, numbers, dots and underscores. 3 to 30 characters.</small>
                         </label>
 
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 NOTIFICATIONS
-            ========================== -->
-            <section class="settings-section">
-
-                <div class="section-heading">
-                    <i class="fa-solid fa-bell"></i>
-                    <h2>Notifications</h2>
-                </div>
-
-                <div class="settings-card">
-
-                    <div class="setting-item no-button">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-bell"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Notifications</h3>
-                            <p>Enable NEXA notifications</p>
-                        </div>
-
-                        <label class="switch">
-                            <input type="checkbox" id="notificationsToggle" checked>
-                            <span class="slider"></span>
+                        <label class="st-field">
+                            <span>Bio</span>
+                            <textarea id="bioInput" maxlength="160" placeholder="Tell people about yourself..."></textarea>
+                            <small><span id="bioCount">0</span> / 160</small>
                         </label>
 
-                    </div>
-
-
-                    <div class="setting-item no-button">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-volume-high"></i>
+                        <div class="st-actions">
+                            <button type="button" class="st-btn primary" id="saveProfile">Save profile</button>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Sounds</h3>
-                            <p>Play sounds for messages and interactions</p>
+                    </section>
+
+
+                    <!-- ============ ACCOUNT ============ -->
+
+                    <section class="st-card" data-panel="account" hidden>
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">ACCOUNT</span>
+                            <h2>Sign-in details</h2>
+                            <p>Your email and password.</p>
+                        </header>
+
+                        <div class="st-info-grid">
+                            <div><small>User ID</small><strong id="infoId">—</strong></div>
+                            <div><small>Member since</small><strong id="infoSince">—</strong></div>
                         </div>
 
-                        <label class="switch">
-                            <input type="checkbox" id="soundsToggle" checked>
-                            <span class="slider"></span>
+                        <div id="emailBlock">
+
+                            <label class="st-field">
+                                <span>Email</span>
+                                <input type="email" id="emailInput" autocomplete="email" placeholder="you@example.com">
+                            </label>
+
+                            <label class="st-field" id="emailPasswordField">
+                                <span>Current password (to confirm)</span>
+                                <input type="password" id="emailPassword" autocomplete="current-password" placeholder="Current password">
+                            </label>
+
+                            <div class="st-actions">
+                                <button type="button" class="st-btn primary" id="saveEmail">Save email</button>
+                            </div>
+
+                        </div>
+
+                        <p class="st-note" id="emailMissing" hidden>
+                            No email is saved on your account, so there is nothing to change here.
+                        </p>
+
+                    </section>
+
+
+                    <section class="st-card" data-panel="account" hidden>
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">SECURITY</span>
+                            <h2>Change password</h2>
+                            <p>Use at least 8 characters. A longer password with numbers and symbols is stronger.</p>
+                        </header>
+
+                        <div id="passwordBlock">
+
+                            <label class="st-field" id="currentPasswordField">
+                                <span>Current password</span>
+                                <div class="st-input-wrap">
+                                    <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Current password">
+                                    <button type="button" class="st-eye" data-eye="currentPassword" aria-label="Show password">👁</button>
+                                </div>
+                            </label>
+
+                            <label class="st-field">
+                                <span>New password</span>
+                                <div class="st-input-wrap">
+                                    <input type="password" id="newPassword" autocomplete="new-password" placeholder="New password">
+                                    <button type="button" class="st-eye" data-eye="newPassword" aria-label="Show password">👁</button>
+                                </div>
+                                <div class="st-meter"><i id="meterBar"></i></div>
+                                <small id="meterText">Type a new password.</small>
+                            </label>
+
+                            <label class="st-field">
+                                <span>Confirm new password</span>
+                                <div class="st-input-wrap">
+                                    <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Repeat the new password">
+                                    <button type="button" class="st-eye" data-eye="confirmPassword" aria-label="Show password">👁</button>
+                                </div>
+                            </label>
+
+                            <div class="st-actions">
+                                <button type="button" class="st-btn primary" id="savePassword">Update password</button>
+                            </div>
+
+                        </div>
+
+                        <p class="st-note" id="passwordMissing" hidden></p>
+
+                    </section>
+
+
+                    <!-- ============ APPEARANCE ============ -->
+
+                    <section class="st-card" data-panel="appearance" hidden>
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">APPEARANCE</span>
+                            <h2>NEXA colour</h2>
+                            <p>Pick the colour of NEXA. It changes on every page, on this device.</p>
+                        </header>
+
+                        <div class="st-swatches" id="swatches"></div>
+
+                        <label class="st-field">
+                            <span>Fine tune</span>
+                            <input type="range" id="hueRange" min="-180" max="180" step="1" value="0">
                         </label>
 
-                    </div>
-
-
-                    <button class="setting-item" id="callNotificationsButton">
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-phone"></i>
+                        <div class="st-preview">
+                            <span class="st-preview-chip keep-color" id="previewChip"></span>
+                            <div>
+                                <strong id="previewName">Ocean</strong>
+                                <small>Your colour</small>
+                            </div>
+                            <button type="button" class="st-btn ghost" id="hueReset">Reset to default</button>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Call Notifications</h3>
-                            <p>Manage incoming call alerts</p>
+                        <div class="st-toggle">
+                            <div>
+                                <strong>Reduce motion</strong>
+                                <small>Turns off most animations, glows and moving effects.</small>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="optMotion"><span></span></label>
                         </div>
 
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </button>
-
-                </div>
-
-            </section>
+                    </section>
 
 
-            <!-- =========================
-                 APPEARANCE
-            ========================== -->
-            <section class="settings-section">
+                    <!-- ============ CHAT ============ -->
 
-                <div class="section-heading">
-                    <i class="fa-solid fa-palette"></i>
-                    <h2>Appearance</h2>
-                </div>
+                    <section class="st-card" data-panel="chat" hidden>
 
-                <div class="settings-card">
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">CHAT</span>
+                            <h2>Chat wallpaper</h2>
+                            <p>The picture behind your messages in the Messages page.</p>
+                        </header>
 
-                    <button class="setting-item" id="themeButton">
+                        <div class="st-wallpapers" id="wallpapers"></div>
 
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-moon"></i>
+                        <div class="st-actions left">
+                            <label for="wallpaperInput" class="st-btn secondary">🖼️ Upload your own</label>
+                            <input type="file" id="wallpaperInput" accept="image/*" hidden>
+                            <button type="button" class="st-btn ghost" id="wallpaperNone">No wallpaper</button>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Theme</h3>
-                            <p id="themeText">Dark theme</p>
+                        <div class="st-chat-preview" id="chatPreview">
+                            <div class="bubble in">Hey! How are you?</div>
+                            <div class="bubble out">All good. Love the new look ✨</div>
+                            <div class="bubble in">Same here 💙</div>
                         </div>
 
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
+                    </section>
 
 
-                    <button class="setting-item" id="chatWallpaperButton">
+                    <!-- ============ NOTIFICATIONS ============ -->
 
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-comments"></i>
+                    <section class="st-card" data-panel="notifications" hidden>
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">NOTIFICATIONS</span>
+                            <h2>What you see</h2>
+                            <p>Choose which alerts show up while you use NEXA.</p>
+                        </header>
+
+                        <div class="st-toggle">
+                            <div>
+                                <strong>Unread message count</strong>
+                                <small>The red number on Messages in the menu and top bar.</small>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="optBadges"><span></span></label>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Chat Wallpaper</h3>
-                            <p>Customize your conversation background</p>
+                        <div class="st-toggle">
+                            <div>
+                                <strong>Notification dot</strong>
+                                <small>The blue dot on the heart when you have new likes or comments.</small>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="optDot"><span></span></label>
                         </div>
 
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
+                    </section>
 
 
-                                        
-                    <button class="setting-item" id="fontSizeButton">
+                    <!-- ============ DATA ============ -->
 
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-text-height"></i>
+                    <section class="st-card" data-panel="data" hidden>
+
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">YOUR DATA</span>
+                            <h2>Download your data</h2>
+                            <p>Get a copy of your profile, posts, stories and friends as a file.</p>
+                        </header>
+
+                        <div class="st-actions left">
+                            <button type="button" class="st-btn secondary" id="exportData">⬇ Download my data</button>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Font Size</h3>
-                            <p>Adjust text size across NEXA</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
-
-                </div>
-
-            </section>
+                    </section>
 
 
-            <!-- =========================
-                 SECURITY
-            ========================== -->
-            <section class="settings-section">
+                    <section class="st-card danger" data-panel="data" hidden>
 
-                <div class="section-heading">
-                    <i class="fa-solid fa-key"></i>
-                    <h2>Security</h2>
-                </div>
+                        <header class="st-card-head">
+                            <span class="section-eyebrow">DANGER ZONE</span>
+                            <h2>Delete account</h2>
+                            <p>This permanently removes your profile, posts, stories and friends. It cannot be undone.</p>
+                        </header>
 
-                <div class="settings-card">
-
-                    <button class="setting-item" id="activeSessionsButton">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-mobile-screen-button"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Active Sessions</h3>
-                            <p>See where your account is signed in</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
-
-
-                    <button class="setting-item" id="twoFactorAuthButton">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-shield"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Two-Factor Authentication</h3>
-                            <p>Add another layer of protection</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
-
-
-                    <div class="setting-item no-button">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Login Alerts</h3>
-                            <p>Get notified about new logins</p>
-                        </div>
-
-                        <label class="switch">
-                            <input type="checkbox" id="loginAlertsToggle" checked>
-                            <span class="slider"></span>
+                        <label class="st-field">
+                            <span>Type DELETE to confirm</span>
+                            <input type="text" id="deleteConfirm" autocomplete="off" placeholder="DELETE">
                         </label>
 
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 ABOUT
-            ========================== -->
-            <section class="settings-section">
-
-                <div class="section-heading">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <h2>About</h2>
-                </div>
-
-                <div class="settings-card">
-
-                    <button class="setting-item" id="privacyPolicyButton">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-file-shield"></i>
+                        <div class="st-actions left">
+                            <button type="button" class="st-btn danger" id="deleteAccount" disabled>Delete my account</button>
                         </div>
 
-                        <div class="setting-content">
-                            <h3>Privacy Policy</h3>
-                            <p>Read the NEXA privacy policy</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
-
-
-                    <button class="setting-item" id="termsOfServiceButton">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-file-lines"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>Terms of Service</h3>
-                            <p>Review NEXA's terms</p>
-                        </div>
-
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-
-                    </button>
-
-
-                    <button class="setting-item" id="aboutNEXAButton">
-
-                        <div class="setting-icon">
-                            <i class="fa-solid fa-crown"></i>
-                        </div>
-
-                        <div class="setting-content">
-                            <h3>About NEXA</h3>
-                            <p>NEXA social experience</p>
-                        </div>
-
-                        <span class="version-badge">v1.0</span>
-
-                    </button>
+                    </section>
 
                 </div>
 
-            </section>
-
-
-            <!-- =========================
-                 LOGOUT
-            ========================== -->
-            <section class="danger-section">
-
-                <button class="logout-button" id="logoutButton">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Log Out
-                </button>
-
-                <button class="delete-button" id="deleteAccountButton">
-                    <i class="fa-solid fa-trash"></i>
-                    Delete Account
-                </button>
-
-            </section>
-
-
-            <!-- =========================
-                 FOOTER
-            ========================== -->
-            <footer class="settings-footer">
-
-                <div class="footer-logo">
-                    NEXA
-                </div>
-
-                <p>Connect. Share. Belong.</p>
-
-                <span>Made for the next generation.</span>
-
-            </footer>
-
-        </main>
-
-    </div>
-
-
-    <!-- =========================
-         EDIT PROFILE MODAL
-    ========================== -->
-    <div class="modal-overlay" id="profileModal">
-
-        <div class="modal">
-
-            <button class="close-modal" id="closeProfileModal">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="modal-header">
-                <div class="modal-crown">
-                    <i class="fa-solid fa-crown"></i>
-                </div>
-
-                <h2>Edit Profile</h2>
-                <p>Update your NEXA identity</p>
-            </div>
-
-            <div class="form-group">
-                <label for="nameInput">Display Name</label>
-
-                <div class="input-box">
-                    <i class="fa-solid fa-user"></i>
-
-                    <input type="text" id="nameInput" placeholder="Your name" maxlength="50">
-                </div>
-            </div>
-
-
-            <div class="form-group">
-                <label for="usernameInput">Username</label>
-
-                <div class="input-box">
-                    <i class="fa-solid fa-at"></i>
-
-                    <input type="text" id="usernameInput" placeholder="username" maxlength="30">
-                </div>
-            </div>
-
-
-            <button class="save-button" id="saveProfileButton">
-                <i class="fa-solid fa-check"></i>
-                Save Changes
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         THEME MODAL
-    ========================== -->
-    <div class="modal-overlay" id="themeModal">
-
-        <div class="modal small-modal">
-
-            <button class="close-modal" id="closeThemeModal">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="modal-header">
-
-                <div class="modal-crown">
-                    <i class="fa-solid fa-palette"></i>
-                </div>
-
-                <h2>Choose Theme</h2>
-                <p>Customize the NEXA experience</p>
-
-            </div>
-
-<div class="theme-options">
-
-    <button class="theme-option" data-theme="royal-black">
-        <div class="theme-preview royal-black-preview">
-            <i class="fa-solid fa-crown"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Royal Black</strong>
-            <span>Classic NEXA</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="futuristic-blue">
-        <div class="theme-preview futuristic-blue-preview">
-            <i class="fa-solid fa-bolt"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Futuristic Blue</strong>
-            <span>Neon blue</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="cyber-purple">
-        <div class="theme-preview cyber-purple-preview">
-            <i class="fa-solid fa-star"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Cyber Purple</strong>
-            <span>Electric purple</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="neon-pink">
-        <div class="theme-preview neon-pink-preview">
-            <i class="fa-solid fa-heart"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Neon Pink</strong>
-            <span>Bright pink glow</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="emerald">
-        <div class="theme-preview emerald-preview">
-            <i class="fa-solid fa-leaf"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Emerald</strong>
-            <span>Green energy</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="crimson">
-        <div class="theme-preview crimson-preview">
-            <i class="fa-solid fa-fire"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Crimson</strong>
-            <span>Red power</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="ocean">
-        <div class="theme-preview ocean-preview">
-            <i class="fa-solid fa-water"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Ocean</strong>
-            <span>Cool aqua</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="sunset">
-        <div class="theme-preview sunset-preview">
-            <i class="fa-solid fa-sun"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Sunset</strong>
-            <span>Orange and pink</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="cosmic">
-        <div class="theme-preview cosmic-preview">
-            <i class="fa-solid fa-meteor"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Cosmic</strong>
-            <span>Deep space</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-
-    <button class="theme-option" data-theme="light">
-        <div class="theme-preview light-preview">
-            <i class="fa-solid fa-sun"></i>
-        </div>
-        <div class="theme-option-info">
-            <strong>Light</strong>
-            <span>Bright NEXA</span>
-        </div>
-        <i class="fa-solid fa-check theme-check"></i>
-    </button>
-
-</div>
-
-        </div>
-
-    </div>
-
-    <!-- =========================
-     SETTINGS DETAIL MODAL
-========================== -->
-    <div class="modal-overlay" id="settingsDetailModal">
-
-        <div class="modal settings-detail-modal">
-
-            <button class="close-modal" id="closeSettingsDetailModal" type="button">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="modal-header">
-
-                <div class="modal-crown">
-                    <i class="fa-solid fa-sliders" id="detailModalIcon"></i>
-                </div>
-
-                <h2 id="detailModalTitle">
-                    Settings
-                </h2>
-
-                <p id="detailModalDescription">
-                    Manage your NEXA setting.
-                </p>
-
-            </div>
-
-
-            <div id="detailModalBody"></div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         CONFIRM MODAL
-    ========================== -->
-    <div class="modal-overlay" id="confirmModal">
-
-        <div class="modal confirm-modal">
-
-            <div class="confirm-icon danger">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </div>
-
-            <h2 id="confirmTitle">Log Out?</h2>
-
-            <p id="confirmText">
-                Are you sure you want to log out of NEXA?
-            </p>
-
-            <div class="confirm-actions">
-
-                <button class="cancel-confirm" id="cancelConfirm">
-                    Cancel
-                </button>
-
-                <button class="danger-confirm" id="confirmAction">
-                    Continue
-                </button>
-
             </div>
 
         </div>
 
-    </div>
-
-
-    <!-- =========================================================
-     CHANGE PASSWORD MODAL
-========================================================= -->
-
-<div
-    class="modal-overlay"
-    id="passwordModal"
->
-
-    <div class="modal password-modal">
-
-        <button
-            type="button"
-            class="close-modal"
-            id="closePasswordModal"
-            aria-label="Close"
-        >
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-
-
-        <div class="modal-header">
-
-            <div class="modal-crown">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-
-            <h2>Change Password</h2>
-
-            <p>
-                Verify your current password before creating a new one.
-            </p>
-
-        </div>
-
-
-        <!-- OLD PASSWORD -->
-
-        <div class="form-group">
-
-            <label for="oldPasswordInput">
-                Current Password
-            </label>
-
-            <div class="input-box">
-
-                <i class="fa-solid fa-lock"></i>
-
-                <input
-                    type="password"
-                    id="oldPasswordInput"
-                    placeholder="Enter current password"
-                    autocomplete="current-password"
-                >
-
-            </div>
-
-        </div>
-
-
-        <!-- NEW PASSWORD -->
-
-        <div class="form-group">
-
-            <label for="newPasswordInput">
-                New Password
-            </label>
-
-            <div class="input-box">
-
-                <i class="fa-solid fa-key"></i>
-
-                <input
-                    type="password"
-                    id="newPasswordInput"
-                    placeholder="Enter new password"
-                    autocomplete="new-password"
-                >
-
-            </div>
-
-        </div>
-
-
-        <!-- CONFIRM -->
-
-        <div class="form-group">
-
-            <label for="confirmPasswordInput">
-                Confirm New Password
-            </label>
-
-            <div class="input-box">
-
-                <i class="fa-solid fa-shield-halved"></i>
-
-                <input
-                    type="password"
-                    id="confirmPasswordInput"
-                    placeholder="Confirm new password"
-                    autocomplete="new-password"
-                >
-
-            </div>
-
-        </div>
-
-
-        <!-- SIGN OUT OTHER DEVICES -->
-
-        <label class="security-check-row">
-
-            <input
-                type="checkbox"
-                id="signOutOtherDevicesToggle"
-                checked
-            >
-
-            <span class="security-check-box"></span>
-
-            <span class="security-check-text">
-
-                <strong>
-                    Sign out other devices
-                </strong>
-
-                <small>
-                    Keep this device signed in and end other active sessions.
-                </small>
-
-            </span>
-
-        </label>
-
-
-        <button
-            type="button"
-            class="save-button"
-            id="changePasswordSubmit"
-        >
-            <i class="fa-solid fa-shield-check"></i>
-            Change Password
-        </button>
-
-    </div>
+    </main>
 
 </div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <script src="nexa-theme.js"></script>
-    <script src="settings.js"></script>
-    
+<nav class="mobile-nav" aria-label="Mobile navigation">
+
+    <a href="home.html" class="mobile-nav-item"><span>⌂</span><small>Home</small></a>
+
+    <a href="people.html" class="mobile-nav-item"><span>◉</span><small>People</small></a>
+
+    <a href="messages.html" class="mobile-nav-item">
+        <span>✉</span><small>Messages</small>
+        <span class="mobile-nav-badge" data-unread-badge hidden>0</span>
+    </a>
+
+    <a href="profile.html" class="mobile-nav-item"><span>●</span><small>Profile</small></a>
+
+</nav>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="nexa-theme.js"></script>
+<script src="Nexa-nav.js"></script>
+<script src="settings.js"></script>
 
 </body>
 
