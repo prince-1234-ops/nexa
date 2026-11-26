@@ -1,0 +1,233 @@
+/* =========================================================
+   NEXA GAMES — REAL WALLPAPER PORTAL WINDOWS
+   Uses the exact variables & glass language of home.css
+========================================================= */
+
+.games-page {
+    padding-bottom: 84px;
+}
+
+.games-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 22px 0 18px;
+}
+
+/* 2-Column Cinematic Wallpaper Window Grid */
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+/* Each card is a direct <a> window into the game's HTML page */
+.wallpaper-portal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 16 / 10;
+    min-height: 290px;
+    padding: 18px 20px;
+    overflow: hidden;
+    border: 1px solid rgba(144, 208, 255, 0.24);
+    border-radius: 24px;
+    background: var(--bg-deep);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.wallpaper-portal:hover,
+.wallpaper-portal:focus-visible {
+    outline: none;
+    transform: translateY(-5px) scale(1.006);
+    border-color: var(--cyan);
+    box-shadow: var(--shadow-lg), 0 0 36px rgba(85, 186, 255, 0.34);
+}
+
+/* Real 3D / AI Wallpaper Image */
+.wallpaper-img {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 420ms ease, filter 320ms ease;
+}
+
+.wallpaper-portal:hover .wallpaper-img {
+    transform: scale(1.06);
+    filter: brightness(1.08);
+}
+
+/* Frosted edge vignette so text & play portal pop cleanly */
+.wallpaper-glass-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(6, 16, 27, 0.08) 0%, rgba(4, 11, 20, 0.65) 100%),
+        linear-gradient(180deg, rgba(4, 11, 20, 0.55) 0%, transparent 38%, rgba(4, 11, 20, 0.92) 100%);
+    box-shadow: inset 0 1px 0 rgba(221, 243, 255, 0.18);
+}
+
+.wallpaper-top-row,
+.wallpaper-center-play,
+.wallpaper-bottom-info {
+    position: relative;
+    z-index: 2;
+}
+
+.wallpaper-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.portal-pill,
+.portal-file-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.portal-pill {
+    border: 1px solid rgba(128, 242, 255, 0.42);
+    background: rgba(6, 19, 34, 0.72);
+    color: var(--cyan);
+}
+
+.portal-file-pill {
+    border: 1px solid var(--line);
+    background: rgba(6, 19, 34, 0.68);
+    color: var(--muted-light);
+}
+
+/* Center Portal Play Button */
+.wallpaper-center-play {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: auto 0;
+    transition: transform 220ms ease;
+}
+
+.wallpaper-portal:hover .wallpaper-center-play {
+    transform: scale(1.07);
+}
+
+.portal-play-circle {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    border: 1.5px solid rgba(128, 242, 255, 0.75);
+    border-radius: 50%;
+    background: rgba(8, 24, 42, 0.72);
+    color: #ffffff;
+    font-size: 18px;
+    box-shadow: 0 0 28px rgba(85, 186, 255, 0.45), inset 0 0 14px rgba(128, 242, 255, 0.25);
+    backdrop-filter: blur(12px);
+}
+
+.portal-play-text {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(5, 15, 26, 0.75);
+    border: 1px solid rgba(144, 208, 255, 0.22);
+    color: #eaf8ff;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+/* Bottom Title & Description */
+.wallpaper-bottom-info h3 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+}
+
+.wallpaper-bottom-info p {
+    margin: 5px 0 0;
+    color: var(--muted-light);
+    font-size: 12.5px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Connect Game Modal Form */
+.connect-box {
+    width: min(460px, 100%);
+}
+
+.connect-game-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px 22px;
+}
+
+.connect-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted-light);
+}
+
+.connect-label input,
+.connect-label select {
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(168, 213, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(6, 17, 30, 0.85);
+    color: var(--text);
+}
+
+.connect-label input:focus,
+.connect-label select:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.connect-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.connect-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+    .wallpaper-grid {
+        grid-template-columns: 1fr;
+    }
+}
