@@ -623,3 +623,33 @@ html[data-nexa-theme="neon-pink"] {
     --nexa-theme-glow:
         rgba(255, 35, 127, 0.22);
 }
+
+/* NEXA GLOBAL LOGO */
+.nexa-brand-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-right: 12px;
+    background: #050b18;
+}
+
+.nexa-brand-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+@media (max-width: 600px) {
+    .nexa-brand-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        margin-right: 8px;
+    }
+}
