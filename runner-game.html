@@ -194,6 +194,12 @@
           </svg>
         </button>
 
+        <button id="hud-touchpad-toggle" title="Toggle On-Screen Controls" class="glass-panel p-2.5 sm:p-3 rounded-2xl text-emerald-300 hover:bg-slate-800/90 active:scale-95 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </button>
+
         <button id="hud-pause-btn" title="Pause Game (Esc)" class="glass-panel p-2.5 sm:p-3 rounded-2xl text-amber-300 hover:bg-slate-800/90 active:scale-95 transition">
           <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/>
@@ -205,12 +211,32 @@
     <!-- Realm / Cave Milestone Banner Slot -->
     <div id="realm-banner-slot" class="flex flex-col items-center justify-center pointer-events-none my-auto"></div>
 
-    <!-- Bottom HUD: Corner Turn Prompt & Active Power-Ups -->
-    <div class="flex flex-col items-center gap-2 w-full">
+    <!-- Bottom HUD: Corner Turn Prompt, Active Power-Ups & Phone Touch Buttons -->
+    <div class="flex flex-col items-center gap-2.5 w-full">
       <div id="turn-hint-pill" class="hidden glass-panel px-4 py-1.5 rounded-full border border-amber-400/65 text-xs font-extrabold uppercase tracking-widest text-amber-300 animate-bounce">
         Junction Ahead — Turn!
       </div>
       <div id="active-powerups-bar" class="flex flex-wrap justify-center gap-2 max-w-lg"></div>
+
+      <!-- Responsive On-Screen Controls for Phones / Touch / All Devices -->
+      <div id="mobile-controls-bar" class="pointer-events-auto w-full max-w-2xl flex items-center justify-between gap-3 px-1 pb-1">
+        <div class="flex items-center gap-2.5">
+          <button id="touch-left-btn" type="button" aria-label="Move Left or Turn Left" class="glass-panel w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-amber-400/40 active:scale-90 active:bg-amber-400/25 flex items-center justify-center text-amber-300 font-black text-xl shadow-lg">
+            ←
+          </button>
+          <button id="touch-right-btn" type="button" aria-label="Move Right or Turn Right" class="glass-panel w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-amber-400/40 active:scale-90 active:bg-amber-400/25 flex items-center justify-center text-amber-300 font-black text-xl shadow-lg">
+            →
+          </button>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button id="touch-slide-btn" type="button" aria-label="Slide" class="glass-panel px-4 h-14 sm:h-16 rounded-2xl border border-sky-400/40 active:scale-90 active:bg-sky-400/25 flex items-center justify-center text-sky-200 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg">
+            ↓ Slide
+          </button>
+          <button id="touch-jump-btn" type="button" aria-label="Jump" class="gold-btn px-5 h-14 sm:h-16 rounded-2xl active:scale-90 flex items-center justify-center text-slate-950 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg">
+            ↑ Jump
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -218,6 +244,9 @@
   <div id="main-menu" class="fixed inset-0 z-30 flex flex-col justify-between p-4 sm:p-6 md:p-8 overflow-y-auto custom-scroll bg-gradient-to-b from-slate-950/65 via-slate-950/35 to-slate-950/88">
     <div class="flex flex-wrap items-center justify-between gap-3 w-full max-w-6xl mx-auto">
       <div class="flex items-center gap-2.5">
+        <button id="btn-menu-back-to-game" type="button" class="emerald-btn px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white flex items-center gap-1.5 shadow-lg">
+          <span>← Back to Game</span>
+        </button>
         <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-2">
           <span class="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-200 border border-yellow-100"></span>
           <span id="menu-total-coins" class="font-extrabold text-amber-300 text-sm sm:text-base tabular-nums">0</span>
@@ -319,14 +348,14 @@
         <span class="text-xs font-bold text-slate-200">Settings</span>
       </button>
     </div>
-  </div>
-
-  <!-- MODAL BACKDROP -->
-  <div id="submodal-backdrop" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-3xl max-h-[86vh] rounded-3xl flex flex-col overflow-hidden border border-amber-400/35">
-      <div class="px-6 py-4 border-b border-slate-700/70 flex items-center justify-between">
+      <div class="px-6 py-4 border-b border-slate-700/70 flex items-center justify-between gap-3">
         <h2 id="submodal-title" class="font-mythic text-xl sm:text-2xl font-bold text-amber-300">Modal</h2>
-        <button id="submodal-close" class="slate-btn w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white font-bold">✕</button>
+        <div class="flex items-center gap-2">
+          <button id="submodal-back-to-game" type="button" class="emerald-btn px-3.5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white">
+            ← Back to Game
+          </button>
+          <button id="submodal-close" class="slate-btn w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white font-bold">✕</button>
+        </div>
       </div>
       <div id="submodal-body" class="p-5 sm:p-6 overflow-y-auto custom-scroll space-y-4"></div>
     </div>
@@ -613,6 +642,7 @@
             volume: d.volume ?? 0.65,
             graphicsQuality: d.graphicsQuality ?? 'high',
             cameraMode: d.cameraMode ?? 'chase',
+            touchPadVisible: d.touchPadVisible ?? true,
             introSeen: d.introSeen ?? false
           };
         }
@@ -635,6 +665,7 @@
         volume: 0.65,
         graphicsQuality: 'high',
         cameraMode: 'chase',
+        touchPadVisible: true,
         introSeen: false
       };
     }
@@ -2241,6 +2272,8 @@
       footstepTimer: 0,
 
       beastProximity: 0.85,
+      beastSightTimer: 0,
+      beastVisible: false,
       cameraShake: 0,
       cinematicTime: 0,
 
@@ -2355,12 +2388,21 @@
         const sh = Math.sin(t * 45) * 0.14;
         camera.position.set(3.2 + sh, 3.1 + sh, -4.6);
         camera.lookAt(0, 2.2, 2.8);
-      } else if (t < 6.4) {
-        const p = (t - 4.8) / 1.6;
+      } else if (t < 5.7) {
+        const p = (t - 4.8) / 0.9;
         const sm = p * p * (3 - 2 * p);
         camera.position.lerpVectors(new THREE.Vector3(3.2, 3.1, -4.6), new THREE.Vector3(0, 5.2, 8.6), sm);
         camera.lookAt(0, 1.6, -6);
-        document.getElementById('cinematic-caption').textContent = 'Khorvath roars into pursuit—run for your life!';
+        beastRig.root.position.y = -sm * 9.0;
+        beastRig.root.position.z = 6.2 + sm * 12.0;
+        document.getElementById('cinematic-caption').textContent = 'Khorvath roars and slips back into the shadows as you bolt forward!';
+      } else if (t < 6.4) {
+        beastRig.root.visible = false;
+        const p = (t - 5.7) / 0.7;
+        const sm = p * p * (3 - 2 * p);
+        camera.position.lerpVectors(new THREE.Vector3(2.4, 4.8, 8.6), new THREE.Vector3(0, 4.6, 8.2), sm);
+        camera.lookAt(0, 1.5, -7);
+        document.getElementById('cinematic-caption').textContent = 'Path ahead clear—run for your life!';
       } else {
         finishCinematicAndBeginRun();
       }
@@ -2410,7 +2452,9 @@
       gameState.slideTimer = 0;
       gameState.stumbleTimer = 0;
       gameState.invulnTimer = 0;
-      gameState.beastProximity = 0.92;
+      gameState.beastProximity = 0.78;
+      gameState.beastSightTimer = 2.6;
+      gameState.beastVisible = true;
       gameState.cameraShake = 0.25;
 
       const charDef = CHARACTERS.find(c => c.id === saveData.selectedChar) || CHARACTERS[0];
@@ -2428,6 +2472,7 @@
 
       hideAllMenus();
       document.getElementById('hud-overlay').classList.remove('hidden');
+      beastRig.root.visible = false;
       sound.playRoar();
     }
 
@@ -2750,6 +2795,8 @@
                     gameState.stumbleTimer = 1.1;
                     gameState.invulnTimer = 1.25;
                     gameState.beastProximity = Math.max(0.12, gameState.beastProximity - 0.42);
+                    gameState.beastSightTimer = 2.6;
+                    gameState.beastVisible = true;
                     gameState.cameraShake = 0.55;
                     sound.playCrash();
                     sound.playRoar();
@@ -2758,7 +2805,7 @@
                       triggerGameOver('Caught by Khorvath');
                       return;
                     } else {
-                      showToast('Stumbled! Khorvath surges closer!', 'rose');
+                      showToast('Stumbled! Khorvath appears then fades!', 'rose');
                     }
                   }
                 }
@@ -2768,13 +2815,31 @@
         }
       }
 
-      gameState.beastProximity = Math.min(0.95, gameState.beastProximity + dt * 0.045);
-      document.getElementById('danger-vignette').style.opacity = gameState.beastProximity < 0.45 ? String((0.45 - gameState.beastProximity) * 1.8) : '0';
+      gameState.beastProximity = Math.min(0.95, gameState.beastProximity + dt * 0.06);
+      if (gameState.beastSightTimer > 0) {
+        gameState.beastSightTimer = Math.max(0, gameState.beastSightTimer - dt);
+        if (gameState.beastSightTimer <= 0) {
+          gameState.beastVisible = false;
+        }
+      } else {
+        gameState.beastVisible = false;
+      }
 
-      const beastDistBehind = 3.8 + gameState.beastProximity * 7.5;
-      const beastPos = gameState.playerPos.clone().addScaledVector(forward, -beastDistBehind);
-      beastRig.root.position.set(beastPos.x, 0, beastPos.z);
+      beastRig.root.visible = gameState.beastVisible;
+      document.getElementById('danger-vignette').style.opacity = gameState.beastVisible && gameState.beastProximity < 0.45
+        ? String((0.45 - gameState.beastProximity) * 1.8)
+        : '0';
+
+      const sightScale = gameState.beastVisible ? Math.min(1, gameState.beastSightTimer / 0.45) : 0;
+      const beastDistBehind = 5.4 + gameState.beastProximity * 8.5;
+      const sidePeek = Math.sin(gameState.distance * 0.28) * 1.9;
+      const beastPos = gameState.playerPos.clone()
+        .addScaledVector(forward, -beastDistBehind)
+        .addScaledVector(right, sidePeek);
+      const sinkY = (1 - sightScale) * -4.2;
+      beastRig.root.position.set(beastPos.x, sinkY, beastPos.z);
       beastRig.root.rotation.y = gameState.playerYaw;
+      }
 
       animateRigs(dt, speed, caveMode);
       updateCamera(dt, forward, right);
@@ -2943,6 +3008,7 @@
 
       document.getElementById('sound-icon-on').classList.toggle('hidden', !saveData.soundEnabled);
       document.getElementById('sound-icon-off').classList.toggle('hidden', saveData.soundEnabled);
+      document.getElementById('mobile-controls-bar').classList.toggle('hidden', !saveData.touchPadVisible);
       updateMissionsBadge();
     }
 
@@ -3025,11 +3091,12 @@
       document.getElementById('gameover-overlay').classList.add('hidden');
       gameState.mode = 'playing';
       gameState.beastProximity = 0.85;
+      gameState.beastRetreatTimer = 0.8;
       gameState.invulnTimer = 2.2;
       gameState.playerY = 0.5;
       gameState.velY = 8;
       sound.playPowerup();
-      showToast('Rescued! Khorvath pushed back!', 'emerald');
+      showToast('Rescued! Khorvath driven back!', 'emerald');
     });
 
     // Sub-Modal Builder (Levels, Heroes, Upgrades, Missions, Settings)
@@ -3214,9 +3281,16 @@
             <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
               <div>
                 <div class="font-bold text-white">Camera Angle</div>
-                <div class="text-xs text-slate-400">Standard Chase or High Action</div>
+                <div class="text-xs text-slate-400">Standard Chase or High Sightline</div>
               </div>
-              <button id="set-cam-btn" class="slate-btn px-4 py-2 rounded-xl text-xs font-extrabold uppercase text-sky-300">${saveData.cameraMode === 'chase' ? 'Standard Chase' : 'High Action'}</button>
+              <button id="set-cam-btn" class="slate-btn px-4 py-2 rounded-xl text-xs font-extrabold uppercase text-sky-300">${saveData.cameraMode === 'chase' ? 'Standard Chase' : 'High Sightline'}</button>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-white">Phone / On-Screen Buttons</div>
+                <div class="text-xs text-slate-400">Show or hide tap buttons alongside touch swipes</div>
+              </div>
+              <button id="set-touch-btn" class="slate-btn px-4 py-2 rounded-xl text-xs font-extrabold uppercase text-emerald-300">${saveData.touchPadVisible ? 'Shown' : 'Hidden'}</button>
             </div>
           </div>
         `;
@@ -3244,6 +3318,12 @@
           persistSave();
           openSubModal('settings');
         });
+        document.getElementById('set-touch-btn').addEventListener('click', () => {
+          saveData.touchPadVisible = !saveData.touchPadVisible;
+          persistSave();
+          refreshMainMenuUI();
+          openSubModal('settings');
+        });
       }
     }
 
@@ -3251,40 +3331,27 @@
       document.getElementById('submodal-backdrop').classList.add('hidden');
     });
 
-    document.querySelectorAll('.menu-nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => openSubModal(btn.getAttribute('data-modal')));
+    document.getElementById('submodal-back-to-game').addEventListener('click', () => {
+      document.getElementById('submodal-backdrop').classList.add('hidden');
+      if (gameState.mode === 'paused') resumeGame();
+      else beginGameplayRun(gameState.gameMode, gameState.campaignLevelIndex);
     });
 
-    document.getElementById('btn-play-campaign').addEventListener('click', () => {
-      if (!saveData.introSeen) startCinematicIntro('campaign', 0);
-      else beginGameplayRun('campaign', 0);
+    document.getElementById('btn-menu-back-to-game').addEventListener('click', () => {
+      beginGameplayRun(gameState.gameMode, gameState.campaignLevelIndex);
     });
 
-    document.getElementById('btn-play-endless').addEventListener('click', () => {
-      beginGameplayRun('endless', 0);
-    });
-
-    document.getElementById('btn-continue-run').addEventListener('click', () => {
-      const idx = Math.max(0, Math.min(LEVELS.length - 1, (saveData.savedCampaignLevel || 1) - 1));
-      beginGameplayRun('campaign', idx);
-    });
-
-    document.getElementById('btn-replay-intro').addEventListener('click', () => {
-      startCinematicIntro('campaign', 0);
-    });
-
-    document.getElementById('skip-cinematic-btn').addEventListener('click', () => {
-      if (gameState.mode === 'cinematic') finishCinematicAndBeginRun();
-    });
-
-    document.getElementById('menu-sound-toggle').addEventListener('click', () => {
-      sound.init();
-      saveData.soundEnabled = !saveData.soundEnabled;
-      sound.applyAudioSettings();
+    document.getElementById('hud-touchpad-toggle').addEventListener('click', () => {
+      saveData.touchPadVisible = !saveData.touchPadVisible;
       persistSave();
       refreshMainMenuUI();
+      showToast(saveData.touchPadVisible ? 'On-Screen Controls Shown' : 'On-Screen Controls Hidden', 'emerald');
     });
 
+    document.getElementById('touch-left-btn').addEventListener('click', handleLeft);
+    document.getElementById('touch-right-btn').addEventListener('click', handleRight);
+    document.getElementById('touch-jump-btn').addEventListener('click', handleJump);
+    document.getElementById('touch-slide-btn').addEventListener('click', handleSlide);
     document.getElementById('hud-cam-btn').addEventListener('click', () => {
       saveData.cameraMode = saveData.cameraMode === 'chase' ? 'high' : 'chase';
       persistSave();
@@ -3322,6 +3389,8 @@
         updateCinematic(dt);
       } else if (gameState.mode === 'playing') {
         updateGameplay(dt);
+      } else {
+        beastRig.root.visible = false;
       }
 
       updateParticles(dt);
